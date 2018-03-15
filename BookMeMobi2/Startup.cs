@@ -35,7 +35,7 @@ namespace BookMeMobi2
 
             services.AddCors();
 
-            services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(Configuration["connectionStrings:LocalDb"],
+            services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(Configuration["connectionStrings:Azure"],
                 b => b.MigrationsAssembly("NetCore2JWTAuthentication")));
             services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 
