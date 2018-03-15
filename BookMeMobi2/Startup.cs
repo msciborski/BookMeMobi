@@ -35,9 +35,9 @@ namespace BookMeMobi2
 
             services.AddCors();
 
-            services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(Configuration["connectionStrings:Azure"],
+            services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(Configuration["connectionStrings:AppDB"],
                 b => b.MigrationsAssembly("NetCore2JWTAuthentication")));
-            services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
+            services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
             var secret = Encoding.ASCII.GetBytes(Configuration["JWTSettings:Secret"]);
 
