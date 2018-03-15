@@ -19,6 +19,13 @@ namespace BookMeMobi2
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+            .ConfigureAppConfiguration((context, builder) =>
+                {
+                    var env = context.HostingEnvironment;
+                    builder.AddJsonFile("appsettings.json", true, true)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true);
+                    builder.AddEnvironmentVariables();
+                })
                 .UseStartup<Startup>()
                 .Build();
     }
