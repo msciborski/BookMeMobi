@@ -72,7 +72,7 @@ namespace BookMeMobi2
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            app.UseDeveloperExceptionPage();
             loggerFactory.AddDebug();
             app.UseCors(o => o.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().AllowCredentials());
 
