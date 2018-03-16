@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using BookMeMobi2.Entities;
 using BookMeMobi2.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +17,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace BookMeMobi2.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/accounts")]
     public class AccountsController : Controller
     {
