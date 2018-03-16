@@ -92,20 +92,11 @@ namespace BookMeMobi2.Controllers
         }
 
         [HttpPost("logout")]
-        public async Task<IActionResult> Logout(string id)
+        public async Task<IActionResult> Logout()
         {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user == null)
-            {
-                return Error("User dosen't exist.");
-            }
             await _signInManager.SignOutAsync();
 
-            return Ok(new
-            {
-                Id = user.Id,
-                UserName = user.UserName
-            });
+            return Ok();
         }
 
 

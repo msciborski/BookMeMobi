@@ -33,7 +33,10 @@ namespace BookMeMobi2
             services.AddOptions();
             services.Configure<JWTSettings>(Configuration.GetSection("JWTSettings"));
 
-            services.AddCors();
+            services.AddCors(o =>
+            {
+                o.AddPolicy("CorsPolicy", policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyHeader().AllowAnyMethod());
+            });
 
             services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
                 b => b.MigrationsAssembly("NetCore2JWTAuthentication")));
@@ -71,11 +74,7 @@ namespace BookMeMobi2
             }
 
             loggerFactory.AddDebug();
-            app.UseCors(o => o
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials());
+            app.UseCors("CorsPolicy");
 
             app.UseMvc();
         }
