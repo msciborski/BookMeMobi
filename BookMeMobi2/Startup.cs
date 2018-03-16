@@ -74,7 +74,7 @@ namespace BookMeMobi2
             }
 
             loggerFactory.AddDebug();
-            app.UseCors("CorsPolicy");
+            app.UseCors(o => o.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().AllowCredentials());
 
             app.UseMvc();
         }
