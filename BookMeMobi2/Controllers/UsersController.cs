@@ -28,7 +28,7 @@ namespace BookMeMobi2.Controllers
 
         private readonly JWTSettings _options;
 
-        public AccountsController(IMapper mapper, SignInManager<User> signInManager, 
+        public UsersController(IMapper mapper, SignInManager<User> signInManager, 
             UserManager<User> userManager, IOptions<JWTSettings> options, ApplicationDbContext context)
         {
             _mapper = mapper;
