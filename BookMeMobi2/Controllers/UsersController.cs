@@ -18,8 +18,8 @@ using Microsoft.IdentityModel.Tokens;
 namespace BookMeMobi2.Controllers
 {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    [Route("api/accounts")]
-    public class AccountsController : Controller
+    [Route("api/users")]
+    public class UsersController : Controller
     {
         private readonly IMapper _mapper;
 
@@ -28,7 +28,7 @@ namespace BookMeMobi2.Controllers
 
         private readonly JWTSettings _options;
 
-        public AccountsController(IMapper mapper, SignInManager<User> signInManager, UserManager<User> userManager, IOptions<JWTSettings> options)
+        public UsersController(IMapper mapper, SignInManager<User> signInManager, UserManager<User> userManager, IOptions<JWTSettings> options)
         {
             _mapper = mapper;
             _signInManager = signInManager;
@@ -37,7 +37,7 @@ namespace BookMeMobi2.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("signin")]
+        [HttpPost("login")]
         public async Task<IActionResult> SignIn([FromBody] Credentials credentials)
         {
             if (ModelState.IsValid)
