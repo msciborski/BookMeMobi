@@ -37,6 +37,7 @@ namespace BookMeMobi2
 
             services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
                 b => b.MigrationsAssembly("NetCore2JWTAuthentication")));
+
             services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
             var secret = Encoding.ASCII.GetBytes(Configuration["JWTSettings:Secret"]);

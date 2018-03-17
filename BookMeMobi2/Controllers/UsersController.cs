@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Extensions.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -35,6 +36,7 @@ namespace BookMeMobi2.Controllers
             _signInManager = signInManager;
             _userManager = userManager;
             _options = options.Value;
+            _context = context;
         }
 
         [AllowAnonymous]
@@ -103,9 +105,8 @@ namespace BookMeMobi2.Controllers
         [HttpGet]
         public IActionResult GetAllUsers()
         {
-            return Ok(_context.Users.Select(u =>
-                new UserDto() {Email = u.Email, FirstName = u.FirstName, LastName = u.LastName, UserName = u.UserName}));
-
+            var users = _context.Users.ToList();
+            return Ok(_mapper.Map<IEnumerable<User>, IEnumerable<UserDto>>(users));
         }
 
 
