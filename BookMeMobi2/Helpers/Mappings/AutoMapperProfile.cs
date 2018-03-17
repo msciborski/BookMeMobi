@@ -12,8 +12,9 @@ namespace BookMeMobi2.Helpers.Mappings
     {
         public AutoMapperProfile()
         {
+            CreateMap<User, UserRegisterDto>();
+            CreateMap<UserRegisterDto, User>();
             CreateMap<User, UserDto>();
-            CreateMap<UserDto, User>();
         }
     }
 }

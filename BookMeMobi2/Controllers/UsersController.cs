@@ -22,13 +22,14 @@ namespace BookMeMobi2.Controllers
     public class UsersController : Controller
     {
         private readonly IMapper _mapper;
-
+        private readonly ApplicationDbContext _context;
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
 
         private readonly JWTSettings _options;
 
-        public UsersController(IMapper mapper, SignInManager<User> signInManager, UserManager<User> userManager, IOptions<JWTSettings> options)
+        public AccountsController(IMapper mapper, SignInManager<User> signInManager, 
+            UserManager<User> userManager, IOptions<JWTSettings> options, ApplicationDbContext context)
         {
             _mapper = mapper;
             _signInManager = signInManager;
@@ -66,7 +67,7 @@ namespace BookMeMobi2.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> Register([FromBody] UserDto userDto)
+        public async Task<IActionResult> Register([FromBody] UserRegisterDto userDto)
         {
             if (ModelState.IsValid)
             {
@@ -98,6 +99,13 @@ namespace BookMeMobi2.Controllers
             await _signInManager.SignOutAsync();
 
             return Ok();
+        }
+        [HttpGet]
+        public IActionResult GetAllUsers()
+        {
+            return Ok(_context.Users.Select(u =>
+                new UserDto() {Email = u.Email, FirstName = u.FirstName, LastName = u.LastName, UserName = u.UserName}));
+
         }
 
 
