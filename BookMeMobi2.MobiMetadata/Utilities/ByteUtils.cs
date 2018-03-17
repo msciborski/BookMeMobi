@@ -46,4 +46,3 @@ namespace BookMeMobi2.MobiMetadata.Utilities
         }
     }
 }
-}
