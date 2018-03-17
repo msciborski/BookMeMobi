@@ -42,7 +42,7 @@ namespace BookMeMobi2.MobiMetadata.Utilities
         {
             if (bytes == null)
                 return "";
-            return Encoding.ASCII.GetString(bytes).Replace("\0", "");
+            return Encoding.UTF8.GetString(bytes).Replace("\0", "");
         }
     }
 }
