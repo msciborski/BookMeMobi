@@ -8,7 +8,7 @@ namespace BookMeMobi2.MobiMetadata.Headers
 {
     public class PdbRecord
     {
-        private readonly FileStream _stream;
+        private readonly Stream _stream;
 
         #region Byte arrays
 
@@ -26,7 +26,7 @@ namespace BookMeMobi2.MobiMetadata.Headers
 
         #endregion
 
-        internal PdbRecord(FileStream stream)
+        internal PdbRecord(Stream stream)
         {
             _stream = stream;
 

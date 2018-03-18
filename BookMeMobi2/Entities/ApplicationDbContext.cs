@@ -11,5 +11,7 @@ namespace BookMeMobi2.Entities
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options) { }
+
+        public DbSet<Book> Books { get; set; }
     }
 }

@@ -8,7 +8,7 @@ namespace BookMeMobi2.MobiMetadata.Headers
 {
     public class ExthHeader
     {
-        private readonly FileStream _stream;
+        private readonly Stream _stream;
 
         #region Byte arrays
 
@@ -29,7 +29,7 @@ namespace BookMeMobi2.MobiMetadata.Headers
 
         #endregion
 
-        internal ExthHeader(FileStream stream)
+        internal ExthHeader(Stream stream)
         {
             _stream = stream;
             LoadExthHeader();

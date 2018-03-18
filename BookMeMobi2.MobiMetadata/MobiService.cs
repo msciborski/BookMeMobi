@@ -8,16 +8,12 @@ namespace BookMeMobi2.MobiMetadata
 {
     public static class MobiService
     {
-        public static MobiDocument LoadDocument(string filePath)
+        public static MobiDocument LoadDocument(Stream stream)
         {
 
-            var document = new MobiDocument(filePath);
-
-            using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-            {
-                document.PdbHeader = new PdbHeader(fs);
-                document.MobiHeader = new MobiHeader(fs, document.PdbHeader.MobiHeaderSize);
-            }
+            var document = new MobiDocument();
+            document.PdbHeader = new PdbHeader(stream);
+            document.MobiHeader = new MobiHeader(stream, document.PdbHeader.MobiHeaderSize);
 
             return document;
         }

@@ -12,5 +12,7 @@ namespace BookMeMobi2.Entities
         public string LastName { get; set; }
         public string FacebookId { get; set; }
         public string PictureUrl { get; set; }
+
+        public virtual ICollection<Book> Books { get; set; }
     }
 }

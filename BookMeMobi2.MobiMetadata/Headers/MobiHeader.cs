@@ -9,7 +9,7 @@ namespace BookMeMobi2.MobiMetadata.Headers
 {
     public class MobiHeader
     {
-        private readonly FileStream _stream;
+        private readonly Stream _stream;
         private readonly int _mobiHeaderSize;
 
         #region Byte arrays
@@ -82,7 +82,7 @@ namespace BookMeMobi2.MobiMetadata.Headers
 
 
 
-        internal MobiHeader(FileStream stream, int mobiHeaderSize)
+        internal MobiHeader(Stream stream, int mobiHeaderSize)
         {
             _stream = stream;
             _mobiHeaderSize = mobiHeaderSize;

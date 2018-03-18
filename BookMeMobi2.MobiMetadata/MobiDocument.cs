@@ -11,7 +11,7 @@ namespace BookMeMobi2.MobiMetadata
 
         public PdbHeader PdbHeader { get; set; }
         public MobiHeader MobiHeader { get; set; }
-        public string FilePath { get; private set; }
+        //public string FilePath { get; private set; }
         public string Title => GetTitle();
         public string Author => GetAuthor();
         public DateTime? PublishingDate => GetPublishingDate();
@@ -20,9 +20,8 @@ namespace BookMeMobi2.MobiMetadata
         #endregion
 
 
-        internal MobiDocument(string filePath)
+        internal MobiDocument()
         {
-            FilePath = filePath;
         }
 
         private string GetAsin()
