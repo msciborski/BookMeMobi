@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.27428.2005
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BookMeMobi2", "BookMeMobi2\BookMeMobi2.csproj", "{6F42F7C3-45DE-4E2C-812A-5A1062804F3C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookMeMobi2.MobiMetadata", "BookMeMobi2.MobiMetadata\BookMeMobi2.MobiMetadata.csproj", "{57F62BBA-E004-42F1-8CDD-5A1CB92C1129}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BookMeMobi2.MobiMetadata", "BookMeMobi2.MobiMetadata\BookMeMobi2.MobiMetadata.csproj", "{57F62BBA-E004-42F1-8CDD-5A1CB92C1129}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

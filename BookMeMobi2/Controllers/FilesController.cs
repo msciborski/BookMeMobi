@@ -21,47 +21,58 @@ namespace BookMeMobi2.Controllers
     {
         private readonly IMapper _mapper;
         private readonly ApplicationDbContext _context;
-        public FilesController(IMapper mapper, ApplicationDbContext context)
+        private readonly UserManager<User> _userManager;
+
+        public FilesController(IMapper mapper, ApplicationDbContext context, UserManager<User> userManager)
         {
             _mapper = mapper;
             _context = context;
+            _userManager = userManager;
         }
 
         [HttpPost("{userId}/files")]
-        public async Task<IActionResult> UploadMobiFile(IFormCollection fileCollection, [FromBody] string userId)
+        public async Task<IActionResult> UploadMobiFile([FromForm] IFormCollection fileCollection, string userId)
         {
             List<BookDto> files = new List<BookDto>();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return BadRequest();
+            }
 
             try
             {
                 foreach (var file in fileCollection.Files)
                 {
-                    var fileDto = GetMobiMetadata(file);
-                    fileDto.DownloadUrl = UploadFileToFtp(file);
-                    files.Add(fileDto);
+                    using(var stream = file.OpenReadStream())
+                    {
+                        var bookDto = GetMobiMetadata(stream);
+
+                    }
+                    //var bookDto = GetMobiMetadata(file);
+                    //AddFilesToDb(bookDto, userId);
+                    //files.Add(bookDto);
+
                 }
-                AddFilesToDb(files, userId);
             }
             catch (Exception e)
             {
-                Console.WriteLine($"{e.Message}, {e.StackTrace}");
                 return new JsonResult(Enumerable.Empty<BookDto>()) { StatusCode = 500 };
             }
-
             return Ok(files);
         }
 
-        private void AddFilesToDb(IEnumerable<BookDto> files, string userId)
+        private void AddFilesToDb(BookDto bookDto, string userId)
         {
-            var books = _mapper.Map<IEnumerable<BookDto>, IEnumerable<Book>>(files);
-
-            foreach (var book in books)
-            {
-                book.UserId = userId;
-                _context.Books.Add(book);
-            }
+            var book = _mapper.Map<BookDto, Book>(bookDto);
+            _context.Books.Add(book);
             _context.SaveChanges();
-
+            bookDto.Id = book.Id;
         }
 
         private string UploadFileToFtp(IFormFile file)
@@ -71,21 +82,14 @@ namespace BookMeMobi2.Controllers
             return "http://testowo.pl/ftp/";
         }
 
-        public BookDto GetMobiMetadata(IFormFile file)
+        public BookDto GetMobiMetadata(Stream stream)
         {
-            if (file == null || file.Length == 0)
-                throw new Exception("File is empty.");
-
             BookDto fileDto = new BookDto();
-            using (Stream stream = file.OpenReadStream())
-            {
-                var mobiDocument = MobiService.LoadDocument(stream);
-                fileDto.Author = mobiDocument.Author;
-                fileDto.Title = mobiDocument.Title;
-                fileDto.PublishingDate = mobiDocument.PublishingDate;
-                fileDto.FullName = mobiDocument.MobiHeader.FullName;
-
-            }
+            var mobiDocument = MobiService.LoadDocument(stream);
+            fileDto.Author = mobiDocument.Author;
+            fileDto.Title = mobiDocument.Title;
+            fileDto.PublishingDate = mobiDocument.PublishingDate;
+            fileDto.FullName = mobiDocument.MobiHeader.FullName;
             return fileDto;
         }
 
