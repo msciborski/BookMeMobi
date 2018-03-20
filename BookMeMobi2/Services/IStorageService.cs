@@ -9,6 +9,6 @@ namespace BookMeMobi2.Services
 {
     public interface IStorageService
     {
-        string UploadBook(Stream file, User user);
+        string UploadBook(Stream file, User user, string bookName);
     }
 }

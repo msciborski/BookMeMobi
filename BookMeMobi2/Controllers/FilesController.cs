@@ -7,6 +7,7 @@ using AutoMapper;
 using BookMeMobi2.Entities;
 using BookMeMobi2.MobiMetadata;
 using BookMeMobi2.Models;
+using BookMeMobi2.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -23,11 +24,14 @@ namespace BookMeMobi2.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<User> _userManager;
 
-        public FilesController(IMapper mapper, ApplicationDbContext context, UserManager<User> userManager)
+        private readonly IStorageService _storageService;
+
+        public FilesController(IMapper mapper, ApplicationDbContext context, UserManager<User> userManager, IStorageService storageService)
         {
             _mapper = mapper;
             _context = context;
             _userManager = userManager;
+            _storageService = storageService;
         }
 
         [HttpPost("{userId}/files")]
@@ -49,14 +53,18 @@ namespace BookMeMobi2.Controllers
             {
                 foreach (var file in fileCollection.Files)
                 {
+                    if(file.Length == 0)
+                    {
+                        throw new Exception("File is empty.");
+                    }
+
                     using(var stream = file.OpenReadStream())
                     {
                         var bookDto = GetMobiMetadata(stream);
-
+                        var storagePathToFile = _storageService.UploadBook(stream, user, file.FileName);
+                        AddFilesToDb(bookDto, userId,storagePathToFile);
+                        files.Add(bookDto);
                     }
-                    //var bookDto = GetMobiMetadata(file);
-                    //AddFilesToDb(bookDto, userId);
-                    //files.Add(bookDto);
 
                 }
             }
@@ -67,19 +75,15 @@ namespace BookMeMobi2.Controllers
             return Ok(files);
         }
 
-        private void AddFilesToDb(BookDto bookDto, string userId)
+        private void AddFilesToDb(BookDto bookDto, string userId, string storagePath)
         {
             var book = _mapper.Map<BookDto, Book>(bookDto);
+            book.StoragePath = storagePath;
+
             _context.Books.Add(book);
             _context.SaveChanges();
-            bookDto.Id = book.Id;
-        }
 
-        private string UploadFileToFtp(IFormFile file)
-        {
-            //There will be code which will be suposed to upload file to ftp server
-            //Method returns url for file
-            return "http://testowo.pl/ftp/";
+            bookDto.Id = book.Id;
         }
 
         public BookDto GetMobiMetadata(Stream stream)

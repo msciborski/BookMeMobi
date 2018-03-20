@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using BookMeMobi2.Entities;
+using BookMeMobi2.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -32,6 +33,7 @@ namespace BookMeMobi2
         {
             services.AddOptions();
             services.Configure<JWTSettings>(Configuration.GetSection("JWTSettings"));
+            services.Configure<GoogleCloudStorageSettings>(Configuration.GetSection("GoogleCloudStorage"));
 
             services.AddCors();
 
@@ -61,6 +63,8 @@ namespace BookMeMobi2
 
             services.AddAutoMapper();
             services.AddMvc();
+
+            services.AddTransient<IStorageService, StorageService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
