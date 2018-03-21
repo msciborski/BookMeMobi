@@ -60,9 +60,9 @@ namespace BookMeMobi2.Controllers
 
                     using(var stream = file.OpenReadStream())
                     {
-                        var bookDto = GetMobiMetadata(stream);
-                        var storagePathToFile = _storageService.UploadBook(stream, user, file.FileName);
-                        AddFilesToDb(bookDto, userId,storagePathToFile);
+                        var bookDto = await GetMobiMetadata(stream);
+                        var storagePathToFile = await _storageService.UploadBook(stream, user, file.FileName);
+                        await AddFilesToDb(bookDto, userId,storagePathToFile);
                         files.Add(bookDto);
                     }
 
@@ -75,21 +75,21 @@ namespace BookMeMobi2.Controllers
             return Ok(files);
         }
 
-        private void AddFilesToDb(BookDto bookDto, string userId, string storagePath)
+        private async Task AddFilesToDb(BookDto bookDto, string userId, string storagePath)
         {
             var book = _mapper.Map<BookDto, Book>(bookDto);
             book.StoragePath = storagePath;
 
-            _context.Books.Add(book);
-            _context.SaveChanges();
+            await _context.Books.AddAsync(book);
+            await _context.SaveChangesAsync();
 
             bookDto.Id = book.Id;
         }
 
-        public BookDto GetMobiMetadata(Stream stream)
+        private async Task<BookDto> GetMobiMetadata(Stream stream)
         {
             BookDto fileDto = new BookDto();
-            var mobiDocument = MobiService.LoadDocument(stream);
+            var mobiDocument = await MobiService.LoadDocument(stream);
             fileDto.Author = mobiDocument.Author;
             fileDto.Title = mobiDocument.Title;
             fileDto.PublishingDate = mobiDocument.PublishingDate;

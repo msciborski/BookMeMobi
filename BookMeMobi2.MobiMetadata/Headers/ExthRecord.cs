@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using BookMeMobi2.MobiMetadata.Utilities;
 
 namespace BookMeMobi2.MobiMetadata.Headers
@@ -35,17 +36,17 @@ namespace BookMeMobi2.MobiMetadata.Headers
         {
             _stream = stream;
 
-            LoadExthRecords();
+            //LoadExthRecords();
         }
 
-        private void LoadExthRecords()
+        internal async Task LoadExthRecords()
         {
-            _stream.Read(_type, 0, _type.Length);
-            _stream.Read(_length, 0, _length.Length);
+            await _stream.ReadAsync(_type, 0, _type.Length);
+            await _stream.ReadAsync(_length, 0, _length.Length);
 
             Data = new byte[Length - 8];
 
-            _stream.Read(Data, 0, Data.Length);
+            await _stream.ReadAsync(Data, 0, Data.Length);
         }
 
         private int GetSize()

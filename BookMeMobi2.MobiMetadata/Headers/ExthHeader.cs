@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using BookMeMobi2.MobiMetadata.Utilities;
 
 namespace BookMeMobi2.MobiMetadata.Headers
@@ -32,28 +33,28 @@ namespace BookMeMobi2.MobiMetadata.Headers
         internal ExthHeader(Stream stream)
         {
             _stream = stream;
-            LoadExthHeader();
         }
 
-        private void LoadExthHeader()
+        internal async Task LoadExthHeader()
         {
-            _stream.Read(_id, 0, _id.Length);
+            await _stream.ReadAsync(_id, 0, _id.Length);
             if (Id != "EXTH")
                 throw new ApplicationException("EXTHHeader is invalid.");
 
-            _stream.Read(_headerLength, 0, _headerLength.Length);
-            _stream.Read(_recordCount, 0, _recordCount.Length);
+            await _stream.ReadAsync(_headerLength, 0, _headerLength.Length);
+            await _stream.ReadAsync(_recordCount, 0, _recordCount.Length);
 
             Records = new List<ExthRecord>();
 
             for (int i = 0; i < RecordCount; i++)
             {
                 var record = new ExthRecord(_stream);
+                await record.LoadExthRecords();
                 Records.Add(record);
             }
 
             var padding = new byte[GetPaddingSize(GetDataSize())];
-            _stream.Read(padding, 0, padding.Length);
+            await _stream.ReadAsync(padding, 0, padding.Length);
         }
 
         private int GetSize()

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using BookMeMobi2.MobiMetadata.Utilities;
 
 namespace BookMeMobi2.MobiMetadata.Headers
@@ -29,15 +30,13 @@ namespace BookMeMobi2.MobiMetadata.Headers
         internal PdbRecord(Stream stream)
         {
             _stream = stream;
-
-            LoadRecordInfo();
         }
 
-        private void LoadRecordInfo()
+        internal async Task LoadRecordInfo()
         {
-            _stream.Read(_offset, 0, _offset.Length);
-            _stream.Read(_attributes, 0, _attributes.Length);
-            _stream.Read(_uniqueId, 0, _uniqueId.Length);
+            await _stream.ReadAsync(_offset, 0, _offset.Length);
+            await _stream.ReadAsync(_attributes, 0, _attributes.Length);
+            await _stream.ReadAsync(_uniqueId, 0, _uniqueId.Length);
         }
     }
 }

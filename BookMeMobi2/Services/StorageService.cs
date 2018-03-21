@@ -25,14 +25,14 @@ namespace BookMeMobi2.Services
             _credentialsJson = JsonConvert.SerializeObject(_googleCloudStorageSettings);
             _credential = GoogleCredential.FromJson(_credentialsJson);
         }
-        public string UploadBook(Stream file, User user, string bookName)
+        public async Task<string> UploadBook(Stream file, User user, string bookName)
         {
             var bookPath = $"{_baseBookPath}{user.Id}/{bookName}";
 
-            using(var storage = StorageClient.Create(_credential))
+            using(var storage = await StorageClient.CreateAsync(_credential))
             {
                 var uploadedObject =
-                    storage.UploadObject(_googleCloudStorageSettings.BucketName, bookPath, null, file);
+                     storage.UploadObject(_googleCloudStorageSettings.BucketName, bookPath, null, file);
             }
             return bookPath;
         }

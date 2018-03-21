@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using BookMeMobi2.MobiMetadata.Utilities;
 
 namespace BookMeMobi2.MobiMetadata.Headers
@@ -59,36 +60,36 @@ namespace BookMeMobi2.MobiMetadata.Headers
         internal PdbHeader(Stream stream)
         {
             _stream = stream;
-
-            LoadPdbHeader();
-
         }
 
-        private void LoadPdbHeader()
+        internal async Task LoadPdbHeader()
         {
 
-            _stream.Read(_name, 0, _name.Length);
-            _stream.Read(_attributes, 0, _attributes.Length);
-            _stream.Read(_version, 0, _version.Length);
-            _stream.Read(_createDate, 0, _createDate.Length);
-            _stream.Read(_lastBackupDate, 0, _lastBackupDate.Length);
-            _stream.Read(_modificationDate, 0, _modificationDate.Length);
-            _stream.Read(_modificationNumber, 0, _modificationNumber.Length);
-            _stream.Read(_appInfoId, 0, _appInfoId.Length);
-            _stream.Read(_sortInfoId, 0, _sortInfoId.Length);
-            _stream.Read(_type, 0, _type.Length);
-            _stream.Read(_creator, 0, _creator.Length);
-            _stream.Read(_uniqueIdSeed, 0, _uniqueIdSeed.Length);
-            _stream.Read(_nextRecordListId, 0, _nextRecordListId.Length);
-            _stream.Read(_numberOfRecords, 0, _numberOfRecords.Length);
+            await _stream.ReadAsync(_name, 0, _name.Length);
+            await _stream.ReadAsync(_attributes, 0, _attributes.Length);
+            await _stream.ReadAsync(_version, 0, _version.Length);
+            await _stream.ReadAsync(_createDate, 0, _createDate.Length);
+            await _stream.ReadAsync(_lastBackupDate, 0, _lastBackupDate.Length);
+            await _stream.ReadAsync(_modificationDate, 0, _modificationDate.Length);
+            await _stream.ReadAsync(_modificationNumber, 0, _modificationNumber.Length);
+            await _stream.ReadAsync(_appInfoId, 0, _appInfoId.Length);
+            await _stream.ReadAsync(_sortInfoId, 0, _sortInfoId.Length);
+            await _stream.ReadAsync(_type, 0, _type.Length);
+            await _stream.ReadAsync(_creator, 0, _creator.Length);
+            await _stream.ReadAsync(_uniqueIdSeed, 0, _uniqueIdSeed.Length);
+            await _stream.ReadAsync(_nextRecordListId, 0, _nextRecordListId.Length);
+            await _stream.ReadAsync(_numberOfRecords, 0, _numberOfRecords.Length);
 
             Records = new List<PdbRecord>();
             for (var i = 0; i < NumberOfRecords; i++)
             {
-                Records.Add(new PdbRecord(_stream));
+                var pdbRecord = new PdbRecord(_stream);
+                await pdbRecord.LoadRecordInfo();
+                Records.Add(pdbRecord);
+
             }
 
-            _stream.Read(_gapToData, 0, _gapToData.Length);
+            await _stream.ReadAsync(_gapToData, 0, _gapToData.Length);
         }
 
         private DateTime? GetHeaderDate(byte[] secondBytes)
