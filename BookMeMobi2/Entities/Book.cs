@@ -13,7 +13,7 @@ namespace BookMeMobi2.Entities
         public string FullName { get; set; }
         public DateTime? PublishingDate { get; set; }
         public string StoragePath { get; set; }
-
+        public DateTime UploadDate { get; set; }
 
         public string UserId { get; set; }
         public User User { get; set; }

@@ -61,6 +61,7 @@ namespace BookMeMobi2.Controllers
                     using(var stream = file.OpenReadStream())
                     {
                         var bookDto = await GetMobiMetadata(stream);
+                        bookDto.PublishingDate = DateTime.Now;
                         var storagePathToFile = await _storageService.UploadBook(stream, user, file.FileName);
                         await AddFilesToDb(bookDto, userId,storagePathToFile);
                         files.Add(bookDto);
