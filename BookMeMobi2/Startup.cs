@@ -37,7 +37,11 @@ namespace BookMeMobi2
 
             services.AddCors();
 
-            services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+            //services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+            //    b => b.MigrationsAssembly("BookMeMobi2")));
+
+
+            services.AddDbContext<ApplicationDbContext>(o => o.UseMySql(Configuration.GetConnectionString("DefaultConnection"),
                 b => b.MigrationsAssembly("BookMeMobi2")));
 
             services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
