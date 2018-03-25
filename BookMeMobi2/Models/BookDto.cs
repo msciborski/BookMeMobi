@@ -11,6 +11,7 @@ namespace BookMeMobi2.Models
         public string Title { get; set; }
         public string Author { get; set; }
         public string FullName { get; set; }
+        public double Size { get; set; }
         public DateTime? PublishingDate { get; set; }
         public DateTime UploadDate { get; set; }
     }

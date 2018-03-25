@@ -58,15 +58,8 @@ namespace BookMeMobi2.Controllers
                         throw new Exception("File is empty.");
                     }
 
-                    using(var stream = file.OpenReadStream())
-                    {
-                        var bookDto = await GetMobiMetadata(stream);
-                        bookDto.PublishingDate = DateTime.Now;
-                        var storagePathToFile = await _storageService.UploadBook(stream, user, file.FileName);
-                        await AddFilesToDb(bookDto, userId,storagePathToFile);
-                        files.Add(bookDto);
-                    }
-
+                    var bookDto = await _storageService.UploadBook(file, user);
+                    files.Add(bookDto);
                 }
             }
             catch (Exception e)
@@ -74,28 +67,6 @@ namespace BookMeMobi2.Controllers
                 return new JsonResult(Enumerable.Empty<BookDto>()) { StatusCode = 500 };
             }
             return Ok(files);
-        }
-
-        private async Task AddFilesToDb(BookDto bookDto, string userId, string storagePath)
-        {
-            var book = _mapper.Map<BookDto, Book>(bookDto);
-            book.StoragePath = storagePath;
-
-            await _context.Books.AddAsync(book);
-            await _context.SaveChangesAsync();
-
-            bookDto.Id = book.Id;
-        }
-
-        private async Task<BookDto> GetMobiMetadata(Stream stream)
-        {
-            BookDto fileDto = new BookDto();
-            var mobiDocument = await MobiService.LoadDocument(stream);
-            fileDto.Author = mobiDocument.Author;
-            fileDto.Title = mobiDocument.Title;
-            fileDto.PublishingDate = mobiDocument.PublishingDate;
-            fileDto.FullName = mobiDocument.MobiHeader.FullName;
-            return fileDto;
         }
 
     }

@@ -41,7 +41,7 @@ namespace BookMeMobi2
             //    b => b.MigrationsAssembly("BookMeMobi2")));
 
 
-            services.AddDbContext<ApplicationDbContext>(o => o.UseMySql(Configuration.GetConnectionString("DefaultConnection"),
+            services.AddDbContext<ApplicationDbContext>(o => o.UseMySql(Configuration.GetConnectionString("ConnectionString"),
                 b => b.MigrationsAssembly("BookMeMobi2")));
 
             services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
