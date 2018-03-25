@@ -37,7 +37,7 @@ namespace BookMeMobi2.Controllers
             _storageService = storageService;
         }
 
-        [HttpPost("{userId}/files")]
+        [HttpPost("{userId}/books")]
         public async Task<IActionResult> UploadMobiFile([FromForm] IFormCollection fileCollection, string userId)
         {
             List<BookDto> files = new List<BookDto>();
@@ -82,6 +82,68 @@ namespace BookMeMobi2.Controllers
                 return new JsonResult(Enumerable.Empty<BookDto>()) { StatusCode = 500 };
             }
             return Ok(files);
+        }
+
+        [HttpGet("{userId}/books/{bookId}")]
+        public async Task<IActionResult> GetBook(string userId, int bookId)
+        {
+            if (!ModelState.IsValid)
+            {
+                _logger.LogError("Model state is invalid.");
+                return BadRequest();
+            }
+
+            Book book = null;
+            try
+            {
+                book = await GetBookForUser(userId, bookId);
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+
+            return Ok(_mapper.Map<Book, BookDto>(book));
+        }
+
+        [HttpGet("{userId}/books/{bookId}/download")]
+        public async Task<IActionResult> DownloadBook(string userId, int bookId)
+        {
+            if (!ModelState.IsValid)
+            {
+                _logger.LogError("Model state is invalid");
+                return BadRequest();
+            }
+
+            Book book = null;
+            try
+            {
+                book = await GetBookForUser(userId, bookId);
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+
+        }
+
+        private async Task<Book> GetBookForUser(string userId, int bookId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                _logger.LogError($"User {userId} dosen't exist.");
+                throw new Exception($"User {userId} dosen't exist.");
+            }
+
+            var book = user.Books.FirstOrDefault(b => b.Id == bookId);
+            if (book == null)
+            {
+                _logger.LogError($"Book {bookId} dosen't exist.");
+                throw new Exception($"Book {bookId} dosen't exist.");
+            }
+
+            return book;
         }
 
     }
