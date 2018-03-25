@@ -5,7 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using BookMeMobi2.Entities;
+using BookMeMobi2.Options;
 using BookMeMobi2.Services;
+using Google.Cloud.Diagnostics.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -34,6 +36,7 @@ namespace BookMeMobi2
             services.AddOptions();
             services.Configure<JWTSettings>(Configuration.GetSection("JWTSettings"));
             services.Configure<GoogleCloudStorageSettings>(Configuration.GetSection("GoogleCloudStorage"));
+            services.Configure<StackdriveSettings>(Configuration.GetSection("Stackdrive"));
 
             services.AddCors();
 
@@ -78,8 +81,11 @@ namespace BookMeMobi2
             {
                 app.UseDeveloperExceptionPage();
             }
+
             app.UseDeveloperExceptionPage();
             loggerFactory.AddDebug();
+            loggerFactory.AddGoogle(Configuration["Stackdrive:ProjectId"]);
+            
             app.UseCors(o => o.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().AllowCredentials());
 
             app.UseMvc();

@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -22,6 +23,7 @@ namespace BookMeMobi2.Controllers
     [Route("api/users")]
     public class UsersController : Controller
     {
+        private readonly ILogger _logger;
         private readonly IMapper _mapper;
         private readonly ApplicationDbContext _context;
         private readonly SignInManager<User> _signInManager;
@@ -30,9 +32,10 @@ namespace BookMeMobi2.Controllers
         private readonly JWTSettings _options;
 
         public UsersController(IMapper mapper, SignInManager<User> signInManager, 
-            UserManager<User> userManager, IOptions<JWTSettings> options, ApplicationDbContext context)
+            UserManager<User> userManager, IOptions<JWTSettings> options, ApplicationDbContext context, ILogger<UsersController> logger)
         {
             _mapper = mapper;
+            _logger = logger;
             _signInManager = signInManager;
             _userManager = userManager;
             _options = options.Value;
@@ -52,6 +55,8 @@ namespace BookMeMobi2.Controllers
                     var user = await _userManager.FindByNameAsync(credentials.Username);
                     var token = CreateToken(user);
 
+                    _logger.LogInformation($"{user.Id} sign in.");
+
                     return Ok(new
                     {
                         Id = user.Id,
@@ -62,6 +67,8 @@ namespace BookMeMobi2.Controllers
                         Token = token
                     });
                 }
+                _logger.LogError($"LUnable to sing in.");
+
                 return new JsonResult("Unable to sign in.") { StatusCode = 401 };
             }
             return Error("Unexpected error occured.");
@@ -80,6 +87,8 @@ namespace BookMeMobi2.Controllers
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     var token = CreateToken(user);
+
+                    _logger.LogInformation($"Succesful register user {user.Id}");
                     return Ok(new
                     {
                         Id = user.Id,
@@ -90,8 +99,14 @@ namespace BookMeMobi2.Controllers
                         Token = token
                     });
                 }
-                return Errors(result);
+
+                var errors = Errors(result);
+                _logger.LogCritical($"Unable to register: {errors}");
+
+                return errors;
             }
+            _logger.LogCritical("Unexpected error occured.");
+
             return Error("Unexpected error occured.");
         }
 
@@ -100,6 +115,7 @@ namespace BookMeMobi2.Controllers
         {
             await _signInManager.SignOutAsync();
 
+            _logger.LogInformation("Sing out.");
             return Ok();
         }
         [HttpGet]
