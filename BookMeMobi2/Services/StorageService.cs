@@ -11,6 +11,8 @@ using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Storage.V1;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Http;
+using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
@@ -19,20 +21,22 @@ namespace BookMeMobi2.Services
     public class StorageService : IStorageService
     {
         private readonly IMapper _mapper;
+        private readonly ILogger _logger;
         private readonly ApplicationDbContext _context;
 
         private readonly string _baseBookPath = "/books/";
         private readonly GoogleCredential _credential;
         private readonly GoogleCloudStorageSettings _googleCloudStorageSettings;
 
-        public StorageService(IOptions<GoogleCloudStorageSettings> options, IMapper mapper, ApplicationDbContext context)
+        public StorageService(IOptions<GoogleCloudStorageSettings> options, IMapper mapper, ApplicationDbContext context, ILogger<StorageService> logger)
         {
             _mapper = mapper;
+            _logger = logger;
             _context = context;
             _googleCloudStorageSettings = options.Value;
 
             var credentialsJson = JsonConvert.SerializeObject(_googleCloudStorageSettings);
-            _credential = GoogleCredential.FromJson(credentialsJson);
+            _credential = GoogleCredential.GetApplicationDefault();
         }
 
         public async Task<BookDto> UploadBook(IFormFile file, User user)
@@ -44,7 +48,7 @@ namespace BookMeMobi2.Services
                     var bookDto = await GetMobiMetadata(stream);
                     var storagePathToBook = await UploadBook(stream, user, file.FileName);
                     bookDto.UploadDate = DateTime.Now;
-                    bookDto.Size = Math.Round(ConvertBytesToMegabytes(file.Length),3);
+                    bookDto.Size = Math.Round(ConvertBytesToMegabytes(file.Length), 3);
 
                     await AddFilesToDb(bookDto, user.Id, storagePathToBook);
 
@@ -52,16 +56,16 @@ namespace BookMeMobi2.Services
                 }
                 catch (Exception e)
                 {
-                    //log exception return null
+                    _logger.LogCritical($"Exception occured. {e.Message}. Stack trace:\n{e.StackTrace}");
                     throw;
                 }
             }
         }
-        public async Task<string> UploadBook(Stream file, User user, string bookName)
+        private async Task<string> UploadBook(Stream file, User user, string bookName)
         {
             var bookPath = $"{_baseBookPath}{user.Id}/{bookName}";
 
-            using(var storage = await StorageClient.CreateAsync(_credential))
+            using (var storage = await StorageClient.CreateAsync(_credential))
             {
                 var uploadedObject =
                      storage.UploadObject(_googleCloudStorageSettings.BucketName, bookPath, null, file);
@@ -69,9 +73,21 @@ namespace BookMeMobi2.Services
             return bookPath;
         }
 
+        public async Task<Stream> DownloadBook(Book book)
+        {
+            using (var storage = await StorageClient.CreateAsync(_credential))
+            {
+                var stream = new MemoryStream();
+                await storage.DownloadObjectAsync(_googleCloudStorageSettings.BucketName, book.StoragePath, stream);
+
+                return stream;
+            }
+        }
+
         private async Task AddFilesToDb(BookDto bookDto, string userId, string storagePath)
         {
             var book = _mapper.Map<BookDto, Book>(bookDto);
+            book.UserId = userId;
             book.StoragePath = storagePath;
 
             await _context.Books.AddAsync(book);

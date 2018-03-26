@@ -12,5 +12,6 @@ namespace BookMeMobi2.Services
     public interface IStorageService
     {
         Task<BookDto> UploadBook(IFormFile file, User user);
+        Task<Stream> DownloadBook(Book book);
     }
 }

@@ -84,7 +84,7 @@ namespace BookMeMobi2
 
             app.UseDeveloperExceptionPage();
             loggerFactory.AddDebug();
-            loggerFactory.AddGoogle(Configuration["Stackdrive:ProjectId"]);
+            loggerFactory.AddGoogle(Configuration["Stackdriver:ProjectId"]);
             
             app.UseCors(o => o.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().AllowCredentials());
 

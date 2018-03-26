@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace BookMeMobi2.Controllers
@@ -35,6 +36,28 @@ namespace BookMeMobi2.Controllers
             _context = context;
             _userManager = userManager;
             _storageService = storageService;
+        }
+
+        [HttpGet("{userId}/books/{bookId}")]
+        public async Task<IActionResult> GetBook(string userId, int bookId)
+        {
+            if (!ModelState.IsValid)
+            {
+                _logger.LogError("Model state is invalid.");
+                return BadRequest();
+            }
+
+            Book book = null;
+            try
+            {
+                book = await GetBookForUser(userId, bookId);
+            }
+            catch (Exception e)
+            {
+                return BadRequest();
+            }
+
+            return Ok(_mapper.Map<Book, BookDto>(book));
         }
 
         [HttpPost("{userId}/books")]
@@ -84,27 +107,6 @@ namespace BookMeMobi2.Controllers
             return Ok(files);
         }
 
-        [HttpGet("{userId}/books/{bookId}")]
-        public async Task<IActionResult> GetBook(string userId, int bookId)
-        {
-            if (!ModelState.IsValid)
-            {
-                _logger.LogError("Model state is invalid.");
-                return BadRequest();
-            }
-
-            Book book = null;
-            try
-            {
-                book = await GetBookForUser(userId, bookId);
-            }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
-
-            return Ok(_mapper.Map<Book, BookDto>(book));
-        }
 
         [HttpGet("{userId}/books/{bookId}/download")]
         public async Task<IActionResult> DownloadBook(string userId, int bookId)
@@ -119,6 +121,10 @@ namespace BookMeMobi2.Controllers
             try
             {
                 book = await GetBookForUser(userId, bookId);
+                var stream = await _storageService.DownloadBook(book);
+                stream.Position = 0;
+                var result = File(stream, "application/x-mobipocket-mobi", $"{book.FullName}.mobi");
+                return result;
             }
             catch (Exception)
             {
@@ -129,7 +135,7 @@ namespace BookMeMobi2.Controllers
 
         private async Task<Book> GetBookForUser(string userId, int bookId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _context.Users.Include(u => u.Books).FirstOrDefaultAsync(u => u.Id.Equals(userId));
             if (user == null)
             {
                 _logger.LogError($"User {userId} dosen't exist.");
