@@ -19,7 +19,7 @@ using Microsoft.Extensions.Logging;
 namespace BookMeMobi2.Controllers
 {
     [Route("/api/users")]
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class FilesController : Controller
     {
         private readonly ILogger _logger;
@@ -36,6 +36,28 @@ namespace BookMeMobi2.Controllers
             _context = context;
             _userManager = userManager;
             _storageService = storageService;
+        }
+
+        [HttpGet("{userId}/books")]
+        public async Task<IActionResult> GetBooks(string userId, [FromQuery(Name = "page_size")] int pageSize = 10, [FromQuery(Name = "page_number")] int pageNumber = 1)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            var user = await _context.Users.Include(u => u.Books).FirstOrDefaultAsync(u => u.Id.Equals(userId));
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var listOfBookDto = _mapper.Map<IEnumerable<Book>, IEnumerable<BookDto>>(user.Books);
+
+            PagedList<BookDto> pagedList = new PagedList<BookDto>(listOfBookDto.AsQueryable(), pageNumber, pageSize);
+
+            return Ok(pagedList);
         }
 
         [HttpGet("{userId}/books/{bookId}")]
@@ -123,7 +145,8 @@ namespace BookMeMobi2.Controllers
                 book = await GetBookForUser(userId, bookId);
                 var stream = await _storageService.DownloadBook(book);
                 stream.Position = 0;
-                var result = File(stream, "application/x-mobipocket-mobi", $"{book.FullName}.mobi");
+                var name = $"{book.FullName}.mobi";
+                var result = File(stream, "application/x-mobipocket-mobi", name);
                 return result;
             }
             catch (Exception)

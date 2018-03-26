@@ -34,8 +34,6 @@ namespace BookMeMobi2.Services
             _logger = logger;
             _context = context;
             _googleCloudStorageSettings = options.Value;
-
-            var credentialsJson = JsonConvert.SerializeObject(_googleCloudStorageSettings);
             _credential = GoogleCredential.GetApplicationDefault();
         }
 
