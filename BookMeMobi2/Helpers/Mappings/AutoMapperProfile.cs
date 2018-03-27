@@ -17,6 +17,8 @@ namespace BookMeMobi2.Helpers.Mappings
             CreateMap<User, UserDto>();
             CreateMap<BookDto, Book>();
             CreateMap<Book, BookDto>();
+            CreateMap<PagedList<Book>, PagedList<BookDto>>();
+            CreateMap<PagedList<BookDto>, PagedList<Book>>();
         }
     }
 }

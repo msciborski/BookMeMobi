@@ -9,9 +9,11 @@ using Microsoft.AspNetCore.Http;
 
 namespace BookMeMobi2.Services
 {
-    public interface IStorageService
+    public interface IFileService
     {
         Task<BookDto> UploadBook(IFormFile file, User user);
         Task<Stream> DownloadBook(Book book);
+        Task<Book> GetBookForUser(string userId, int bookId);
+        Task<PagedList<Book>> GetBooksForUser(string userId, int pageSize, int pageNumber);
     }
 }

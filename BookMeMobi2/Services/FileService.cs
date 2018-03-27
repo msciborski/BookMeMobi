@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using BookMeMobi2.Entities;
+using BookMeMobi2.Helpers.Exceptions;
 using BookMeMobi2.MobiMetadata;
 using BookMeMobi2.Models;
 using Google.Apis.Auth.OAuth2;
@@ -12,13 +13,14 @@ using Google.Cloud.Storage.V1;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace BookMeMobi2.Services
 {
-    public class StorageService : IStorageService
+    public class FileService : IFileService
     {
         private readonly IMapper _mapper;
         private readonly ILogger _logger;
@@ -28,13 +30,45 @@ namespace BookMeMobi2.Services
         private readonly GoogleCredential _credential;
         private readonly GoogleCloudStorageSettings _googleCloudStorageSettings;
 
-        public StorageService(IOptions<GoogleCloudStorageSettings> options, IMapper mapper, ApplicationDbContext context, ILogger<StorageService> logger)
+        public FileService(IOptions<GoogleCloudStorageSettings> options, IMapper mapper, ApplicationDbContext context, ILogger<FileService> logger)
         {
             _mapper = mapper;
             _logger = logger;
             _context = context;
             _googleCloudStorageSettings = options.Value;
             _credential = GoogleCredential.GetApplicationDefault();
+        }
+
+        public async Task<Book> GetBookForUser(string userId, int bookId)
+        {
+            var user = await _context.Users.Include(u => u.Books).FirstOrDefaultAsync(u => u.Id.Equals(userId));
+            if (user == null)
+            {
+                _logger.LogError($"User {userId} dosen't exist.");
+                throw new UserNoFoundException($"User {userId} no found.");
+            }
+
+            var book = user.Books.FirstOrDefault(b => b.Id == bookId);
+            if (book == null)
+            {
+                _logger.LogError($"Book {bookId} dosen't exist.");
+                throw new BookNoFoundException($"Book {bookId} no found.");
+            }
+
+            return book;
+        }
+
+        public async Task<PagedList<Book>> GetBooksForUser(string userId, int pageSize, int pageNumber)
+        {
+            var user = await _context.Users.Include(u => u.Books).FirstOrDefaultAsync(u => u.Id.Equals(userId));
+
+            if (user == null)
+            {
+                throw new UserNoFoundException($"User {userId} no found.");
+            }
+
+
+            return new PagedList<Book>(user.Books.AsQueryable(), pageNumber, pageSize);
         }
 
         public async Task<BookDto> UploadBook(IFormFile file, User user)

@@ -28,15 +28,15 @@ namespace BookMeMobi2.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<User> _userManager;
 
-        private readonly IStorageService _storageService;
+        private readonly IFileService _fileService;
 
-        public FilesController(IMapper mapper, ApplicationDbContext context, UserManager<User> userManager, IStorageService storageService, ILogger<FilesController> logger)
+        public FilesController(IMapper mapper, ApplicationDbContext context, UserManager<User> userManager, IFileService storageService, ILogger<FilesController> logger)
         {
             _mapper = mapper;
             _logger = logger;
             _context = context;
             _userManager = userManager;
-            _storageService = storageService;
+            _fileService = storageService;
         }
 
         [HttpGet("{userId}/books")]
@@ -47,18 +47,18 @@ namespace BookMeMobi2.Controllers
                 return BadRequest(ModelState);
             }
 
-            var user = await _context.Users.Include(u => u.Books).FirstOrDefaultAsync(u => u.Id.Equals(userId));
-
-            if (user == null)
+            PagedList<Book> books = null;
+            try
             {
-                return NotFound($"User {userId} not found");
+                books = await _fileService.GetBooksForUser(userId, pageSize, pageNumber);
+
             }
-
-            var listOfBookDto = _mapper.Map<IEnumerable<Book>, IEnumerable<BookDto>>(user.Books);
-
-            PagedList<BookDto> pagedList = new PagedList<BookDto>(listOfBookDto.AsQueryable(), pageNumber, pageSize);
-
-            return Ok(pagedList);
+            catch (UserNoFoundException e)
+            {
+                _logger.LogError(e.Message);
+                return NotFound(e.Message);
+            }
+            return Ok(_mapper.Map<PagedList<Book>, PagedList<BookDto>>(books));
         }
 
         [HttpGet("{userId}/books/{bookId}")]
@@ -73,7 +73,7 @@ namespace BookMeMobi2.Controllers
             Book book = null;
             try
             {
-                book = await GetBookForUser(userId, bookId);
+                book = await _fileService.GetBookForUser(userId, bookId);
             }
             catch (AppException e)
             {
@@ -123,7 +123,7 @@ namespace BookMeMobi2.Controllers
                         return BadRequest();
                     }
 
-                    var bookDto = await _storageService.UploadBook(file, user);
+                    var bookDto = await _fileService.UploadBook(file, user);
                     files.Add(bookDto);
 
                     _logger.LogInformation($"{bookDto.FullName} is uploaded.");
@@ -157,8 +157,8 @@ namespace BookMeMobi2.Controllers
             Book book = null;
             try
             {
-                book = await GetBookForUser(userId, bookId);
-                var stream = await _storageService.DownloadBook(book);
+                book = await _fileService.GetBookForUser(userId, bookId);
+                var stream = await _fileService.DownloadBook(book);
                 stream.Position = 0;
                 var name = $"{book.FullName}.mobi";
                 var result = File(stream, "application/x-mobipocket-mobi", name);
@@ -166,36 +166,13 @@ namespace BookMeMobi2.Controllers
             }
             catch (AppException e)
             {
-                _logger.LogError(e.Message);
-
                 return NotFound(e.Message);
             }
             catch (Exception e)
             {
-                _logger.LogError(e.Message);
-
                 return BadRequest(e.Message);
             }
 
-        }
-
-        private async Task<Book> GetBookForUser(string userId, int bookId)
-        {
-            var user = await _context.Users.Include(u => u.Books).FirstOrDefaultAsync(u => u.Id.Equals(userId));
-            if (user == null)
-            {
-                _logger.LogError($"User {userId} dosen't exist.");
-                throw new UserNoFoundException($"User {userId} no found.");
-            }
-
-            var book = user.Books.FirstOrDefault(b => b.Id == bookId);
-            if (book == null)
-            {
-                _logger.LogError($"Book {bookId} dosen't exist.");
-                throw new BookNoFoundException($"Book {bookId} no found.");
-            }
-
-            return book;
         }
 
     }
