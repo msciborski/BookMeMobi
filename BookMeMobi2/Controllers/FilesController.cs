@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using BookMeMobi2.Entities;
+using BookMeMobi2.Helpers.Exceptions;
 using BookMeMobi2.MobiMetadata;
 using BookMeMobi2.Models;
 using BookMeMobi2.Services;
@@ -43,14 +44,14 @@ namespace BookMeMobi2.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(ModelState);
             }
 
             var user = await _context.Users.Include(u => u.Books).FirstOrDefaultAsync(u => u.Id.Equals(userId));
 
             if (user == null)
             {
-                return NotFound();
+                return NotFound($"User {userId} not found");
             }
 
             var listOfBookDto = _mapper.Map<IEnumerable<Book>, IEnumerable<BookDto>>(user.Books);
@@ -66,7 +67,7 @@ namespace BookMeMobi2.Controllers
             if (!ModelState.IsValid)
             {
                 _logger.LogError("Model state is invalid.");
-                return BadRequest();
+                return BadRequest(ModelState);
             }
 
             Book book = null;
@@ -74,9 +75,17 @@ namespace BookMeMobi2.Controllers
             {
                 book = await GetBookForUser(userId, bookId);
             }
+            catch (AppException e)
+            {
+                _logger.LogError(e.Message);
+
+                return NotFound(e.Message);
+            }
             catch (Exception e)
             {
-                return BadRequest();
+                _logger.LogError(e.Message);
+
+                return NotFound(e.Message);
             }
 
             return Ok(_mapper.Map<Book, BookDto>(book));
@@ -120,11 +129,17 @@ namespace BookMeMobi2.Controllers
                     _logger.LogInformation($"{bookDto.FullName} is uploaded.");
                 }
             }
+            catch (AppException e)
+            {
+                _logger.LogError(e.Message);
+
+                return NotFound(e.Message);
+            }
             catch (Exception e)
             {
-                _logger.LogCritical(e, "Exception occured.");
+                _logger.LogError(e.Message);
 
-                return new JsonResult(Enumerable.Empty<BookDto>()) { StatusCode = 500 };
+                return NotFound(e.Message);
             }
             return Ok(files);
         }
@@ -149,9 +164,17 @@ namespace BookMeMobi2.Controllers
                 var result = File(stream, "application/x-mobipocket-mobi", name);
                 return result;
             }
-            catch (Exception)
+            catch (AppException e)
             {
-                return BadRequest();
+                _logger.LogError(e.Message);
+
+                return NotFound(e.Message);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message);
+
+                return BadRequest(e.Message);
             }
 
         }
@@ -162,14 +185,14 @@ namespace BookMeMobi2.Controllers
             if (user == null)
             {
                 _logger.LogError($"User {userId} dosen't exist.");
-                throw new Exception($"User {userId} dosen't exist.");
+                throw new UserNoFoundException($"User {userId} no found.");
             }
 
             var book = user.Books.FirstOrDefault(b => b.Id == bookId);
             if (book == null)
             {
                 _logger.LogError($"Book {bookId} dosen't exist.");
-                throw new Exception($"Book {bookId} dosen't exist.");
+                throw new BookNoFoundException($"Book {bookId} no found.");
             }
 
             return book;
