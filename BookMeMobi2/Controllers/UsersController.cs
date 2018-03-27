@@ -7,7 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using BookMeMobi2.Entities;
+using BookMeMobi2.Helpers.Exceptions;
 using BookMeMobi2.Models;
+using BookMeMobi2.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -25,21 +27,12 @@ namespace BookMeMobi2.Controllers
     {
         private readonly ILogger _logger;
         private readonly IMapper _mapper;
-        private readonly ApplicationDbContext _context;
-        private readonly SignInManager<User> _signInManager;
-        private readonly UserManager<User> _userManager;
-
-        private readonly JWTSettings _options;
-
-        public UsersController(IMapper mapper, SignInManager<User> signInManager, 
-            UserManager<User> userManager, IOptions<JWTSettings> options, ApplicationDbContext context, ILogger<UsersController> logger)
+        private readonly IUserService _userService;
+        public UsersController(IUserService userService, ILogger<UsersController> logger, IMapper mapper)
         {
             _mapper = mapper;
             _logger = logger;
-            _signInManager = signInManager;
-            _userManager = userManager;
-            _options = options.Value;
-            _context = context;
+            _userService = userService;
         }
 
         [AllowAnonymous]
@@ -48,30 +41,24 @@ namespace BookMeMobi2.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result =
-                    await _signInManager.PasswordSignInAsync(credentials.Username, credentials.Password, false, false);
-                if (result.Succeeded)
+                try
                 {
-                    var user = await _userManager.FindByNameAsync(credentials.Username);
-                    var token = CreateToken(user);
-
-                    _logger.LogInformation($"{user.Id} sign in.");
-
-                    return Ok(new
-                    {
-                        Id = user.Id,
-                        UserName = user.UserName,
-                        FirstName = user.FirstName,
-                        LastName = user.LastName,
-                        Email = user.Email,
-                        Token = token
-                    });
+                    var userLoginDto = await _userService.SignIn(credentials);
+                    return Ok(userLoginDto);
                 }
-                _logger.LogError($"LUnable to sing in.");
-
-                return new JsonResult("Unable to sign in.") { StatusCode = 401 };
+                catch (AppException e)
+                {
+                    _logger.LogError(e.Message);
+                    return BadRequest(e.Message);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogCritical(e.Message);
+                    return BadRequest(e.Message);
+                }
             }
-            return Error("Unexpected error occured.");
+
+            return BadRequest(ModelState);
         }
 
         [AllowAnonymous]
@@ -80,81 +67,34 @@ namespace BookMeMobi2.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = _mapper.Map<User>(userDto);
-                var result = await _userManager.CreateAsync(user, userDto.Password);
-
-                if (result.Succeeded)
+                try
                 {
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    var token = CreateToken(user);
+                    var userLoginDto = await _userService.Register(userDto);
 
-                    _logger.LogInformation($"Succesful register user {user.Id}");
-                    return Ok(new
-                    {
-                        Id = user.Id,
-                        UserName = user.UserName,
-                        FirstName = user.FirstName,
-                        LastName = user.LastName,
-                        Email = user.Email,
-                        Token = token
-                    });
+                    return Ok(userLoginDto);
                 }
+                catch (AppException e)
+                {
+                    _logger.LogCritical($"Unable to register: {e.Message}");
 
-                var errors = Errors(result);
-                _logger.LogCritical($"Unable to register: {errors}");
-
-                return errors;
+                    return BadRequest(e.Message);
+                }
             }
             _logger.LogCritical("Unexpected error occured.");
 
-            return Error("Unexpected error occured.");
+            return BadRequest("Unexpected error occured.");
         }
 
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            await _signInManager.SignOutAsync();
-
-            _logger.LogInformation("Sing out.");
+            await _userService.Logout();
             return Ok();
         }
         [HttpGet]
-        public IActionResult GetAllUsers()
+        public IActionResult GetAllUsers([FromQuery(Name = "page_size" )]int pageSize = 10, [FromQuery(Name = "page_number")] int pageNumber = 1)
         {
-            var users = _context.Users.ToList();
-            return Ok(_mapper.Map<IEnumerable<User>, IEnumerable<UserDto>>(users));
-        }
-
-
-
-        private string CreateToken(User user)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_options.Secret);
-            var tokenDescriptor = new SecurityTokenDescriptor()
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(ClaimTypes.Name, user.Id.ToString())
-                }),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials =
-                    new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            var tokenString = tokenHandler.WriteToken(token);
-
-            return tokenString;
-        }
-        private JsonResult Errors(IdentityResult result)
-        {
-            var items = result.Errors.Select(e => e.Description).ToArray();
-            return new JsonResult(items) { StatusCode = 400 };
-        }
-
-        private JsonResult Error(string message)
-        {
-            return new JsonResult(message) { StatusCode = 400 };
+            return Ok(_mapper.Map<PagedList<User>, PagedList<UserDto>>(_userService.GetAllUsers(pageSize, pageNumber)));
         }
     }
 }
