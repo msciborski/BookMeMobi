@@ -11,9 +11,10 @@ using System;
 namespace BookMeMobi2.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180325131635_AlterBookTableSizeField")]
+    partial class AlterBookTableSizeField
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -27,13 +28,7 @@ namespace BookMeMobi2.Migrations
 
                     b.Property<string>("Author");
 
-                    b.Property<DateTime?>("DeleteDate");
-
-                    b.Property<string>("FileName");
-
-                    b.Property<string>("Format");
-
-                    b.Property<bool>("IsDeleted");
+                    b.Property<string>("FullName");
 
                     b.Property<DateTime?>("PublishingDate");
 

@@ -260,4 +260,10 @@ paket-files/
 __pycache__/
 *.pyc
 
+appsettings.json
 appsettings.release.json
+appsettings.development.json
+appsettings.json
+appsettings.Development.json
+
+app.yaml
