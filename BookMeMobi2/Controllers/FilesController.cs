@@ -160,8 +160,7 @@ namespace BookMeMobi2.Controllers
                 book = await _fileService.GetBookForUser(userId, bookId);
                 var stream = await _fileService.DownloadBook(book);
                 stream.Position = 0;
-                var name = $"{book.FullName}.mobi";
-                var result = File(stream, "application/x-mobipocket-mobi", name);
+                var result = File(stream, "application/x-mobipocket-mobi", book.FileName);
                 return result;
             }
             catch (AppException e)

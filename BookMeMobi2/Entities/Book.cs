@@ -10,7 +10,7 @@ namespace BookMeMobi2.Entities
         public int Id { get; set; }
         public string Title { get; set; }
         public string Author { get; set; }
-        public string FullName { get; set; }
+        public string FileName { get; set; }
         public DateTime? PublishingDate { get; set; }
         public string StoragePath { get; set; }
         public DateTime UploadDate { get; set; }
