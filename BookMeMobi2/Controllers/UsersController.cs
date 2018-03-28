@@ -95,7 +95,7 @@ namespace BookMeMobi2.Controllers
         [HttpGet]
         public IActionResult GetAllUsers([FromQuery(Name = "page_size" )]int pageSize = 10, [FromQuery(Name = "page_number")] int pageNumber = 1)
         {
-            return Ok(_mapper.Map<PagedList<User>, PagedList<UserDto>>(_userService.GetAllUsers(pageSize, pageNumber)));
+            return Ok(_userService.GetAllUsers(pageSize, pageNumber));
         }
 
         [AllowAnonymous]

@@ -58,7 +58,7 @@ namespace BookMeMobi2.Services
             return book;
         }
 
-        public async Task<PagedList<Book>> GetBooksForUser(string userId, int pageSize, int pageNumber)
+        public async Task<PagedList<BookDto>> GetBooksForUser(string userId, int pageSize, int pageNumber)
         {
             var user = await _context.Users.Include(u => u.Books).FirstOrDefaultAsync(u => u.Id.Equals(userId));
 
@@ -67,8 +67,8 @@ namespace BookMeMobi2.Services
                 throw new UserNoFoundException($"User {userId} no found.");
             }
 
-
-            return new PagedList<Book>(user.Books.AsQueryable(), pageNumber, pageSize);
+            var booksDto = _mapper.Map<IEnumerable<Book>, IEnumerable<BookDto>>(user.Books);
+            return new PagedList<BookDto>(booksDto.AsQueryable(), pageNumber, pageSize);
         }
 
         public async Task<BookDto> UploadBook(IFormFile file, User user)
@@ -82,7 +82,7 @@ namespace BookMeMobi2.Services
                     bookDto.UploadDate = DateTime.Now;
                     bookDto.Size = Math.Round(ConvertBytesToMegabytes(file.Length), 3);
                     bookDto.Format = GetEbookFormat(file.FileName);
-
+                    bookDto.FileName = file.FileName;
 
                     await AddFilesToDb(bookDto, user.Id, storagePathToBook);
 
@@ -137,7 +137,6 @@ namespace BookMeMobi2.Services
             fileDto.Author = mobiDocument.Author;
             fileDto.Title = mobiDocument.Title;
             fileDto.PublishingDate = mobiDocument.PublishingDate;
-            fileDto.FullName = mobiDocument.MobiHeader.FullName;
             return fileDto;
         }
 

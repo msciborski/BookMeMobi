@@ -47,10 +47,10 @@ namespace BookMeMobi2.Controllers
                 return BadRequest(ModelState);
             }
 
-            PagedList<Book> books = null;
+            PagedList<BookDto> booksDto = null;
             try
             {
-                books = await _fileService.GetBooksForUser(userId, pageSize, pageNumber);
+                booksDto = await _fileService.GetBooksForUser(userId, pageSize, pageNumber);
 
             }
             catch (UserNoFoundException e)
@@ -58,7 +58,7 @@ namespace BookMeMobi2.Controllers
                 _logger.LogError(e.Message);
                 return NotFound(e.Message);
             }
-            return Ok(_mapper.Map<PagedList<Book>, PagedList<BookDto>>(books));
+            return Ok(booksDto);
         }
 
         [HttpGet("{userId}/books/{bookId}")]
@@ -126,7 +126,7 @@ namespace BookMeMobi2.Controllers
                     var bookDto = await _fileService.UploadBook(file, user);
                     files.Add(bookDto);
 
-                    _logger.LogInformation($"{bookDto.FullName} is uploaded.");
+                    _logger.LogInformation($"{bookDto.FileName} is uploaded.");
                 }
             }
             catch (AppException e)

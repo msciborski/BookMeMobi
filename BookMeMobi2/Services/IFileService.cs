@@ -14,6 +14,6 @@ namespace BookMeMobi2.Services
         Task<BookDto> UploadBook(IFormFile file, User user);
         Task<Stream> DownloadBook(Book book);
         Task<Book> GetBookForUser(string userId, int bookId);
-        Task<PagedList<Book>> GetBooksForUser(string userId, int pageSize, int pageNumber);
+        Task<PagedList<BookDto>> GetBooksForUser(string userId, int pageSize, int pageNumber);
     }
 }

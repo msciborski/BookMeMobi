@@ -86,10 +86,11 @@ namespace BookMeMobi2.Services
             _logger.LogInformation("Sing out.");
         }
 
-        public PagedList<User> GetAllUsers(int pageSize, int pageNumber)
+        public PagedList<UserDto> GetAllUsers(int pageSize, int pageNumber)
         {
             var users = _context.Users;
-            return new PagedList<User>(users, pageNumber, pageSize);
+            var usersDto = _mapper.Map<IEnumerable<User>, IEnumerable<UserDto>>(users);
+            return new PagedList<UserDto>(usersDto.AsQueryable(), pageNumber, pageSize);
         }
 
         public async Task<User> GetUser(string userId)
