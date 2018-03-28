@@ -8,6 +8,24 @@
   <ItemGroup>
     <Compile Remove="Migrations\20180314194043_Initial.cs" />
     <Compile Remove="Migrations\20180314194043_Initial.Designer.cs" />
+    <Compile Remove="Migrations\20180314195729_Initial.cs" />
+    <Compile Remove="Migrations\20180314195729_Initial.Designer.cs" />
+    <Compile Remove="Migrations\20180317192443_BookEntityMigration.cs" />
+    <Compile Remove="Migrations\20180317192443_BookEntityMigration.Designer.cs" />
+    <Compile Remove="Migrations\20180318115904_BookUrlMigration.cs" />
+    <Compile Remove="Migrations\20180318115904_BookUrlMigration.Designer.cs" />
+    <Compile Remove="Migrations\20180320194144_AlterBookTableWIthStoragePath.cs" />
+    <Compile Remove="Migrations\20180320194144_AlterBookTableWIthStoragePath.Designer.cs" />
+    <Compile Remove="Migrations\20180321205225_AlterBookTableUploadDateField.cs" />
+    <Compile Remove="Migrations\20180321205225_AlterBookTableUploadDateField.Designer.cs" />
+    <Compile Remove="Migrations\20180322163617_KeySizeMigration.cs" />
+    <Compile Remove="Migrations\20180322163617_KeySizeMigration.Designer.cs" />
+    <Compile Remove="Migrations\20180322164550_KeySizeMigration1.cs" />
+    <Compile Remove="Migrations\20180322164550_KeySizeMigration1.Designer.cs" />
+    <Compile Remove="Migrations\20180322165556_KeySizeMigration2.cs" />
+    <Compile Remove="Migrations\20180322165556_KeySizeMigration2.Designer.cs" />
+    <Compile Remove="Migrations\20180322171747_MySqlMigration.cs" />
+    <Compile Remove="Migrations\20180322171747_MySqlMigration.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,12 +36,19 @@
     <PackageReference Include="Automapper" Version="6.2.2" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="3.2.0" />
     <PackageReference Include="FluentValidation" Version="7.5.1" />
+    <PackageReference Include="Google.Cloud.Diagnostics.AspNetCore" Version="2.0.0" />
+    <PackageReference Include="Google.Cloud.Storage.V1" Version="2.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.6" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.3" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BookMeMobi2.MobiMetadata\BookMeMobi2.MobiMetadata.csproj" />
   </ItemGroup>
 
 </Project>
