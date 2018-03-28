@@ -81,6 +81,8 @@ namespace BookMeMobi2.Services
                     var storagePathToBook = await UploadBook(stream, user, file.FileName);
                     bookDto.UploadDate = DateTime.Now;
                     bookDto.Size = Math.Round(ConvertBytesToMegabytes(file.Length), 3);
+                    bookDto.Format = GetEbookFormat(file.FileName);
+
 
                     await AddFilesToDb(bookDto, user.Id, storagePathToBook);
 
@@ -142,6 +144,20 @@ namespace BookMeMobi2.Services
         private double ConvertBytesToMegabytes(long bytes)
         {
             return (bytes / 1024f) / 1024f;
+        }
+
+        private string GetEbookFormat(string fileName)
+        {
+            if (fileName.Contains(".mobi"))
+            {
+                return "mobi";
+            }
+
+            if (fileName.Contains(".azw3"))
+            {
+                return "azw3";
+            }
+            throw new NotImplementedException("Format is not avaiable.");
         }
     }
 }

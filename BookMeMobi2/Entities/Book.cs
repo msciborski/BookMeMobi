@@ -15,6 +15,7 @@ namespace BookMeMobi2.Entities
         public string StoragePath { get; set; }
         public DateTime UploadDate { get; set; }
         public double Size { get; set; }
+        public string Format { get; set; }
 
         public string UserId { get; set; }
         public User User { get; set; }

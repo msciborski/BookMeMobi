@@ -20,7 +20,7 @@ using Microsoft.Extensions.Logging;
 namespace BookMeMobi2.Controllers
 {
     [Route("/api/users")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class FilesController : Controller
     {
         private readonly ILogger _logger;
