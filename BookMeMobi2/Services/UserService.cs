@@ -92,6 +92,18 @@ namespace BookMeMobi2.Services
             return new PagedList<User>(users, pageNumber, pageSize);
         }
 
+        public async Task<User> GetUser(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new UserNoFoundException($"User {userId} no found.");
+            }
+
+            return user;
+        }
+
         private string Errors(IdentityResult result)
         {
             var items = result.Errors.Select(e => e.Description).AsEnumerable();

@@ -13,5 +13,6 @@ namespace BookMeMobi2.Services
         Task<UserLoginDto> Register(UserRegisterDto userDto);
         Task Logout();
         PagedList<User> GetAllUsers(int pageSize, int pageNumber);
+        Task<User> GetUser(string userId);
     }
 }

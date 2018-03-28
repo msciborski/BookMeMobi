@@ -91,10 +91,32 @@ namespace BookMeMobi2.Controllers
             await _userService.Logout();
             return Ok();
         }
+
         [HttpGet]
         public IActionResult GetAllUsers([FromQuery(Name = "page_size" )]int pageSize = 10, [FromQuery(Name = "page_number")] int pageNumber = 1)
         {
             return Ok(_mapper.Map<PagedList<User>, PagedList<UserDto>>(_userService.GetAllUsers(pageSize, pageNumber)));
+        }
+
+        [AllowAnonymous]
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetUser(string userId)
+        {
+            try
+            {
+                var user = await _userService.GetUser(userId);
+                return Ok(_mapper.Map<User, UserDto>(user));
+            }
+            catch (UserNoFoundException e)
+            {
+                _logger.LogError(e.Message);
+                return NotFound(e.Message);
+            }
+            catch (Exception e)
+            {
+                _logger.LogCritical($"{e.Message}, {e.StackTrace}");
+                return new JsonResult("Something went wrong on server. Sorry.") {StatusCode = 500};
+            }
         }
     }
 }
