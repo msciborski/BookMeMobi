@@ -18,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace BookMeMobi2
 {
@@ -71,6 +72,15 @@ namespace BookMeMobi2
             services.AddAutoMapper();
             services.AddMvc();
 
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Info()
+                {
+                    Version = "v1",
+                    Title = "BookMeMobi API"
+                });
+            });
+
             services.AddTransient<IFileService, FileService>();
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<ITokenService, TokenService>();
@@ -91,6 +101,9 @@ namespace BookMeMobi2
             app.UseCors(o => o.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().AllowCredentials());
 
             app.UseMvc();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>  c.SwaggerEndpoint("/swagger/v1/swagger.json", "BookMeMobi API"));
         }
     }
 }
