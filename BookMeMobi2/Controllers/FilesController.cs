@@ -50,7 +50,7 @@ namespace BookMeMobi2.Controllers
             PagedList<BookDto> booksDto = null;
             try
             {
-                booksDto = await _fileService.GetBooksForUser(userId, pageSize, pageNumber);
+                booksDto = await _fileService.GetBooksForUserAsync(userId, pageSize, pageNumber);
 
             }
             catch (UserNoFoundException e)
@@ -73,7 +73,7 @@ namespace BookMeMobi2.Controllers
             Book book = null;
             try
             {
-                book = await _fileService.GetBookForUser(userId, bookId);
+                book = await _fileService.GetBookForUserAsync(userId, bookId);
             }
             catch (AppException e)
             {
@@ -91,6 +91,31 @@ namespace BookMeMobi2.Controllers
             return Ok(_mapper.Map<Book, BookDto>(book));
         }
 
+        [HttpDelete]
+        public async Task<IActionResult> DeleteBook(string userId, int bookId)
+        {
+            try
+            {
+                var book = await _fileService.DeleteBookAsync(userId, bookId);
+
+                return Ok(book);
+            }
+            catch (UserNoFoundException e)
+            {
+                _logger.LogError(e.Message);
+                return NotFound(e.Message);
+            }
+            catch (BookNoFoundException e)
+            {
+                _logger.LogError(e.Message);
+                return NotFound(e.Message);
+            }
+            catch (Exception e)
+            {
+                _logger.LogCritical($"{e.Message}, {e.StackTrace}");
+                return new JsonResult("Unexpected internal error.") {StatusCode = 500};
+            }
+        }
         [HttpPost("{userId}/books")]
         public async Task<IActionResult> UploadMobiFile([FromForm] IFormCollection fileCollection, string userId)
         {
@@ -123,7 +148,7 @@ namespace BookMeMobi2.Controllers
                         return BadRequest();
                     }
 
-                    var bookDto = await _fileService.UploadBook(file, user);
+                    var bookDto = await _fileService.UploadBookAsync(file, user);
                     files.Add(bookDto);
 
                     _logger.LogInformation($"{bookDto.FileName} is uploaded.");
@@ -157,8 +182,8 @@ namespace BookMeMobi2.Controllers
             Book book = null;
             try
             {
-                book = await _fileService.GetBookForUser(userId, bookId);
-                var stream = await _fileService.DownloadBook(book);
+                book = await _fileService.GetBookForUserAsync(userId, bookId);
+                var stream = await _fileService.DownloadBookAsync(book);
                 stream.Position = 0;
                 var result = File(stream, "application/x-mobipocket-mobi", book.FileName);
                 return result;

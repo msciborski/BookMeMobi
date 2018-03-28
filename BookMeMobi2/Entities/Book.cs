@@ -16,6 +16,8 @@ namespace BookMeMobi2.Entities
         public DateTime UploadDate { get; set; }
         public double Size { get; set; }
         public string Format { get; set; }
+        public bool IsDeleted { get; set; }
+        public DateTime? DeleteDate { get; set; }
 
         public string UserId { get; set; }
         public User User { get; set; }

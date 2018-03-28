@@ -39,7 +39,7 @@ namespace BookMeMobi2.Services
             _credential = GoogleCredential.GetApplicationDefault();
         }
 
-        public async Task<Book> GetBookForUser(string userId, int bookId)
+        public async Task<Book> GetBookForUserAsync(string userId, int bookId)
         {
             var user = await _context.Users.Include(u => u.Books).FirstOrDefaultAsync(u => u.Id.Equals(userId));
             if (user == null)
@@ -48,7 +48,7 @@ namespace BookMeMobi2.Services
                 throw new UserNoFoundException($"User {userId} no found.");
             }
 
-            var book = user.Books.FirstOrDefault(b => b.Id == bookId);
+            var book = user.Books.FirstOrDefault(b => b.Id == bookId && !b.IsDeleted);
             if (book == null)
             {
                 _logger.LogError($"Book {bookId} dosen't exist.");
@@ -58,7 +58,7 @@ namespace BookMeMobi2.Services
             return book;
         }
 
-        public async Task<PagedList<BookDto>> GetBooksForUser(string userId, int pageSize, int pageNumber)
+        public async Task<PagedList<BookDto>> GetBooksForUserAsync(string userId, int pageSize, int pageNumber)
         {
             var user = await _context.Users.Include(u => u.Books).FirstOrDefaultAsync(u => u.Id.Equals(userId));
 
@@ -67,24 +67,50 @@ namespace BookMeMobi2.Services
                 throw new UserNoFoundException($"User {userId} no found.");
             }
 
-            var booksDto = _mapper.Map<IEnumerable<Book>, IEnumerable<BookDto>>(user.Books);
+            //Filter method
+            var books = user.Books.Where(b => !b.IsDeleted);
+
+            var booksDto = _mapper.Map<IEnumerable<Book>, IEnumerable<BookDto>>(books);
             return new PagedList<BookDto>(booksDto.AsQueryable(), pageNumber, pageSize);
         }
 
-        public async Task<BookDto> UploadBook(IFormFile file, User user)
+        public async Task<Book> DeleteBookAsync(string userId, int bookId)
+        {
+            var user = await _context.Users.Include(u => u.Books).FirstOrDefaultAsync(u => u.Id.Equals(userId));
+            if (user == null)
+            {
+                throw new UserNoFoundException($"User {userId} no found.");
+            }
+
+            var book = user.Books.FirstOrDefault(b => b.Id == bookId && !b.IsDeleted);
+            if (book == null)
+            {
+                throw new BookNoFoundException($"Book {bookId} no found.");
+            }
+
+            book.IsDeleted = true;
+            book.DeleteDate = DateTime.Now;
+
+            _context.Books.Update(book);
+            await _context.SaveChangesAsync();
+
+            return book;
+        }
+
+        public async Task<BookDto> UploadBookAsync(IFormFile file, User user)
         {
             using (var stream = file.OpenReadStream())
             {
                 try
                 {
-                    var bookDto = await GetMobiMetadata(stream);
-                    var storagePathToBook = await UploadBook(stream, user, file.FileName);
+                    var bookDto = await GetMobiMetadataAsync(stream);
+                    var storagePathToBook = await UploadBookAsync(stream, user, file.FileName);
                     bookDto.UploadDate = DateTime.Now;
                     bookDto.Size = Math.Round(ConvertBytesToMegabytes(file.Length), 3);
                     bookDto.Format = GetEbookFormat(file.FileName);
                     bookDto.FileName = file.FileName;
 
-                    await AddFilesToDb(bookDto, user.Id, storagePathToBook);
+                    await AddFilesToDbAsync(bookDto, user.Id, storagePathToBook);
 
                     return bookDto;
                 }
@@ -95,7 +121,7 @@ namespace BookMeMobi2.Services
                 }
             }
         }
-        private async Task<string> UploadBook(Stream file, User user, string bookName)
+        private async Task<string> UploadBookAsync(Stream file, User user, string bookName)
         {
             var bookPath = $"{_baseBookPath}{user.Id}/{bookName}";
 
@@ -107,7 +133,7 @@ namespace BookMeMobi2.Services
             return bookPath;
         }
 
-        public async Task<Stream> DownloadBook(Book book)
+        public async Task<Stream> DownloadBookAsync(Book book)
         {
             using (var storage = await StorageClient.CreateAsync(_credential))
             {
@@ -118,7 +144,7 @@ namespace BookMeMobi2.Services
             }
         }
 
-        private async Task AddFilesToDb(BookDto bookDto, string userId, string storagePath)
+        private async Task AddFilesToDbAsync(BookDto bookDto, string userId, string storagePath)
         {
             var book = _mapper.Map<BookDto, Book>(bookDto);
             book.UserId = userId;
@@ -130,7 +156,7 @@ namespace BookMeMobi2.Services
             bookDto.Id = book.Id;
         }
 
-        private async Task<BookDto> GetMobiMetadata(Stream stream)
+        private async Task<BookDto> GetMobiMetadataAsync(Stream stream)
         {
             BookDto fileDto = new BookDto();
             var mobiDocument = await MobiService.LoadDocument(stream);
