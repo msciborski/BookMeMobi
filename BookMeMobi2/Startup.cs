@@ -79,6 +79,7 @@ namespace BookMeMobi2
                     Version = "v1",
                     Title = "BookMeMobi API"
                 });
+                c.IncludeXmlComments(GetXmlCommentsPath());
             });
 
             services.AddTransient<IFileService, FileService>();
@@ -104,6 +105,12 @@ namespace BookMeMobi2
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>  c.SwaggerEndpoint("/swagger/v1/swagger.json", "BookMeMobi API"));
+        }
+
+        private string GetXmlCommentsPath()
+        {
+            var app = System.AppContext.BaseDirectory;
+            return System.IO.Path.Combine(app, "BookMeMobi2.xml");
         }
     }
 }
