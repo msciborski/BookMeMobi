@@ -20,7 +20,7 @@ using Microsoft.Extensions.Logging;
 namespace BookMeMobi2.Controllers
 {
     [Route("/api/users")]
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class FilesController : Controller
     {
         private readonly ILogger _logger;
@@ -39,6 +39,17 @@ namespace BookMeMobi2.Controllers
             _fileService = storageService;
         }
 
+
+        /// <summary>
+        /// Returns user's books. 
+        /// </summary>
+        /// <param name="userId">User ID</param>
+        /// <param name="pageSize">Page size, defualt 10</param>
+        /// <param name="pageNumber"> Page number, default: 1</param>
+        /// <returns></returns>
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(BookDto), 200)]
+        [ProducesResponseType(typeof(string), 404)]
         [HttpGet("{userId}/books")]
         public async Task<IActionResult> GetBooks(string userId, [FromQuery(Name = "page_size")] int pageSize = 10, [FromQuery(Name = "page_number")] int pageNumber = 1)
         {
@@ -61,6 +72,17 @@ namespace BookMeMobi2.Controllers
             return Ok(booksDto);
         }
 
+
+        /// <summary>
+        /// Returns user's book with particular id
+        /// </summary>
+        /// <param name="userId">Book owner Id</param>
+        /// <param name="bookId">Book id</param>
+        /// <returns></returns>
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(BookDto), 200)]
+        [ProducesResponseType(typeof(string), 404)]
+        [ProducesResponseType(typeof(string),500)]
         [HttpGet("{userId}/books/{bookId}")]
         public async Task<IActionResult> GetBook(string userId, int bookId)
         {
@@ -91,6 +113,16 @@ namespace BookMeMobi2.Controllers
             return Ok(_mapper.Map<Book, BookDto>(book));
         }
 
+        /// <summary>
+        /// Delete user's book for particular id
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="bookId"></param>
+        /// <returns>Info of deleted book</returns>
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(BookDto), 200)]
+        [ProducesResponseType(typeof(string), 404)]
+        [ProducesResponseType(typeof(string), 500)]
         [HttpDelete]
         public async Task<IActionResult> DeleteBook(string userId, int bookId)
         {
@@ -116,6 +148,17 @@ namespace BookMeMobi2.Controllers
                 return new JsonResult("Unexpected internal error.") {StatusCode = 500};
             }
         }
+
+        /// <summary>
+        /// Upload book
+        /// </summary>
+        /// <param name="fileCollection">File from form</param>
+        /// <param name="userId">User id</param>
+        /// <returns>Uploaded book</returns>
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(IEnumerable<BookDto>), 200)]
+        [ProducesResponseType(typeof(string), 404)]
+        [ProducesResponseType(typeof(string), 500)]
         [HttpPost("{userId}/books")]
         public async Task<IActionResult> UploadMobiFile([FromForm] IFormCollection fileCollection, string userId)
         {
@@ -170,6 +213,16 @@ namespace BookMeMobi2.Controllers
         }
 
 
+        /// <summary>
+        /// Download user's book with particular id
+        /// </summary>
+        /// <param name="userId">User id</param>
+        /// <param name="bookId">Book id</param>
+        /// <returns></returns>
+        [Produces("application/x-mobipocket-mobi")]
+        [ProducesResponseType(typeof(FileStreamResult), 200)]
+        [ProducesResponseType(typeof(string), 404)]
+        [ProducesResponseType(typeof(string), 500)]
         [HttpGet("{userId}/books/{bookId}/download")]
         public async Task<IActionResult> DownloadBook(string userId, int bookId)
         {

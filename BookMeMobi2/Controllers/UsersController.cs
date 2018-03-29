@@ -35,6 +35,14 @@ namespace BookMeMobi2.Controllers
             _userService = userService;
         }
 
+        /// <summary>
+        /// Login user with credentials
+        /// </summary>
+        /// <param name="credentials"></param>
+        /// <returns></returns>
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(UserLoginDto),200)]
+        [ProducesResponseType(typeof(string), 500)]
         [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> SignIn([FromBody] Credentials credentials)
@@ -61,6 +69,14 @@ namespace BookMeMobi2.Controllers
             return BadRequest(ModelState);
         }
 
+        /// <summary>
+        /// Register user
+        /// </summary>
+        /// <param name="userDto"></param>
+        /// <returns></returns>
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(UserLoginDto), 201)]
+        [ProducesResponseType(typeof(string), 500)]
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] UserRegisterDto userDto)
@@ -71,7 +87,7 @@ namespace BookMeMobi2.Controllers
                 {
                     var userLoginDto = await _userService.Register(userDto);
 
-                    return Ok(userLoginDto);
+                    return new JsonResult(userLoginDto) {StatusCode = 201};
                 }
                 catch (AppException e)
                 {
@@ -84,20 +100,39 @@ namespace BookMeMobi2.Controllers
 
             return BadRequest("Unexpected error occured.");
         }
-
+        /// <summary>
+        /// Logout user.
+        /// </summary>
+        /// <returns></returns>
+        [Produces("application/json")]
+        [ProducesResponseType(200)]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
             await _userService.Logout();
             return Ok();
         }
-
+        /// <summary>
+        /// Returns all users.
+        /// </summary>
+        /// <param name="pageSize">Page size, default = 10</param>
+        /// <param name="pageNumber">Page number, default = 1</param>
+        /// <returns></returns>
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(PagedList<UserDto>),200)]
         [HttpGet]
         public IActionResult GetAllUsers([FromQuery(Name = "page_size" )]int pageSize = 10, [FromQuery(Name = "page_number")] int pageNumber = 1)
         {
             return Ok(_userService.GetAllUsers(pageSize, pageNumber));
         }
 
+        /// <summary>
+        /// Returns particular user.
+        /// </summary>
+        /// <param name="userId">User id</param>
+        /// <returns></returns>
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(UserDto), 200)]
         [AllowAnonymous]
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetUser(string userId)
