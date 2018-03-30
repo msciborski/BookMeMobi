@@ -17,6 +17,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Swagger;
 
@@ -100,16 +101,16 @@ namespace BookMeMobi2
             loggerFactory.AddGoogle(Configuration["Stackdriver:ProjectId"]);
             
             app.UseCors(o => o.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().AllowCredentials());
-
+            app.UseStaticFiles();
             app.UseMvc();
 
             app.UseSwagger();
-            app.UseSwaggerUI(c =>  c.SwaggerEndpoint("/swagger/v1/swagger.json", "BookMeMobi API"));
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BookMeMobi API"));
         }
 
         private string GetXmlCommentsPath()
         {
-            var app = System.AppContext.BaseDirectory;
+            var app = AppContext.BaseDirectory;
             return System.IO.Path.Combine(app, "BookMeMobi2.xml");
         }
     }

@@ -6,7 +6,8 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>bin\Debug\netcoreapp2.0\BookMeMobi2.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\netcoreapp2.0\netcoreapp2.0\BookMeMobi2.xml</DocumentationFile>
+    <OutputPath>bin\Debug\netcoreapp2.0\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -55,5 +56,12 @@
   <ItemGroup>
     <ProjectReference Include="..\BookMeMobi2.MobiMetadata\BookMeMobi2.MobiMetadata.csproj" />
   </ItemGroup>
+  
+  <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
+    <ItemGroup>
+      <DocFile Include="bin\*\*\*.xml" />
+    </ItemGroup>
+    <Copy SourceFiles="@(DocFile)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="false" />
+  </Target>
 
 </Project>

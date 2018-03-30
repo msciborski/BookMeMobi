@@ -48,7 +48,7 @@ namespace BookMeMobi2.Controllers
         /// <param name="pageNumber"> Page number, default: 1</param>
         /// <returns></returns>
         [Produces("application/json")]
-        [ProducesResponseType(typeof(BookDto), 200)]
+        [ProducesResponseType(typeof(PagedList<BookDto>), 200)]
         [ProducesResponseType(typeof(string), 404)]
         [HttpGet("{userId}/books")]
         public async Task<IActionResult> GetBooks(string userId, [FromQuery(Name = "page_size")] int pageSize = 10, [FromQuery(Name = "page_number")] int pageNumber = 1)
