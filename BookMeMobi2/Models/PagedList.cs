@@ -24,5 +24,6 @@ namespace BookMeMobi2.Models
             PageSize = pageSize;
             Items = source.Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToList();
         }
+        public PagedList() { }
     }
 }
