@@ -114,11 +114,66 @@ namespace BookMeMobi2.Tests
 
         #region DeleteBook(soft)
 
+        [Fact]
         public async Task DeleteBookForValidUserIdAndBookId()
         {
             using (var fixture = new FileServiceTestFixture())
             {
+                //Arrange
+                await fixture.SeedDatabase();
 
+                //Action
+                var result = await fixture.FileService.DeleteBookAsync("ID1", 1);
+
+                //Assert
+                result.Id.ShouldEqual(1);
+                var booksForUser = await fixture.FileService.GetBooksForUserAsync("ID1", 10, 1);
+                booksForUser.Items.Count.ShouldEqual(1);
+            }
+        }
+
+        [Fact]
+        public async Task DeleteBookForInvalidUserId()
+        {
+            using (var fixture = new FileServiceTestFixture())
+            {
+                //Arrange
+                await fixture.SeedDatabase();
+
+                //Action&&Assert
+
+                await Assert.ThrowsAsync<UserNoFoundException>(
+                    async () => await fixture.FileService.DeleteBookAsync("ID11111", 1));
+            }
+        }
+
+        [Fact]
+        public async Task DeleteBookForInvalidBookId()
+        {
+            using (var fixture = new FileServiceTestFixture())
+            {
+                //Arrange
+                await fixture.SeedDatabase();
+
+                //Action&&Assert
+
+                await Assert.ThrowsAsync<BookNoFoundException>(
+                    async () => await fixture.FileService.DeleteBookAsync("ID1", 1111111));
+            }
+        }
+
+        [Fact]
+        public async Task DeleteBookForInvalidUserIdAndBookId()
+        {
+            using (var fixture = new FileServiceTestFixture())
+            {
+                //Arrange
+                await fixture.SeedDatabase();
+
+                //Action&&Assert
+
+                await Assert.ThrowsAsync<UserNoFoundException>(
+                    async () => await fixture.FileService.DeleteBookAsync("ID111111", 1111111));
             }
         }
 
