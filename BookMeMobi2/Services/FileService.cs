@@ -97,8 +97,14 @@ namespace BookMeMobi2.Services
             return book;
         }
 
-        public async Task<BookDto> UploadBookAsync(IFormFile file, User user)
+        public async Task<BookDto> UploadBookAsync(IFormFile file, string userId)
         {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                throw new UserNoFoundException($"User {userId} is no found."); 
+            }
+
             using (var stream = file.OpenReadStream())
             {
                 try

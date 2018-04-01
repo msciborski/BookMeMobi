@@ -11,7 +11,7 @@ namespace BookMeMobi2.Services
 {
     public interface IFileService
     {
-        Task<BookDto> UploadBookAsync(IFormFile file, User user);
+        Task<BookDto> UploadBookAsync(IFormFile file, string userId);
         Task<Stream> DownloadBookAsync(Book book);
         Task<Book> GetBookForUserAsync(string userId, int bookId);
         Task<PagedList<BookDto>> GetBooksForUserAsync(string userId, int pageSize, int pageNumber);
