@@ -330,5 +330,76 @@ namespace BookMeMobi2.Tests
 
         #endregion
 
+        #region DownloadBook (Controller)
+
+        [Fact]
+        public async Task DownloadBookSuccess()
+        {
+            //Arrange
+            var mockStream = new Mock<Stream>();
+
+            var fileServiceMock = new Mock<IFileService>();
+            fileServiceMock.Setup(m => m.GetBookForUserAsync(It.IsAny<string>(), It.IsAny<int>()))
+                .Returns(Task.FromResult(new Book() {Id = 1}));
+            fileServiceMock.Setup(m => m.DownloadBookAsync(It.IsAny<Book>()))
+                .Returns(Task.FromResult(mockStream.Object));
+
+            var fileController = new FilesController(_fixture.Mapper, fileServiceMock.Object, _fixture.Logger);
+
+            //Act
+
+            IActionResult actionResult = await fileController.DownloadBook("ID1", 1);
+            actionResult.ShouldNotBeNull();
+
+            FileStreamResult result = actionResult as FileStreamResult;
+            result.ShouldNotBeNull();
+            result.FileStream.ShouldNotBeNull();
+        }
+
+        [Fact]
+        public async Task DownloadBookInvalidIds()
+        {
+            var mockStream = new Mock<Stream>();
+
+            var fileServiceMock = new Mock<IFileService>();
+            fileServiceMock.Setup(m => m.GetBookForUserAsync(It.IsAny<string>(), It.IsAny<int>()))
+                .Throws(new UserNoFoundException());
+            fileServiceMock.Setup(m => m.DownloadBookAsync(It.IsAny<Book>()))
+                .Returns(Task.FromResult(mockStream.Object));
+
+            var fileController = new FilesController(_fixture.Mapper, fileServiceMock.Object, _fixture.Logger);
+
+            //Act
+
+            IActionResult actionResult = await fileController.DownloadBook("ID1", 1);
+            actionResult.ShouldNotBeNull();
+
+            NotFoundObjectResult result = actionResult as NotFoundObjectResult;
+            result.ShouldNotBeNull();
+            result.StatusCode.ShouldEqual(404);
+        }
+
+        [Fact]
+        public async Task DownloadBookInternalError()
+        {
+            var mockStream = new Mock<Stream>();
+
+            var fileServiceMock = new Mock<IFileService>();
+            fileServiceMock.Setup(m => m.GetBookForUserAsync(It.IsAny<string>(), It.IsAny<int>()))
+                .Returns(Task.FromResult(new Book() {Id = 1}));
+            fileServiceMock.Setup(m => m.DownloadBookAsync(It.IsAny<Book>())).Throws(new Exception());
+
+            var fileController = new FilesController(_fixture.Mapper, fileServiceMock.Object, _fixture.Logger);
+
+            //Act
+
+            IActionResult actionResult = await fileController.DownloadBook("ID1", 1);
+            actionResult.ShouldNotBeNull();
+
+            BadRequestObjectResult result = actionResult as BadRequestObjectResult;
+            result.ShouldNotBeNull();
+            result.StatusCode.ShouldEqual(400);
+        }
+        #endregion
     }
 }
