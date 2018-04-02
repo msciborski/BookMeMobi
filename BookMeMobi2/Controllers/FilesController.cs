@@ -126,8 +126,8 @@ namespace BookMeMobi2.Controllers
             try
             {
                 var book = await _fileService.DeleteBookAsync(userId, bookId);
-
-                return Ok(book);
+                var bookDto = _mapper.Map<Book, BookDeleteDto>(book);
+                return Ok(bookDto);
             }
             catch (UserNoFoundException e)
             {
@@ -193,17 +193,11 @@ namespace BookMeMobi2.Controllers
                 _logger.LogError(e.Message);
                 return NotFound(e.Message);
             }
-            catch (AppException e)
-            {
-                _logger.LogError(e.Message);
-
-                return NotFound(e.Message);
-            }
             catch (Exception e)
             {
                 _logger.LogError(e.Message);
 
-                return NotFound(e.Message);
+                return BadRequest(e.Message);
             }
             return Ok(files);
         }
