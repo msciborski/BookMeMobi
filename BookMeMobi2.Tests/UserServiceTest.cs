@@ -10,6 +10,7 @@ using BookMeMobi2.Helpers.Exceptions;
 using BookMeMobi2.Helpers.Mappings;
 using BookMeMobi2.Models;
 using BookMeMobi2.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -38,13 +39,14 @@ namespace BookMeMobi2.Tests
             _tokenService = tokenServiceMock.Object;
         }
 
+        #region SignIn
 
         [Fact]
         public async Task SignInUserSuccess()
         {
             //Arrange
-            var credentials = new Credentials() {Password = "SłabeHasło!123", Username = "TestUserName"};
-            var user = new User() {Id = "ID1", UserName = "TestUserName"};
+            var credentials = new Credentials() { Password = "SłabeHasło!123", Username = "TestUserName" };
+            var user = new User() { Id = "ID1", UserName = "TestUserName" };
 
             var fakeUserManager = new Mock<FakeUserManager>();
             fakeUserManager.Setup(m => m.FindByNameAsync(credentials.Username)).ReturnsAsync(user);
@@ -53,7 +55,7 @@ namespace BookMeMobi2.Tests
             fakeSignInManager.Setup(
                 m => m.PasswordSignInAsync(credentials.Username, credentials.Password, false, false)).ReturnsAsync(SignInResult.Success);
 
-            var userService = new UserService(_logger,_mapper,fakeUserManager.Object,fakeSignInManager.Object,_tokenService);
+            var userService = new UserService(_logger, _mapper, fakeUserManager.Object, fakeSignInManager.Object, _tokenService);
 
             //Act
             var result = await userService.SignIn(credentials);
@@ -82,6 +84,60 @@ namespace BookMeMobi2.Tests
             //Act&&Assert
             await Assert.ThrowsAsync<AppException>(async () => await userService.SignIn(credentials));
         }
+
+        #endregion
+
+        #region Register
+
+        [Fact]
+        public async Task RegisterSuccess()
+        {
+            //Arrange
+            var userRegisterDto = new UserRegisterDto()
+                { Email = "test@gmail.com", FirstName = "Test", LastName = "Testowy", UserName = "TestowyUser", Password = "Test!123@"};
+            var fakeUserManager = new Mock<FakeUserManager>();
+            fakeUserManager.Setup(m => m.CreateAsync(It.IsAny<User>(), It.IsAny<string>()))
+                .ReturnsAsync(IdentityResult.Success);
+
+            var fakeSignInManager = new Mock<FakeSignInManager>();
+            fakeSignInManager.Setup(m => m.SignInAsync(It.IsAny<User>(), false, null))
+                .Returns(Task.CompletedTask);
+
+            var userService = new UserService(_logger, _mapper, fakeUserManager.Object, fakeSignInManager.Object, _tokenService);
+
+            //Act
+
+            var userLoginDtoResult = await userService.Register(userRegisterDto);
+
+            //Assert
+
+            userLoginDtoResult.ShouldNotBeNull();
+            userLoginDtoResult.Email.ShouldEqual("test@gmail.com");
+        }
+
+        [Fact]
+        public async Task RegisterFailedCreateUser()
+        {
+            //Arrange
+            var userRegisterDto = new UserRegisterDto()
+                { Email = "test@gmail.com", FirstName = "Test", LastName = "Testowy", UserName = "TestowyUser", Password = "Test!123@" };
+            var fakeUserManager = new Mock<FakeUserManager>();
+            fakeUserManager.Setup(m => m.CreateAsync(It.IsAny<User>(), It.IsAny<string>()))
+                .ReturnsAsync(IdentityResult.Failed());
+
+            var fakeSignInManager = new Mock<FakeSignInManager>();
+            fakeSignInManager.Setup(m => m.SignInAsync(It.IsAny<User>(), false, null))
+                .Returns(Task.CompletedTask);
+
+            var userService = new UserService(_logger, _mapper, fakeUserManager.Object, fakeSignInManager.Object, _tokenService);
+
+            //Act&Assert
+            await Assert.ThrowsAsync<AppException>(async () => await userService.Register(userRegisterDto));
+
+        }
+
+        #endregion
+
     }
 }
 
