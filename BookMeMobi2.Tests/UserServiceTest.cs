@@ -10,6 +10,7 @@ using BookMeMobi2.Helpers.Exceptions;
 using BookMeMobi2.Helpers.Mappings;
 using BookMeMobi2.Models;
 using BookMeMobi2.Services;
+using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
@@ -135,9 +136,84 @@ namespace BookMeMobi2.Tests
             await Assert.ThrowsAsync<AppException>(async () => await userService.Register(userRegisterDto));
 
         }
-
         #endregion
 
+        #region GetAllUsers
+
+        [Fact]
+        public async Task GetAllUsersSuccess()
+        {
+            //Arrange
+            var users = new List<User>
+            {
+                new User()
+                {
+                    Id = "ID1",
+                    UserName = "Test1",
+                    Email = "testowy1@gmail.com"
+                },
+                new User()
+                {
+                    Id = "ID2",
+                    UserName = "Test2",
+                    Email = "test2@gmail.com"
+                }
+            };
+
+            var fakeUserManager = new Mock<FakeUserManager>();
+            fakeUserManager.Setup(m => m.Users).Returns(users.AsQueryable);
+
+            var fakeSignInManager = new Mock<FakeSignInManager>();
+
+            var userService = new UserService(_logger, _mapper, fakeUserManager.Object, 
+                fakeSignInManager.Object, _tokenService);
+
+            //Action
+
+            var result = userService.GetAllUsers(10, 1);
+
+            //Assert
+            result.ShouldNotBeNull();
+            result.Items.Count.ShouldEqual(2);
+        }
+        [Fact]
+        public async Task GetAllUserPageNumberBiggerThanTotalPages()
+        {
+            //Arrange
+            var users = new List<User>
+            {
+                new User()
+                {
+                    Id = "ID1",
+                    UserName = "Test1",
+                    Email = "testowy1@gmail.com"
+                },
+                new User()
+                {
+                    Id = "ID2",
+                    UserName = "Test2",
+                    Email = "test2@gmail.com"
+                }
+            };
+
+            var fakeUserManager = new Mock<FakeUserManager>();
+            fakeUserManager.Setup(m => m.Users).Returns(users.AsQueryable);
+
+            var fakeSignInManager = new Mock<FakeSignInManager>();
+
+            var userService = new UserService(_logger, _mapper, fakeUserManager.Object,
+                fakeSignInManager.Object, _tokenService);
+
+            //Action
+
+            var result = userService.GetAllUsers(10, 2);
+
+            //Assert
+            result.ShouldNotBeNull();
+            result.Items.Count.ShouldEqual(0);
+        }
+
+        #endregion
     }
 }
 
