@@ -212,6 +212,47 @@ namespace BookMeMobi2.Tests
             result.ShouldNotBeNull();
             result.Items.Count.ShouldEqual(0);
         }
+        #endregion
+
+        #region GetUser
+
+        [Fact]
+        public async Task GetUserSuccess()
+        {
+            //Arrange
+            var user = new User {Id = "ID1", UserName = "Test1", Email = "test@gmail.com"};
+
+            var fakeUserManager = new Mock<FakeUserManager>();
+            fakeUserManager.Setup(m => m.FindByIdAsync(It.IsAny<string>())).ReturnsAsync(user);
+
+            var fakeSignInManager = new Mock<FakeSignInManager>();
+
+            var userService = new UserService(_logger, _mapper, fakeUserManager.Object, 
+                fakeSignInManager.Object, _tokenService);
+
+            //Act
+            var result = await userService.GetUser("ID1");
+
+            //Assert
+            result.ShouldNotBeNull();
+            result.Id.ShouldEqual("ID1");
+        }
+
+        [Fact]
+        public async Task GetUserUserNotFound()
+        {
+            //Arrange
+            var fakeUserManager = new Mock<FakeUserManager>();
+            fakeUserManager.Setup(m => m.FindByIdAsync(It.IsAny<string>())).Throws(new UserNoFoundException());
+
+            var fakeSignInManager = new Mock<FakeSignInManager>();
+
+            var userService = new UserService(_logger, _mapper, fakeUserManager.Object,
+                fakeSignInManager.Object, _tokenService);
+
+            //Act&Assert
+            await Assert.ThrowsAsync<UserNoFoundException>(async () => await userService.GetUser("IDNOTFOUND"));
+        }
 
         #endregion
     }
