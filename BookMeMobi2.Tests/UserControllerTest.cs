@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -138,7 +139,49 @@ namespace BookMeMobi2.Tests
             result.StatusCode.ShouldEqual(400);
             
         }
+        #endregion
+
+        #region GetAllUsers (Controller)
+
+        [Fact]
+        public async Task GetAllUsers()
+        {
+            //Arrange
+            var usersDto = new List<UserDto>
+            {
+                new UserDto
+                {
+                    Id = "ID1",
+                    UserName = "Test1"
+                },
+                new UserDto
+                {
+                    Id = "ID2",
+                    UserName = "Test2"
+                }
+            };
+            var userServiceMock = new Mock<IUserService>();
+            userServiceMock.Setup(m => m.GetAllUsers(It.IsAny<int>(), It.IsAny<int>()))
+                .Returns(new PagedList<UserDto>(usersDto.AsQueryable(), 1, 10));
+
+            var usersController = new UsersController(userServiceMock.Object, _logger, _mapper);
+
+            //Act
+
+            IActionResult actionResult = usersController.GetAllUsers();
+
+            //Assert
+            actionResult.ShouldNotBeNull();
+
+            OkObjectResult result = actionResult as OkObjectResult;
+            result.ShouldNotBeNull();
+            result.StatusCode.ShouldEqual(200);
+
+            PagedList<UserDto> resultValue = result.Value as PagedList<UserDto>;
+            resultValue.Items.Count.ShouldEqual(2);
+        }
 
         #endregion
     }
 }
+
