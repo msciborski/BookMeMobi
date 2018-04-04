@@ -4,11 +4,13 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using BookMeMobi2.Controllers;
+using BookMeMobi2.Entities;
 using BookMeMobi2.Helpers.Exceptions;
 using BookMeMobi2.Helpers.Mappings;
 using BookMeMobi2.Models;
 using BookMeMobi2.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -80,6 +82,62 @@ namespace BookMeMobi2.Tests
             result.StatusCode.ShouldEqual(404);
         }
 
+        #endregion
+
+        #region Register (Controller)
+
+        [Fact]
+        public async Task RegisterSuccess()
+        {
+            //Arrange
+
+            var userRegisterDto = new UserRegisterDto(){Email = "test@test.com", FirstName = "Test", LastName = "Test", Password = "Test!231@", UserName = "Test"};
+
+            var userServiceMock = new Mock<IUserService>();
+            userServiceMock.Setup(m => m.Register(It.IsAny<UserRegisterDto>()))
+                .ReturnsAsync(new UserLoginDto() {Email = "test@test.com", FirstName = "TestName"});
+
+            var usersController = new UsersController(userServiceMock.Object, _logger, _mapper);
+
+            //Act
+            IActionResult actionResult = await usersController.Register(userRegisterDto);
+
+            //Assert
+            actionResult.ShouldNotBeNull();
+
+            JsonResult result = actionResult as JsonResult;
+            result.StatusCode.ShouldEqual(201);
+
+            UserLoginDto resultValue = result.Value as UserLoginDto;
+            resultValue.Email.ShouldEqual("test@test.com");
+        }
+
+        [Fact]
+        public async Task RegisterFailed()
+        {
+            var userRegisterDto = new UserRegisterDto()
+            {
+                Email = "test@test.com",
+                FirstName = "TestName",
+                LastName = "TestLast",
+                Password = "1231",
+                UserName = "userfail"
+            };
+
+            var userServiceMock = new Mock<IUserService>();
+            userServiceMock.Setup(m => m.Register(userRegisterDto)).Throws(new AppException());
+
+            var usersController = new UsersController(userServiceMock.Object, _logger, _mapper);
+
+            //Act
+            IActionResult actionResult = await usersController.Register(userRegisterDto);
+            actionResult.ShouldNotBeNull();
+
+            BadRequestObjectResult result = actionResult as BadRequestObjectResult;
+            result.ShouldNotBeNull();
+            result.StatusCode.ShouldEqual(400);
+            
+        }
 
         #endregion
     }
