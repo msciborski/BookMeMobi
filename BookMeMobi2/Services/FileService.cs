@@ -89,7 +89,7 @@ namespace BookMeMobi2.Services
             }
 
             book.IsDeleted = true;
-            book.DeleteDate = DateTime.Now;
+            book.DeleteDate = DateTime.Now.ToUniversalTime();
 
             _context.Books.Update(book);
             await _context.SaveChangesAsync();
@@ -97,15 +97,21 @@ namespace BookMeMobi2.Services
             return book;
         }
 
-        public async Task<BookDto> UploadBookAsync(IFormFile file, User user)
+        public async Task<BookDto> UploadBookAsync(IFormFile file, string userId)
         {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                throw new UserNoFoundException($"User {userId} is no found."); 
+            }
+
             using (var stream = file.OpenReadStream())
             {
                 try
                 {
                     var bookDto = await GetMobiMetadataAsync(stream);
                     var storagePathToBook = await UploadBookAsync(stream, user, file.FileName);
-                    bookDto.UploadDate = DateTime.Now;
+                    bookDto.UploadDate = DateTime.Now.ToUniversalTime();
                     bookDto.Size = Math.Round(ConvertBytesToMegabytes(file.Length), 3);
                     bookDto.Format = GetEbookFormat(file.FileName);
                     bookDto.FileName = file.FileName;
@@ -162,7 +168,7 @@ namespace BookMeMobi2.Services
             var mobiDocument = await MobiService.LoadDocument(stream);
             fileDto.Author = mobiDocument.Author;
             fileDto.Title = mobiDocument.Title;
-            fileDto.PublishingDate = mobiDocument.PublishingDate;
+            fileDto.PublishingDate = mobiDocument.PublishingDate?.ToUniversalTime();
             return fileDto;
         }
 

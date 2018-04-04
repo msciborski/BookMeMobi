@@ -21,17 +21,15 @@ namespace BookMeMobi2.Services
     {
         private readonly ILogger _logger;
         private readonly IMapper _mapper;
-        private readonly ApplicationDbContext _context;
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly ITokenService _tokenService;
 
-        public UserService(ILogger<UserService> logger, IMapper mapper, ApplicationDbContext context,
-            UserManager<User> userManager, SignInManager<User> signInManager, ITokenService tokenService)
+        public UserService(ILogger<UserService> logger, IMapper mapper,UserManager<User> userManager, 
+            SignInManager<User> signInManager, ITokenService tokenService)
         {
             _logger = logger;
             _mapper = mapper;
-            _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
@@ -88,7 +86,7 @@ namespace BookMeMobi2.Services
 
         public PagedList<UserDto> GetAllUsers(int pageSize, int pageNumber)
         {
-            var users = _context.Users;
+            var users = _userManager.Users;
             var usersDto = _mapper.Map<IEnumerable<User>, IEnumerable<UserDto>>(users);
             return new PagedList<UserDto>(usersDto.AsQueryable(), pageNumber, pageSize);
         }

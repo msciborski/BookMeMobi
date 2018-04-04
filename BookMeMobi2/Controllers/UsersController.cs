@@ -57,7 +57,7 @@ namespace BookMeMobi2.Controllers
                 catch (AppException e)
                 {
                     _logger.LogError(e.Message);
-                    return BadRequest(e.Message);
+                    return NotFound(e.Message);
                 }
                 catch (Exception e)
                 {
