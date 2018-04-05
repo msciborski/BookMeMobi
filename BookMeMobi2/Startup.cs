@@ -8,6 +8,7 @@ using AutoMapper;
 using BookMeMobi2.Entities;
 using BookMeMobi2.Options;
 using BookMeMobi2.Services;
+using FluentValidation.AspNetCore;
 using Google.Cloud.Diagnostics.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -50,7 +51,13 @@ namespace BookMeMobi2
             services.AddDbContext<ApplicationDbContext>(o => o.UseMySql(Configuration.GetConnectionString("ConnectionString"),
                 b => b.MigrationsAssembly("BookMeMobi2")));
 
-            services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+            services.AddIdentity<User, IdentityRole>(o =>
+            {
+                o.Password.RequireDigit = true;
+                o.Password.RequiredLength = 6;
+                o.Password.RequireUppercase = true;
+                o.Password.RequireUppercase = true;
+            }).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
             var secret = Encoding.ASCII.GetBytes(Configuration["JWTSettings:Secret"]);
 
@@ -72,7 +79,8 @@ namespace BookMeMobi2
             });
 
             services.AddAutoMapper();
-            services.AddMvc();
+
+            services.AddMvc().AddFluentValidation(o => o.RegisterValidatorsFromAssemblyContaining<Startup>());
 
             services.AddSwaggerGen(c =>
             {
