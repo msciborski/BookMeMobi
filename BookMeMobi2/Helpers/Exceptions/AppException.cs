@@ -8,13 +8,30 @@ namespace BookMeMobi2.Helpers.Exceptions
 {
     public class AppException : Exception
     {
-        public AppException()
-            : base() { }
-        public AppException(string message)
-            : base(message) { }
-        public AppException(string message, params object[] args)
-            : base(String.Format(CultureInfo.CurrentCulture, message, args)) { }
-        public AppException(string message, Exception innerException)
-            : base(message, innerException) { }
+        public int StatusCode { get; set; }
+
+        public AppException(int statusCode = 500)
+            : base()
+        {
+            StatusCode = statusCode;
+        }
+
+        public AppException(string message, int statusCode = 500)
+            : base(message)
+        {
+            StatusCode = statusCode;
+        }
+
+        public AppException(string message, int statusCode = 500, params object[] args)
+            : base(String.Format(CultureInfo.CurrentCulture, message, args))
+        {
+            StatusCode = statusCode;
+        }
+
+        public AppException(string message, Exception innerException, int statusCode = 500)
+            : base(message, innerException)
+        {
+            StatusCode = statusCode;
+        }
     }
 }
