@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using BookMeMobi2.Entities;
+using BookMeMobi2.Helpers.Fliters;
 using BookMeMobi2.Options;
 using BookMeMobi2.Services;
 using FluentValidation.AspNetCore;
@@ -95,6 +96,7 @@ namespace BookMeMobi2
             services.AddTransient<IFileService, FileService>();
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<ITokenService, TokenService>();
+            services.AddScoped<ValidateModelAttribute>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

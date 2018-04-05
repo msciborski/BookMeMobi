@@ -13,7 +13,7 @@ namespace BookMeMobi2.Helpers.Validators
         {
             RuleFor(m => m.UserName).NotEmpty().WithMessage("Username can't be empty.")
                                     .Length(5,30).WithMessage("Too short or too long username.")
-                                    .Matches("^[A-Za-z]+.$").WithMessage("User name has to start with a letter.");
+                                    .Matches("^[A-Za-z]+.*").WithMessage("User name has to start with a letter.");
             RuleFor(m => m.Email).EmailAddress();
             RuleFor(m => m.FirstName).NotEmpty().WithMessage("First name can't be empty.")
                                      .Matches("[A-Za-z]+").WithMessage("First name can contain only letters.");

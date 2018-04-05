@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using BookMeMobi2.Entities;
 using BookMeMobi2.Helpers.Exceptions;
+using BookMeMobi2.Helpers.Fliters;
 using BookMeMobi2.MobiMetadata;
 using BookMeMobi2.Models;
 using BookMeMobi2.Services;
@@ -79,16 +80,11 @@ namespace BookMeMobi2.Controllers
         [Produces("application/json")]
         [ProducesResponseType(typeof(BookDto), 200)]
         [ProducesResponseType(typeof(string), 404)]
-        [ProducesResponseType(typeof(string),500)]
+        [ProducesResponseType(typeof(string), 500)]
+        [ValidateModel]
         [HttpGet("{userId}/books/{bookId}")]
         public async Task<IActionResult> GetBook(string userId, int bookId)
         {
-            if (!ModelState.IsValid)
-            {
-                _logger.LogError("Model state is invalid.");
-                return BadRequest(ModelState);
-            }
-
             Book book = null;
             try
             {
@@ -142,7 +138,7 @@ namespace BookMeMobi2.Controllers
             catch (Exception e)
             {
                 _logger.LogCritical($"{e.Message}, {e.StackTrace}");
-                return new JsonResult("Unexpected internal error.") {StatusCode = 500};
+                return new JsonResult("Unexpected internal error.") { StatusCode = 500 };
             }
         }
 
@@ -156,16 +152,11 @@ namespace BookMeMobi2.Controllers
         [ProducesResponseType(typeof(IEnumerable<BookDto>), 200)]
         [ProducesResponseType(typeof(string), 404)]
         [ProducesResponseType(typeof(string), 500)]
+        [ValidateModel]
         [HttpPost("{userId}/books")]
         public async Task<IActionResult> UploadMobiFile([FromForm] IFormCollection fileCollection, string userId)
         {
             List<BookDto> files = new List<BookDto>();
-            if (!ModelState.IsValid)
-            {
-                _logger.LogError("Model State error.");
-                return BadRequest();
-            }
-
             try
             {
                 foreach (var file in fileCollection.Files)
@@ -216,12 +207,6 @@ namespace BookMeMobi2.Controllers
         [HttpGet("{userId}/books/{bookId}/download")]
         public async Task<IActionResult> DownloadBook(string userId, int bookId)
         {
-            if (!ModelState.IsValid)
-            {
-                _logger.LogError("Model state is invalid");
-                return BadRequest();
-            }
-
             Book book = null;
             try
             {
@@ -239,7 +224,6 @@ namespace BookMeMobi2.Controllers
             {
                 return BadRequest(e.Message);
             }
-
         }
 
     }

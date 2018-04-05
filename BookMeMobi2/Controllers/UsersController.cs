@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using BookMeMobi2.Entities;
 using BookMeMobi2.Helpers.Exceptions;
+using BookMeMobi2.Helpers.Fliters;
 using BookMeMobi2.Models;
 using BookMeMobi2.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -41,32 +42,28 @@ namespace BookMeMobi2.Controllers
         /// <param name="credentials"></param>
         /// <returns></returns>
         [Produces("application/json")]
-        [ProducesResponseType(typeof(UserLoginDto),200)]
+        [ProducesResponseType(typeof(UserLoginDto), 200)]
         [ProducesResponseType(typeof(string), 500)]
         [AllowAnonymous]
+        [ValidateModel]
         [HttpPost("login")]
         public async Task<IActionResult> SignIn([FromBody] Credentials credentials)
         {
-            if (ModelState.IsValid)
+            try
             {
-                try
-                {
-                    var userLoginDto = await _userService.SignIn(credentials);
-                    return Ok(userLoginDto);
-                }
-                catch (AppException e)
-                {
-                    _logger.LogError(e.Message);
-                    return NotFound(e.Message);
-                }
-                catch (Exception e)
-                {
-                    _logger.LogCritical(e.Message);
-                    return BadRequest(e.Message);
-                }
+                var userLoginDto = await _userService.SignIn(credentials);
+                return Ok(userLoginDto);
             }
-
-            return BadRequest(ModelState);
+            catch (AppException e)
+            {
+                _logger.LogError(e.Message);
+                return NotFound(e.Message);
+            }
+            catch (Exception e)
+            {
+                _logger.LogCritical(e.Message);
+                return BadRequest(e.Message);
+            }
         }
 
         /// <summary>
@@ -78,27 +75,22 @@ namespace BookMeMobi2.Controllers
         [ProducesResponseType(typeof(UserLoginDto), 201)]
         [ProducesResponseType(typeof(string), 500)]
         [AllowAnonymous]
+        [ValidateModel]
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] UserRegisterDto userDto)
         {
-            if (ModelState.IsValid)
+            try
             {
-                try
-                {
-                    var userLoginDto = await _userService.Register(userDto);
+                var userLoginDto = await _userService.Register(userDto);
 
-                    return new JsonResult(userLoginDto) {StatusCode = 201};
-                }
-                catch (AppException e)
-                {
-                    _logger.LogCritical($"Unable to register: {e.Message}");
-
-                    return BadRequest(e.Message);
-                }
+                return new JsonResult(userLoginDto) { StatusCode = 201 };
             }
-            _logger.LogCritical("Unexpected error occured.");
+            catch (AppException e)
+            {
+                _logger.LogCritical($"Unable to register: {e.Message}");
 
-            return BadRequest("Unexpected error occured.");
+                return BadRequest(e.Message);
+            }
         }
         /// <summary>
         /// Logout user.
@@ -119,9 +111,9 @@ namespace BookMeMobi2.Controllers
         /// <param name="pageNumber">Page number, default = 1</param>
         /// <returns></returns>
         [Produces("application/json")]
-        [ProducesResponseType(typeof(PagedList<UserDto>),200)]
+        [ProducesResponseType(typeof(PagedList<UserDto>), 200)]
         [HttpGet]
-        public IActionResult GetAllUsers([FromQuery(Name = "page_size" )]int pageSize = 10, [FromQuery(Name = "page_number")] int pageNumber = 1)
+        public IActionResult GetAllUsers([FromQuery(Name = "page_size")]int pageSize = 10, [FromQuery(Name = "page_number")] int pageNumber = 1)
         {
             return Ok(_userService.GetAllUsers(pageSize, pageNumber));
         }
@@ -150,7 +142,7 @@ namespace BookMeMobi2.Controllers
             catch (Exception e)
             {
                 _logger.LogCritical($"{e.Message}, {e.StackTrace}");
-                return new JsonResult("Something went wrong on server. Sorry.") {StatusCode = 500};
+                return new JsonResult("Something went wrong on server. Sorry.") { StatusCode = 500 };
             }
         }
     }
