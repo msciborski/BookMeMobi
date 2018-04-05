@@ -120,7 +120,7 @@ namespace BookMeMobi2.Controllers
         [ProducesResponseType(typeof(BookDto), 200)]
         [ProducesResponseType(typeof(string), 404)]
         [ProducesResponseType(typeof(string), 500)]
-        [HttpDelete]
+        [HttpDelete("/{userId}/books/{bookId}")]
         public async Task<IActionResult> DeleteBook(string userId, int bookId)
         {
             try
