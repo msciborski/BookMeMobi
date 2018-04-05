@@ -45,14 +45,14 @@ namespace BookMeMobi2.Services
             if (user == null)
             {
                 _logger.LogError($"User {userId} dosen't exist.");
-                throw new UserNoFoundException($"User {userId} no found.");
+                throw new UserNoFoundException($"User {userId} no found.", 404);
             }
 
             var book = user.Books.FirstOrDefault(b => b.Id == bookId && !b.IsDeleted);
             if (book == null)
             {
                 _logger.LogError($"Book {bookId} dosen't exist.");
-                throw new BookNoFoundException($"Book {bookId} no found.");
+                throw new BookNoFoundException($"Book {bookId} no found.", 404);
             }
 
             return book;
@@ -64,7 +64,7 @@ namespace BookMeMobi2.Services
 
             if (user == null)
             {
-                throw new UserNoFoundException($"User {userId} no found.");
+                throw new UserNoFoundException($"User {userId} no found.", 404);
             }
 
             //Filter method
@@ -79,13 +79,13 @@ namespace BookMeMobi2.Services
             var user = await _context.Users.Include(u => u.Books).FirstOrDefaultAsync(u => u.Id.Equals(userId));
             if (user == null)
             {
-                throw new UserNoFoundException($"User {userId} no found.");
+                throw new UserNoFoundException($"User {userId} no found.", 404);
             }
 
             var book = user.Books.FirstOrDefault(b => b.Id == bookId && !b.IsDeleted);
             if (book == null)
             {
-                throw new BookNoFoundException($"Book {bookId} no found.");
+                throw new BookNoFoundException($"Book {bookId} no found.", 404);
             }
 
             book.IsDeleted = true;
@@ -102,7 +102,7 @@ namespace BookMeMobi2.Services
             var user = await _context.Users.FindAsync(userId);
             if (user == null)
             {
-                throw new UserNoFoundException($"User {userId} is no found."); 
+                throw new UserNoFoundException($"User {userId} is no found.", 404); 
             }
 
             using (var stream = file.OpenReadStream())

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BookMeMobi2.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -30,7 +31,7 @@ namespace BookMeMobi2.Helpers.Fliters
             if (!context.ModelState.IsValid)
             {
                 _logger.LogError(GetErrorFromModelState(context.ModelState));
-                context.Result = new BadRequestObjectResult(context.ModelState);
+                context.Result = new JsonResult(new ApiError(context.ModelState)) {StatusCode = 400};
             }
         }
 

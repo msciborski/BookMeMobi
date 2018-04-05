@@ -97,7 +97,7 @@ namespace BookMeMobi2.Services
 
             if (user == null)
             {
-                throw new UserNoFoundException($"User {userId} no found.");
+                throw new UserNoFoundException($"User {userId} no found.", 404);
             }
 
             return user;
@@ -114,11 +114,5 @@ namespace BookMeMobi2.Services
 
             return stringBuilder.ToString();
         }
-
-        private JsonResult Error(string message)
-        {
-            return new JsonResult(message) { StatusCode = 400 };
-        }
-
     }
 }
