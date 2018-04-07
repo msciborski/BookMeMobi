@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using BookMeMobi2.MobiMetadata.Headers;
 
@@ -50,7 +51,7 @@ namespace BookMeMobi2.MobiMetadata
 
             var date = MobiHeader.GetExthRecordValue(106);
 
-            return Convert.ToDateTime(date);
+            return DateTime.ParseExact(date, "dd/MM/yyyy", CultureInfo.CurrentCulture);
         }
 
         private string GetTitle()

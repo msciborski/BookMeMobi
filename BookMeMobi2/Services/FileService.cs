@@ -168,7 +168,9 @@ namespace BookMeMobi2.Services
             var mobiDocument = await MobiService.LoadDocument(stream);
             fileDto.Author = mobiDocument.Author;
             fileDto.Title = mobiDocument.Title;
-            fileDto.PublishingDate = mobiDocument.PublishingDate?.ToUniversalTime();
+            fileDto.PublishingDate = (mobiDocument.PublishingDate.HasValue)
+                ? mobiDocument.PublishingDate?.ToUniversalTime()
+                : null;
             return fileDto;
         }
 
