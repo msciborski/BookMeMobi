@@ -47,26 +47,11 @@ namespace BookMeMobi2.Controllers
         [Produces("application/json")]
         [ProducesResponseType(typeof(PagedList<BookDto>), 200)]
         [ProducesResponseType(typeof(string), 404)]
-
+        [ValidateModel]
         [HttpGet("{userId}/books")]
         public async Task<IActionResult> GetBooks(string userId, [FromQuery(Name = "page_size")] int pageSize = 10, [FromQuery(Name = "page_number")] int pageNumber = 1)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            PagedList<BookDto> booksDto = null;
-            try
-            {
-                booksDto = await _fileService.GetBooksForUserAsync(userId, pageSize, pageNumber);
-
-            }
-            catch (UserNoFoundException e)
-            {
-                _logger.LogError(e.Message);
-                return NotFound(e.Message);
-            }
+            PagedList<BookDto> booksDto = await _fileService.GetBooksForUserAsync(userId, pageSize, pageNumber);
             return Ok(booksDto);
         }
 
@@ -85,23 +70,7 @@ namespace BookMeMobi2.Controllers
         [HttpGet("{userId}/books/{bookId}")]
         public async Task<IActionResult> GetBook(string userId, int bookId)
         {
-            Book book = null;
-            try
-            {
-                book = await _fileService.GetBookForUserAsync(userId, bookId);
-            }
-            catch (AppException e)
-            {
-                _logger.LogError(e.Message);
-
-                return NotFound(e.Message);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.Message);
-
-                return NotFound(e.Message);
-            }
+            Book book = await _fileService.GetBookForUserAsync(userId, bookId);
 
             return Ok(_mapper.Map<Book, BookDto>(book));
         }
@@ -119,27 +88,9 @@ namespace BookMeMobi2.Controllers
         [HttpDelete("/{userId}/books/{bookId}")]
         public async Task<IActionResult> DeleteBook(string userId, int bookId)
         {
-            try
-            {
-                var book = await _fileService.DeleteBookAsync(userId, bookId);
-                var bookDto = _mapper.Map<Book, BookDeleteDto>(book);
-                return Ok(bookDto);
-            }
-            catch (UserNoFoundException e)
-            {
-                _logger.LogError(e.Message);
-                return NotFound(e.Message);
-            }
-            catch (BookNoFoundException e)
-            {
-                _logger.LogError(e.Message);
-                return NotFound(e.Message);
-            }
-            catch (Exception e)
-            {
-                _logger.LogCritical($"{e.Message}, {e.StackTrace}");
-                return new JsonResult("Unexpected internal error.") { StatusCode = 500 };
-            }
+            var book = await _fileService.DeleteBookAsync(userId, bookId);
+            var bookDto = _mapper.Map<Book, BookDeleteDto>(book);
+            return Ok(bookDto);
         }
 
         /// <summary>
@@ -157,38 +108,24 @@ namespace BookMeMobi2.Controllers
         public async Task<IActionResult> UploadMobiFile([FromForm] IFormCollection fileCollection, string userId)
         {
             List<BookDto> files = new List<BookDto>();
-            try
+            foreach (var file in fileCollection.Files)
             {
-                foreach (var file in fileCollection.Files)
+                if (file.Length == 0)
                 {
-                    if (file.Length == 0)
-                    {
-                        _logger.LogError($"File {file.FileName} length == 0");
-                        return BadRequest();
-                    }
-
-                    if (!file.FileName.Contains(".mobi"))
-                    {
-                        _logger.LogError($"User {userId} tried to upload no mobi file.");
-                        return BadRequest();
-                    }
-
-                    var bookDto = await _fileService.UploadBookAsync(file, userId);
-                    files.Add(bookDto);
-
-                    _logger.LogInformation($"{bookDto.FileName} is uploaded.");
+                    _logger.LogError($"File {file.FileName} length == 0");
+                    return BadRequest();
                 }
-            }
-            catch (UserNoFoundException e)
-            {
-                _logger.LogError(e.Message);
-                return NotFound(e.Message);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.Message);
 
-                return BadRequest(e.Message);
+                if (!file.FileName.Contains(".mobi"))
+                {
+                    _logger.LogError($"User {userId} tried to upload no mobi file.");
+                    return BadRequest();
+                }
+
+                var bookDto = await _fileService.UploadBookAsync(file, userId);
+                files.Add(bookDto);
+
+                _logger.LogInformation($"{bookDto.FileName} is uploaded.");
             }
             return Ok(files);
         }
@@ -207,23 +144,11 @@ namespace BookMeMobi2.Controllers
         [HttpGet("{userId}/books/{bookId}/download")]
         public async Task<IActionResult> DownloadBook(string userId, int bookId)
         {
-            Book book = null;
-            try
-            {
-                book = await _fileService.GetBookForUserAsync(userId, bookId);
-                var stream = await _fileService.DownloadBookAsync(book);
-                stream.Position = 0;
-                var result = File(stream, "application/x-mobipocket-mobi", book.FileName);
-                return result;
-            }
-            catch (AppException e)
-            {
-                return NotFound(e.Message);
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
+            Book book = await _fileService.GetBookForUserAsync(userId, bookId);
+            var stream = await _fileService.DownloadBookAsync(book);
+            stream.Position = 0;
+            var result = File(stream, "application/x-mobipocket-mobi", book.FileName);
+            return result;
         }
 
     }

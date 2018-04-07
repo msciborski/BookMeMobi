@@ -81,7 +81,7 @@ namespace BookMeMobi2
 
             services.AddAutoMapper();
 
-            services.AddMvc().AddFluentValidation(o => o.RegisterValidatorsFromAssemblyContaining<Startup>());
+            services.AddMvc(o => o.Filters.Add(typeof(ApiExceptionAttributeImpl))).AddFluentValidation(o => o.RegisterValidatorsFromAssemblyContaining<Startup>());
 
             services.AddSwaggerGen(c =>
             {

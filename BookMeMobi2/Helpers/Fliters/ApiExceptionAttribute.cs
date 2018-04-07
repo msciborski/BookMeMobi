@@ -16,7 +16,7 @@ namespace BookMeMobi2.Helpers.Fliters
         {
         }
     }
-    public class ApiExceptionAttributeImpl : IExceptionFilter
+    public class ApiExceptionAttributeImpl : ExceptionFilterAttribute
     {
         private readonly ILogger<ApiExceptionAttributeImpl> _logger;
 
@@ -24,7 +24,7 @@ namespace BookMeMobi2.Helpers.Fliters
         {
             _logger = logger;
         }
-        public void OnException(ExceptionContext context)
+        public override void OnException(ExceptionContext context)
         {
             ApiError apiError = null;
 
@@ -83,7 +83,8 @@ namespace BookMeMobi2.Helpers.Fliters
                 context.HttpContext.Response.StatusCode = 500;
             }
 
-            context.Result = new JsonResult(context);
+            context.Result = new JsonResult(apiError);
+            base.OnException(context);
         }
     }
 }

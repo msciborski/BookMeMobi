@@ -49,21 +49,8 @@ namespace BookMeMobi2.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> SignIn([FromBody] Credentials credentials)
         {
-            try
-            {
-                var userLoginDto = await _userService.SignIn(credentials);
-                return Ok(userLoginDto);
-            }
-            catch (AppException e)
-            {
-                _logger.LogError(e.Message);
-                return NotFound(e.Message);
-            }
-            catch (Exception e)
-            {
-                _logger.LogCritical(e.Message);
-                return BadRequest(e.Message);
-            }
+            var userLoginDto = await _userService.SignIn(credentials);
+            return Ok(userLoginDto);
         }
 
         /// <summary>
@@ -79,18 +66,9 @@ namespace BookMeMobi2.Controllers
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] UserRegisterDto userDto)
         {
-            try
-            {
-                var userLoginDto = await _userService.Register(userDto);
+            var userLoginDto = await _userService.Register(userDto);
 
-                return new JsonResult(userLoginDto) { StatusCode = 201 };
-            }
-            catch (AppException e)
-            {
-                _logger.LogCritical($"Unable to register: {e.Message}");
-
-                return BadRequest(e.Message);
-            }
+            return new JsonResult(userLoginDto) { StatusCode = 201 };
         }
         /// <summary>
         /// Logout user.
@@ -104,6 +82,7 @@ namespace BookMeMobi2.Controllers
             await _userService.Logout();
             return Ok();
         }
+
         /// <summary>
         /// Returns all users.
         /// </summary>
@@ -129,21 +108,8 @@ namespace BookMeMobi2.Controllers
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetUser(string userId)
         {
-            try
-            {
-                var user = await _userService.GetUser(userId);
-                return Ok(_mapper.Map<User, UserDto>(user));
-            }
-            catch (UserNoFoundException e)
-            {
-                _logger.LogError(e.Message);
-                return NotFound(e.Message);
-            }
-            catch (Exception e)
-            {
-                _logger.LogCritical($"{e.Message}, {e.StackTrace}");
-                return new JsonResult("Something went wrong on server. Sorry.") { StatusCode = 500 };
-            }
+            var user = await _userService.GetUser(userId);
+            return Ok(_mapper.Map<User, UserDto>(user));
         }
     }
 }

@@ -83,16 +83,8 @@ namespace BookMeMobi2.Tests
 
             var fileController = new FilesController(_fixture.Mapper, fileServiceMock.Object, _fixture.Logger);
             
-            //Act
-            IActionResult actionResult = await fileController.GetBooks("ID101");
-
-            //Assert
-            actionResult.ShouldNotBeNull();
-
-            NotFoundObjectResult result = actionResult as NotFoundObjectResult;
-            result.ShouldNotBeNull();
-
-            result.StatusCode.ShouldEqual(404);
+            //Act&Assert
+            await Assert.ThrowsAsync<UserNoFoundException>(async () => await fileController.GetBooks("ID11111"));
         }
 
         #endregion
@@ -133,19 +125,12 @@ namespace BookMeMobi2.Tests
             //Arrange
             var fileServiceMock = new Mock<IFileService>();
             fileServiceMock.Setup(m => m.GetBookForUserAsync(It.IsAny<string>(), It.IsAny<int>()))
-                .Throws(new UserNoFoundException());
+                .ThrowsAsync(new UserNoFoundException());
 
             var fileController = new FilesController(_fixture.Mapper, fileServiceMock.Object, _fixture.Logger);
 
-            //Act
-            IActionResult actionResult = await fileController.GetBook("ID112", 1);
-
-            //Assert
-            actionResult.ShouldNotBeNull();
-
-            NotFoundObjectResult result = actionResult as NotFoundObjectResult;
-            result.ShouldNotBeNull();
-            result.StatusCode.ShouldEqual(404);
+            //Act&Assert
+            await Assert.ThrowsAsync<UserNoFoundException>(async () => await fileController.GetBook("ID111", 1));
         }
 
         [Fact]
@@ -158,15 +143,8 @@ namespace BookMeMobi2.Tests
 
             var fileController = new FilesController(_fixture.Mapper, fileServiceMock.Object, _fixture.Logger);
 
-            //Act
-            IActionResult actionResult = await fileController.GetBook("ID1", 121312312);
-
-            //Assert
-            actionResult.ShouldNotBeNull();
-
-            NotFoundObjectResult result = actionResult as NotFoundObjectResult;
-            result.ShouldNotBeNull();
-            result.StatusCode.ShouldEqual(404);
+            //Act&Assert
+            await Assert.ThrowsAsync<BookNoFoundException>(async () => await fileController.GetBook("ID1", 1231231));
         }
 
 
@@ -213,15 +191,8 @@ namespace BookMeMobi2.Tests
 
             var fileController = new FilesController(_fixture.Mapper, fileServiceMock.Object, _fixture.Logger);
 
-            //Act
-            IActionResult actionResult = await fileController.DeleteBook("ID111111", 1);
-
-            //Assert
-            actionResult.ShouldNotBeNull();
-
-            NotFoundObjectResult result = actionResult as NotFoundObjectResult;
-            result.ShouldNotBeNull();
-            result.StatusCode.ShouldEqual(404);
+            //Act&Assert
+            await Assert.ThrowsAsync<UserNoFoundException>(async () => await fileController.DeleteBook("ID11111", 1));
         }
         [Fact]
         public async Task DeleteBookInvalidBookId()
@@ -235,16 +206,8 @@ namespace BookMeMobi2.Tests
 
             var fileController = new FilesController(_fixture.Mapper, fileServiceMock.Object, _fixture.Logger);
 
-            //Act
-            IActionResult actionResult = await fileController.DeleteBook("ID111111", 1);
-
-            //Assert
-            actionResult.ShouldNotBeNull();
-
-            NotFoundObjectResult result = actionResult as NotFoundObjectResult;
-            result.ShouldNotBeNull();
-            result.StatusCode.ShouldEqual(404);
-
+            //Act&Assert
+            await Assert.ThrowsAsync<BookNoFoundException>(async () => await fileController.DeleteBook("ID1", 111111));
         }
 
         #endregion
@@ -294,15 +257,11 @@ namespace BookMeMobi2.Tests
 
             var fileController = new FilesController(_fixture.Mapper, fileServiceMock.Object, _fixture.Logger);
 
-            //Act
-            IActionResult actionResult = await fileController.UploadMobiFile(formCollectionMock.Object, "Id1");
-
-            //Assert
-            actionResult.ShouldNotBeNull();
-
-            NotFoundObjectResult result = actionResult as NotFoundObjectResult;
-            result.StatusCode = 404;
+            //Act&Assert
+            await Assert.ThrowsAsync<UserNoFoundException>(async () =>
+                await fileController.UploadMobiFile(formCollectionMock.Object, "Id1"));
         }
+
         [Fact]
         public async Task UploadBookInternalError()
         {
@@ -318,14 +277,8 @@ namespace BookMeMobi2.Tests
 
             var fileController = new FilesController(_fixture.Mapper, fileServiceMock.Object, _fixture.Logger);
 
-            //Act
-            IActionResult actionResult = await fileController.UploadMobiFile(formCollectionMock.Object, "Id1");
-
-            //Assert
-            actionResult.ShouldNotBeNull();
-
-            BadRequestObjectResult result = actionResult as BadRequestObjectResult;
-            result.StatusCode = 500;
+            //Act&Assert
+            await Assert.ThrowsAsync<Exception>(async () => await fileController.UploadMobiFile(formCollectionMock.Object, "ID1"));
         }
 
         #endregion
@@ -363,20 +316,15 @@ namespace BookMeMobi2.Tests
 
             var fileServiceMock = new Mock<IFileService>();
             fileServiceMock.Setup(m => m.GetBookForUserAsync(It.IsAny<string>(), It.IsAny<int>()))
-                .Throws(new UserNoFoundException());
+                .ThrowsAsync(new UserNoFoundException());
             fileServiceMock.Setup(m => m.DownloadBookAsync(It.IsAny<Book>()))
                 .Returns(Task.FromResult(mockStream.Object));
 
             var fileController = new FilesController(_fixture.Mapper, fileServiceMock.Object, _fixture.Logger);
 
-            //Act
+            //Act&Assert
 
-            IActionResult actionResult = await fileController.DownloadBook("ID1", 1);
-            actionResult.ShouldNotBeNull();
-
-            NotFoundObjectResult result = actionResult as NotFoundObjectResult;
-            result.ShouldNotBeNull();
-            result.StatusCode.ShouldEqual(404);
+            await Assert.ThrowsAsync<UserNoFoundException>(async () => await fileController.DownloadBook("ID1111", 1));
         }
 
         [Fact]
@@ -387,19 +335,14 @@ namespace BookMeMobi2.Tests
             var fileServiceMock = new Mock<IFileService>();
             fileServiceMock.Setup(m => m.GetBookForUserAsync(It.IsAny<string>(), It.IsAny<int>()))
                 .Returns(Task.FromResult(new Book() {Id = 1}));
-            fileServiceMock.Setup(m => m.DownloadBookAsync(It.IsAny<Book>())).Throws(new Exception());
+            fileServiceMock.Setup(m => m.DownloadBookAsync(It.IsAny<Book>())).ThrowsAsync(new Exception());
 
             var fileController = new FilesController(_fixture.Mapper, fileServiceMock.Object, _fixture.Logger);
 
-            //Act
-
-            IActionResult actionResult = await fileController.DownloadBook("ID1", 1);
-            actionResult.ShouldNotBeNull();
-
-            BadRequestObjectResult result = actionResult as BadRequestObjectResult;
-            result.ShouldNotBeNull();
-            result.StatusCode.ShouldEqual(400);
+            //Act&Assert
+            await Assert.ThrowsAsync<Exception>(async () => await fileController.DownloadBook("ID1", 1));
         }
         #endregion
     }
 }
+

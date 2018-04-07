@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using BookMeMobi2.Entities;
 using BookMeMobi2.Helpers.Exceptions;
+using BookMeMobi2.Helpers.Fliters;
 using BookMeMobi2.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +35,7 @@ namespace BookMeMobi2.Services
             _signInManager = signInManager;
             _tokenService = tokenService;
         }
-
+        //[ApiException]
         public async Task<UserLoginDto> SignIn(Credentials credentials)
         {
             var result =

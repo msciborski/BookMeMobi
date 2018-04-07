@@ -72,15 +72,8 @@ namespace BookMeMobi2.Tests
 
             var usersController = new UsersController(userServiceMock.Object, _logger, _mapper);
 
-            //Act
-            IActionResult actionResult = await usersController.SignIn(credentials);
-
-            //Assert
-            actionResult.ShouldNotBeNull();
-
-            NotFoundObjectResult result = actionResult as NotFoundObjectResult;
-            result.ShouldNotBeNull();
-            result.StatusCode.ShouldEqual(404);
+            //Act&Assert
+            await Assert.ThrowsAsync<AppException>(async () => await usersController.SignIn(credentials));
         }
 
         #endregion
@@ -130,14 +123,8 @@ namespace BookMeMobi2.Tests
 
             var usersController = new UsersController(userServiceMock.Object, _logger, _mapper);
 
-            //Act
-            IActionResult actionResult = await usersController.Register(userRegisterDto);
-            actionResult.ShouldNotBeNull();
-
-            BadRequestObjectResult result = actionResult as BadRequestObjectResult;
-            result.ShouldNotBeNull();
-            result.StatusCode.ShouldEqual(400);
-            
+            //Act&Assert
+            await Assert.ThrowsAsync<AppException>(async () => await usersController.Register(userRegisterDto));
         }
         #endregion
 
@@ -220,15 +207,8 @@ namespace BookMeMobi2.Tests
 
             var usersController = new UsersController(userServiceMock.Object, _logger, _mapper);
 
-            //Act
-            IActionResult actionResult = await usersController.GetUser("ID1");
-
-            //Assert
-            actionResult.ShouldNotBeNull();
-
-            NotFoundObjectResult result = actionResult as NotFoundObjectResult;
-            result.ShouldNotBeNull();
-            result.StatusCode.ShouldEqual(404);
+            //Act&Assert
+            await Assert.ThrowsAsync<UserNoFoundException>(async () => await usersController.GetUser("ID1"));
         }
 
         [Fact]
@@ -241,15 +221,8 @@ namespace BookMeMobi2.Tests
 
             var usersController = new UsersController(userServiceMock.Object, _logger, _mapper);
 
-            //Act
-            IActionResult actionResult = await usersController.GetUser("ID1");
-
-            //Assert
-            actionResult.ShouldNotBeNull();
-
-            JsonResult result = actionResult as JsonResult;
-            result.ShouldNotBeNull();
-            result.StatusCode.ShouldEqual(500);
+            //Act&Assert
+            await Assert.ThrowsAsync<Exception>(async () => await usersController.GetUser("ID1"));
         }
 
         #endregion
