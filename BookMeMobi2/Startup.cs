@@ -96,6 +96,7 @@ namespace BookMeMobi2
             services.AddTransient<IBookService, BookService>();
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<ITokenService, TokenService>();
+            services.AddTransient<IPropertyMappingService, PropertyMappingService>();
             services.AddScoped<ValidateModelAttribute>();
         }
 

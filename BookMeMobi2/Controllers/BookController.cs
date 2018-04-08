@@ -29,6 +29,7 @@ namespace BookMeMobi2.Controllers
 
         private readonly IBookService _fileService;
 
+
         public BookController(IMapper mapper, IBookService storageService, ILogger<BookController> logger)
         {
             _mapper = mapper;
@@ -46,7 +47,7 @@ namespace BookMeMobi2.Controllers
         /// <returns></returns>
         [Produces("application/json")]
         [ProducesResponseType(typeof(PagedList<BookDto>), 200)]
-        [ProducesResponseType(typeof(string), 404)]
+        [ProducesResponseType(typeof(ApiError), 404)]
         [ValidateModel]
         [HttpGet("{userId}/books")]
         public async Task<IActionResult> GetBooks(string userId, [FromQuery] BooksResourceParameters parameters)
@@ -64,8 +65,8 @@ namespace BookMeMobi2.Controllers
         /// <returns></returns>
         [Produces("application/json")]
         [ProducesResponseType(typeof(BookDto), 200)]
-        [ProducesResponseType(typeof(string), 404)]
-        [ProducesResponseType(typeof(string), 500)]
+        [ProducesResponseType(typeof(ApiError), 404)]
+        [ProducesResponseType(typeof(ApiError), 500)]
         [ValidateModel]
         [HttpGet("{userId}/books/{bookId}")]
         public async Task<IActionResult> GetBook(string userId, int bookId)
@@ -83,8 +84,8 @@ namespace BookMeMobi2.Controllers
         /// <returns>Info of deleted book</returns>
         [Produces("application/json")]
         [ProducesResponseType(typeof(BookDto), 200)]
-        [ProducesResponseType(typeof(string), 404)]
-        [ProducesResponseType(typeof(string), 500)]
+        [ProducesResponseType(typeof(ApiError), 404)]
+        [ProducesResponseType(typeof(ApiError), 500)]
         [HttpDelete("/{userId}/books/{bookId}")]
         public async Task<IActionResult> DeleteBook(string userId, int bookId)
         {
@@ -101,8 +102,8 @@ namespace BookMeMobi2.Controllers
         /// <returns>Uploaded book</returns>
         [Produces("application/json")]
         [ProducesResponseType(typeof(IEnumerable<BookDto>), 200)]
-        [ProducesResponseType(typeof(string), 404)]
-        [ProducesResponseType(typeof(string), 500)]
+        [ProducesResponseType(typeof(ApiError), 404)]
+        [ProducesResponseType(typeof(ApiError), 500)]
         [ValidateModel]
         [HttpPost("{userId}/books")]
         public async Task<IActionResult> UploadMobiFile([FromForm] IFormCollection fileCollection, string userId)
@@ -139,8 +140,8 @@ namespace BookMeMobi2.Controllers
         /// <returns></returns>
         [Produces("application/x-mobipocket-mobi")]
         [ProducesResponseType(typeof(FileStreamResult), 200)]
-        [ProducesResponseType(typeof(string), 404)]
-        [ProducesResponseType(typeof(string), 500)]
+        [ProducesResponseType(typeof(ApiError), 404)]
+        [ProducesResponseType(typeof(ApiError), 500)]
         [HttpGet("{userId}/books/{bookId}/download")]
         public async Task<IActionResult> DownloadBook(string userId, int bookId)
         {

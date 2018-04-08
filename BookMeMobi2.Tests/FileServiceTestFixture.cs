@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using BookMeMobi2.Entities;
 using BookMeMobi2.Helpers.Mappings;
+using BookMeMobi2.Models;
 using BookMeMobi2.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,8 +21,21 @@ namespace BookMeMobi2.Tests
         public IMapper Mapper { get; private set; }
         public IOptions<GoogleCloudStorageSettings> GoogleCloudOptions { get; private set; }
         public BookService FileService { get; private set; }
+        private Dictionary<string, PropertyMappingValue> _booksPropertyMapping = new Dictionary<string, PropertyMappingValue>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "Id", new PropertyMappingValue(new List<string>(){"Id"}) },
+            { "Title", new PropertyMappingValue(new List<string>(){"Title"}) },
+            { "Author", new PropertyMappingValue(new List<string>(){"Author"}) },
+            { "FileName", new PropertyMappingValue(new List<string>(){"FileName"}) },
+            { "PublishingDate", new PropertyMappingValue(new List<string>(){"PublishingDate"}) }
+        };
         public FileServiceTestFixture()
         {
+
+            var propertyMappingServiceMock = new Mock<IPropertyMappingService>();
+            propertyMappingServiceMock.Setup(m => m.GetPropertyMapping<BookDto, Book>())
+                .Returns(_booksPropertyMapping);
+
             var options = SqliteInMemory.CreateOptions<ApplicationDbContext>();
             Context = new ApplicationDbContext(options);
             Context.Database.EnsureCreated();
@@ -34,7 +48,7 @@ namespace BookMeMobi2.Tests
 
             GoogleCloudOptions = Microsoft.Extensions.Options.Options.Create(new GoogleCloudStorageSettings());
 
-            FileService = new BookService(GoogleCloudOptions, Mapper, Context, Logger);
+            FileService = new BookService(GoogleCloudOptions, Mapper, Context, Logger, propertyMappingServiceMock.Object);
 
         }
 
