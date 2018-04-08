@@ -26,18 +26,19 @@ namespace BookMeMobi2.Services
         private readonly IMapper _mapper;
         private readonly ILogger _logger;
         private readonly ApplicationDbContext _context;
-
+        private readonly IPropertyMappingService _propertyMappingService;
         private readonly string _baseBookPath = "/books/";
         private readonly GoogleCredential _credential;
         private readonly GoogleCloudStorageSettings _googleCloudStorageSettings;
 
-        public BookService(IOptions<GoogleCloudStorageSettings> options, IMapper mapper, ApplicationDbContext context, ILogger<BookService> logger)
+        public BookService(IOptions<GoogleCloudStorageSettings> options, IMapper mapper, ApplicationDbContext context, ILogger<BookService> logger, IPropertyMappingService propertyMappingService)
         {
             _mapper = mapper;
             _logger = logger;
             _context = context;
             _googleCloudStorageSettings = options.Value;
             _credential = GoogleCredential.GetApplicationDefault();
+            _propertyMappingService = propertyMappingService;
         }
 
         public async Task<Book> GetBookForUserAsync(string userId, int bookId)

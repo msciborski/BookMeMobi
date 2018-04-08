@@ -60,7 +60,7 @@ namespace BookMeMobi2.Controllers
         /// <returns></returns>
         [Produces("application/json")]
         [ProducesResponseType(typeof(UserLoginDto), 201)]
-        [ProducesResponseType(typeof(string), 500)]
+        [ProducesResponseType(typeof(ApiError), 500)]
         [AllowAnonymous]
         [ValidateModel]
         [HttpPost]

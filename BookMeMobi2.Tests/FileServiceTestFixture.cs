@@ -22,6 +22,7 @@ namespace BookMeMobi2.Tests
         public BookService FileService { get; private set; }
         public FileServiceTestFixture()
         {
+            var propertyMappingServiceMock = new Mock<IPropertyMappingService>();
             var options = SqliteInMemory.CreateOptions<ApplicationDbContext>();
             Context = new ApplicationDbContext(options);
             Context.Database.EnsureCreated();
@@ -34,7 +35,7 @@ namespace BookMeMobi2.Tests
 
             GoogleCloudOptions = Microsoft.Extensions.Options.Options.Create(new GoogleCloudStorageSettings());
 
-            FileService = new BookService(GoogleCloudOptions, Mapper, Context, Logger);
+            FileService = new BookService(GoogleCloudOptions, Mapper, Context, Logger, propertyMappingServiceMock.Object);
 
         }
 
