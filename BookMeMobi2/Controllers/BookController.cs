@@ -22,14 +22,14 @@ namespace BookMeMobi2.Controllers
 {
     [Route("/api/users")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public class FilesController : Controller
+    public class BookController : Controller
     {
         private readonly ILogger _logger;
         private readonly IMapper _mapper;
 
-        private readonly IFileService _fileService;
+        private readonly IBookService _fileService;
 
-        public FilesController(IMapper mapper, IFileService storageService, ILogger<FilesController> logger)
+        public BookController(IMapper mapper, IBookService storageService, ILogger<BookController> logger)
         {
             _mapper = mapper;
             _logger = logger;
@@ -49,9 +49,9 @@ namespace BookMeMobi2.Controllers
         [ProducesResponseType(typeof(string), 404)]
         [ValidateModel]
         [HttpGet("{userId}/books")]
-        public async Task<IActionResult> GetBooks(string userId, [FromQuery(Name = "page_size")] int pageSize = 10, [FromQuery(Name = "page_number")] int pageNumber = 1)
+        public async Task<IActionResult> GetBooks(string userId, [FromQuery] BooksResourceParameters parameters)
         {
-            PagedList<BookDto> booksDto = await _fileService.GetBooksForUserAsync(userId, pageSize, pageNumber);
+            PagedList<BookDto> booksDto = await _fileService.GetBooksForUserAsync(userId, parameters);
             return Ok(booksDto);
         }
 

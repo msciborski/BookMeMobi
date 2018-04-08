@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using BookMeMobi2.Entities;
+using BookMeMobi2.Helpers;
 using BookMeMobi2.Helpers.Exceptions;
 using BookMeMobi2.MobiMetadata;
 using BookMeMobi2.Models;
@@ -20,7 +21,7 @@ using Newtonsoft.Json;
 
 namespace BookMeMobi2.Services
 {
-    public class FileService : IFileService
+    public class BookService : IBookService
     {
         private readonly IMapper _mapper;
         private readonly ILogger _logger;
@@ -30,7 +31,7 @@ namespace BookMeMobi2.Services
         private readonly GoogleCredential _credential;
         private readonly GoogleCloudStorageSettings _googleCloudStorageSettings;
 
-        public FileService(IOptions<GoogleCloudStorageSettings> options, IMapper mapper, ApplicationDbContext context, ILogger<FileService> logger)
+        public BookService(IOptions<GoogleCloudStorageSettings> options, IMapper mapper, ApplicationDbContext context, ILogger<BookService> logger)
         {
             _mapper = mapper;
             _logger = logger;
@@ -58,7 +59,7 @@ namespace BookMeMobi2.Services
             return book;
         }
 
-        public async Task<PagedList<BookDto>> GetBooksForUserAsync(string userId, int pageSize, int pageNumber)
+        public async Task<PagedList<BookDto>> GetBooksForUserAsync(string userId, BooksResourceParameters parameters)
         {
             var user = await _context.Users.Include(u => u.Books).FirstOrDefaultAsync(u => u.Id.Equals(userId));
 
@@ -68,10 +69,10 @@ namespace BookMeMobi2.Services
             }
 
             //Filter method
-            var books = user.Books.Where(b => !b.IsDeleted);
+            var books = user.Books.FilterBooks(parameters).SearchBook(parameters.SearchQuery);
 
             var booksDto = _mapper.Map<IEnumerable<Book>, IEnumerable<BookDto>>(books);
-            return new PagedList<BookDto>(booksDto.AsQueryable(), pageNumber, pageSize);
+            return new PagedList<BookDto>(booksDto.AsQueryable(), parameters.PageNumber, parameters.PageSize);
         }
 
         public async Task<Book> DeleteBookAsync(string userId, int bookId)

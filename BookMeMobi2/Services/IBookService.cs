@@ -9,12 +9,12 @@ using Microsoft.AspNetCore.Http;
 
 namespace BookMeMobi2.Services
 {
-    public interface IFileService
+    public interface IBookService
     {
         Task<BookDto> UploadBookAsync(IFormFile file, string userId);
         Task<Stream> DownloadBookAsync(Book book);
         Task<Book> GetBookForUserAsync(string userId, int bookId);
-        Task<PagedList<BookDto>> GetBooksForUserAsync(string userId, int pageSize, int pageNumber);
+        Task<PagedList<BookDto>> GetBooksForUserAsync(string userId, BooksResourceParameters parameters);
         Task<Book> DeleteBookAsync(string userId, int bookId);
     }
 }

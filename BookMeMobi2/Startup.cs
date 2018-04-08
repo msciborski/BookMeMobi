@@ -93,7 +93,7 @@ namespace BookMeMobi2
                 c.IncludeXmlComments(GetXmlCommentsPath());
             });
 
-            services.AddTransient<IFileService, FileService>();
+            services.AddTransient<IBookService, BookService>();
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<ITokenService, TokenService>();
             services.AddScoped<ValidateModelAttribute>();

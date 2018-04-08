@@ -85,7 +85,7 @@ namespace BookMeMobi2.Tests
                 //Action&Assert
 
                 await Assert.ThrowsAsync<UserNoFoundException>(async () =>
-                    await fixture.FileService.GetBooksForUserAsync("ID101", 10, 1));
+                    await fixture.FileService.GetBooksForUserAsync("ID101", new BooksResourceParameters()));
             }
 
 
@@ -100,7 +100,7 @@ namespace BookMeMobi2.Tests
                 await fixture.SeedDatabase();
                 //Action
 
-                var result = await fixture.FileService.GetBooksForUserAsync("ID1", 10, 1);
+                var result = await fixture.FileService.GetBooksForUserAsync("ID1", new BooksResourceParameters());
 
                 //Assert
 
@@ -127,7 +127,7 @@ namespace BookMeMobi2.Tests
 
                 //Assert
                 result.Id.ShouldEqual(1);
-                var booksForUser = await fixture.FileService.GetBooksForUserAsync("ID1", 10, 1);
+                var booksForUser = await fixture.FileService.GetBooksForUserAsync("ID1", new BooksResourceParameters());
                 booksForUser.Items.Count.ShouldEqual(1);
             }
         }

@@ -16,12 +16,12 @@ namespace BookMeMobi2.Tests
 {
     public class FileControllerTestFixture : IDisposable
     {
-        public ILogger<FilesController> Logger { get; private set; }
+        public ILogger<BookController> Logger { get; private set; }
         public IMapper Mapper { get; private set; }
 
         public FileControllerTestFixture()
         {
-            var loggerMock = new Mock<ILogger<FilesController>>();
+            var loggerMock = new Mock<ILogger<BookController>>();
             Logger = loggerMock.Object;
 
             var config = new MapperConfiguration(cfg => cfg.AddProfile<AutoMapperProfile>());
