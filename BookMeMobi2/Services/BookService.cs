@@ -70,7 +70,9 @@ namespace BookMeMobi2.Services
             }
 
             //Filter method
-            var books = user.Books.FilterBooks(parameters).SearchBook(parameters.SearchQuery);
+            var books = user.Books.FilterBooks(parameters).SearchBook(parameters.SearchQuery).AsQueryable()
+                .ApplySort(parameters.OrderBy, _propertyMappingService.GetPropertyMapping<BookDto, Book>())
+                .AsEnumerable();
 
             var booksDto = _mapper.Map<IEnumerable<Book>, IEnumerable<BookDto>>(books);
             return new PagedList<BookDto>(booksDto.AsQueryable(), parameters.PageNumber, parameters.PageSize);
