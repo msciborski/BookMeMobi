@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BookMeMobi2.Models
 {
     public class BooksResourceParameters
     {
-        private const int maxPageSize = 20;
-
+        private const int maxPageSize = 50;
         public int PageNumber { get; set; } = 1;
         public bool Deleted { get; set; } = false;
         public string SearchQuery { get; set; }
-        public string OrderBy { get; set; } = "Title";
+        public string OrderBy { get; set; } = "PublishingDate desc";
 
         private int _pageSize = 10;
         public int PageSize

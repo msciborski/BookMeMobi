@@ -50,8 +50,7 @@ namespace BookMeMobi2.MobiMetadata
                 return null;
 
             var date = MobiHeader.GetExthRecordValue(106);
-
-            return DateTime.ParseExact(date, "dd/MM/yyyy", CultureInfo.CurrentCulture);
+            return Convert.ToDateTime(date);
         }
 
         private string GetTitle()

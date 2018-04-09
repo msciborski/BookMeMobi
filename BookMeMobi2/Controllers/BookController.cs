@@ -86,7 +86,7 @@ namespace BookMeMobi2.Controllers
         [ProducesResponseType(typeof(BookDto), 200)]
         [ProducesResponseType(typeof(ApiError), 404)]
         [ProducesResponseType(typeof(ApiError), 500)]
-        [HttpDelete("/{userId}/books/{bookId}")]
+        [HttpDelete("{userId}/books/{bookId}")]
         public async Task<IActionResult> DeleteBook(string userId, int bookId)
         {
             var book = await _fileService.DeleteBookAsync(userId, bookId);
