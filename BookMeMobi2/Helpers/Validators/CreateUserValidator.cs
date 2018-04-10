@@ -19,6 +19,7 @@ namespace BookMeMobi2.Helpers.Validators
                                      .Matches("[A-Za-z]+").WithMessage("First name can contain only letters.");
             RuleFor(m => m.LastName).NotEmpty().WithMessage("Last name can't be empty.")
                                     .Matches("[A-Za-z]+").WithMessage("Last name can contain only letters");
+            RuleFor(m => m.KindleEmail).EmailAddress();
         }
     }
 }
