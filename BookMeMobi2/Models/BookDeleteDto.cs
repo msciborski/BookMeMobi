@@ -13,6 +13,7 @@ namespace BookMeMobi2.Models
         public string FileName { get; set; }
         public double Size { get; set; }
         public string Format { get; set; }
+        public bool IsSentToKindle { get; set; }
         public DateTime? PublishingDate { get; set; }
         public DateTime UploadDate { get; set; }
         public DateTime DeleteDate { get; set; }

@@ -11,9 +11,10 @@ using System;
 namespace BookMeMobi2.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180411200308_AlterBookTableIsSentToKindleColumn")]
+    partial class AlterBookTableIsSentToKindleColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

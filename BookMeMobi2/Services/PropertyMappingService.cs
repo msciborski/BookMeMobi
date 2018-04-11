@@ -15,7 +15,8 @@ namespace BookMeMobi2.Services
             { "Title", new PropertyMappingValue(new List<string>(){"Title"}) },
             { "Author", new PropertyMappingValue(new List<string>(){"Author"}) },
             { "FileName", new PropertyMappingValue(new List<string>(){"FileName"}) },
-            { "PublishingDate", new PropertyMappingValue(new List<string>(){"PublishingDate"}) }
+            { "PublishingDate", new PropertyMappingValue(new List<string>(){"PublishingDate"}) },
+            { "UploadDate", new PropertyMappingValue(new List<string>(){"UploadDate"}) }
         };
 
         private IList<IPropertyMapping> _propertyMappings = new List<IPropertyMapping>();

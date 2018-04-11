@@ -12,7 +12,7 @@ namespace BookMeMobi2.Models
         public int PageNumber { get; set; } = 1;
         public bool Deleted { get; set; } = false;
         public string SearchQuery { get; set; }
-        public string OrderBy { get; set; } = "PublishingDate desc";
+        public string OrderBy { get; set; } = "UploadDate desc";
 
         private int _pageSize = 10;
         public int PageSize
