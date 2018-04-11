@@ -10,5 +10,6 @@ namespace BookMeMobi2.Options
         public string SMTPUserName { get; set; }
         public string SMTPPassword { get; set; }
         public string SMTPHost { get; set; }
+        public int SMTPPort { get; set; }
     }
 }

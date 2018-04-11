@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Mail;
 using System.Threading.Tasks;
 using AutoMapper;
 using BookMeMobi2.Entities;
@@ -28,6 +29,8 @@ namespace BookMeMobi2.Controllers
         private readonly IMapper _mapper;
 
         private readonly IBookService _fileService;
+        private readonly IMailService _mailService;
+        private readonly IUserService _userService;
 
 
         public BookController(IMapper mapper, IBookService storageService, ILogger<BookController> logger)
@@ -150,6 +153,14 @@ namespace BookMeMobi2.Controllers
             stream.Position = 0;
             var result = File(stream, "application/x-mobipocket-mobi", book.FileName);
             return result;
+        }
+
+        [HttpGet("{userId}/books/{bookId}/send")]
+        public async Task<IActionResult> SendBook(string userId, int bookId)
+        {
+            await _fileService.SendBook(userId, bookId);
+
+            return Ok();
         }
 
     }
