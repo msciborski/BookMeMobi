@@ -42,6 +42,7 @@ namespace BookMeMobi2
             services.Configure<JWTSettings>(Configuration.GetSection("JWTSettings"));
             services.Configure<GoogleCloudStorageSettings>(Configuration.GetSection("GoogleCloudStorage"));
             services.Configure<StackdriveSettings>(Configuration.GetSection("Stackdrive"));
+            services.Configure<SMTPSettings>(Configuration.GetSection("SMTP"));
 
             services.AddCors();
 
