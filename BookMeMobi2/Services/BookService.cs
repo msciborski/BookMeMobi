@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Mail;
 using System.Threading.Tasks;
 using AutoMapper;
 using BookMeMobi2.Entities;
@@ -30,8 +31,9 @@ namespace BookMeMobi2.Services
         private readonly string _baseBookPath = "/books/";
         private readonly GoogleCredential _credential;
         private readonly GoogleCloudStorageSettings _googleCloudStorageSettings;
+        private readonly IMailService _mailService;
 
-        public BookService(IOptions<GoogleCloudStorageSettings> options, IMapper mapper, ApplicationDbContext context, ILogger<BookService> logger, IPropertyMappingService propertyMappingService)
+        public BookService(IOptions<GoogleCloudStorageSettings> options, IMapper mapper, ApplicationDbContext context, ILogger<BookService> logger, IPropertyMappingService propertyMappingService, IMailService mailService)
         {
             _mapper = mapper;
             _logger = logger;
@@ -39,6 +41,7 @@ namespace BookMeMobi2.Services
             _googleCloudStorageSettings = options.Value;
             _credential = GoogleCredential.GetApplicationDefault();
             _propertyMappingService = propertyMappingService;
+            _mailService = mailService;
         }
 
         public async Task<Book> GetBookForUserAsync(string userId, int bookId)
@@ -176,6 +179,15 @@ namespace BookMeMobi2.Services
                 ? mobiDocument.PublishingDate?.ToUniversalTime()
                 : null;
             return fileDto;
+        }
+
+        public async Task SendBook(string userId, int bookId)
+        {
+            Book book = await GetBookForUserAsync(userId, bookId);
+            User user = await _context.Users.FindAsync(userId);
+            Stream stream = await DownloadBookAsync(book);
+            Attachment attachment = new Attachment(stream, book.FileName);
+            await _mailService.SendMailAsync(user.KindleEmail, book.FileName, attachment);
         }
 
         private double ConvertBytesToMegabytes(long bytes)

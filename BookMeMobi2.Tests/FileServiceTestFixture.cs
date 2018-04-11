@@ -48,7 +48,9 @@ namespace BookMeMobi2.Tests
 
             GoogleCloudOptions = Microsoft.Extensions.Options.Options.Create(new GoogleCloudStorageSettings());
 
-            FileService = new BookService(GoogleCloudOptions, Mapper, Context, Logger, propertyMappingServiceMock.Object);
+            var mailServiceMock = new Mock<IMailService>();
+
+            FileService = new BookService(GoogleCloudOptions, Mapper, Context, Logger, propertyMappingServiceMock.Object, mailServiceMock.Object);
 
         }
 

@@ -1,20 +1,19 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.TestHost;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 
 namespace BookMeMobi2.Tests
 {
-    public class UserServiceTestFixture<TStarup> : IDisposable where TStarup : class
+    public class MailServiceTestFixture<TStartup> : IDisposable where TStartup : class
     {
         public readonly TestServer Server;
         private readonly HttpClient _client;
 
-        public UserServiceTestFixture()
+        public MailServiceTestFixture()
         {
             var builder = new WebHostBuilder()
                 .UseContentRoot($"C:\\Users\\msciborski\\Downloads\\source\\repos\\BookMeMobi2\\BookMeMobi2")
@@ -25,7 +24,7 @@ namespace BookMeMobi2.Tests
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true);
                     buil.AddEnvironmentVariables();
                 })
-                .UseStartup<TStarup>();
+                .UseStartup<TStartup>();
 
             Server = new TestServer(builder);
             _client = new HttpClient();
@@ -35,5 +34,6 @@ namespace BookMeMobi2.Tests
             Server.Dispose();
             _client.Dispose();
         }
+
     }
 }

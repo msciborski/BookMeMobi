@@ -25,7 +25,7 @@ namespace BookMeMobi2.Tests
         private readonly IMapper _mapper;
         private readonly ILogger<UserService> _logger;
         private readonly ITokenService _tokenService;
-        private readonly UserServiceTestFixture<Startup> _fixture;
+
         public UserServiceTest()
         {
             var loggerMock = new Mock<ILogger<UserService>>();
