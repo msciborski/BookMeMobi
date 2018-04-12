@@ -75,7 +75,7 @@ namespace BookMeMobi2.MobiMetadata.Headers
         public int OutputLanguage => ByteUtils.ToInt32(_outputLanguage);
         public int MinVersion => ByteUtils.ToInt32(_minVersion);
         public int FirstImageIndex => ByteUtils.ToInt32(_firstImageIndex);
-        public string FullName => ByteUtils.ToString(_fullname);
+        public string FullName => ByteUtils.ToString(_fullname).ReplaceSpecialChars();
 
         public ExthHeader ExthHeader { get; set; }
 

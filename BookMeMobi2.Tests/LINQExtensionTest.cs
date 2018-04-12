@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using BookMeMobi2.Helpers;
+using BookMeMobi2.Helpers.Extensions;
 using BookMeMobi2.Models;
 using BookMeMobi2.Services;
 using Xunit;

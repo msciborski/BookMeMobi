@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Linq.Dynamic.Core;
 using BookMeMobi2.Entities;
 using BookMeMobi2.Models;
 using BookMeMobi2.Services;
-using System.Linq.Dynamic.Core;
-namespace BookMeMobi2.Helpers
+
+namespace BookMeMobi2.Helpers.Extensions
 {
     public static class LINQExtension
     {

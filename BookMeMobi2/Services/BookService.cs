@@ -2,23 +2,21 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Net.Mail;
 using System.Threading.Tasks;
 using AutoMapper;
 using BookMeMobi2.Entities;
-using BookMeMobi2.Helpers;
 using BookMeMobi2.Helpers.Exceptions;
+using BookMeMobi2.Helpers.Extensions;
 using BookMeMobi2.MobiMetadata;
 using BookMeMobi2.Models;
 using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Storage.V1;
-using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Http;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 
 namespace BookMeMobi2.Services
 {
@@ -74,8 +72,7 @@ namespace BookMeMobi2.Services
 
             //Filter method
             var books = user.Books.FilterBooks(parameters).SearchBook(parameters.SearchQuery).AsQueryable()
-                .ApplySort(parameters.OrderBy, _propertyMappingService.GetPropertyMapping<BookDto, Book>())
-                .AsEnumerable();
+                .ApplySort(parameters.OrderBy, _propertyMappingService.GetPropertyMapping<BookDto, Book>());
 
             var booksDto = _mapper.Map<IEnumerable<Book>, IEnumerable<BookDto>>(books);
             return new PagedList<BookDto>(booksDto.AsQueryable(), parameters.PageNumber, parameters.PageSize);
@@ -188,6 +185,11 @@ namespace BookMeMobi2.Services
             Stream stream = await DownloadBookAsync(book);
             Attachment attachment = new Attachment(stream, book.FileName);
             await _mailService.SendMailAsync(user.KindleEmail, book.FileName, attachment);
+
+            book.IsSentToKindle = true;
+            _context.Books.Update(book);
+            await _context.SaveChangesAsync();
+
         }
 
         private double ConvertBytesToMegabytes(long bytes)
