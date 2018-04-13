@@ -15,6 +15,7 @@ namespace BookMeMobi2.Entities
             : base(options) { }
 
         public DbSet<Book> Books { get; set; }
+        public DbSet<Cover> Covers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

@@ -64,10 +64,14 @@ namespace BookMeMobi2.Controllers
         [ProducesResponseType(typeof(ApiError), 500)]
         [ValidateModel]
         [HttpGet("{userId}/books/{bookId}")]
-        public async Task<IActionResult> GetBook(string userId, int bookId)
+        public async Task<IActionResult> GetBook(string userId, int bookId, [FromQuery] bool withCover = false)
         {
-            Book book = await _fileService.GetBookForUserAsync(userId, bookId);
+            Book book = await _fileService.GetBookForUserAsync(userId, bookId, withCover);
 
+            if (!withCover)
+            {
+                book.Cover = null;
+            }
             return Ok(_mapper.Map<Book, BookDto>(book));
         }
 
@@ -140,7 +144,7 @@ namespace BookMeMobi2.Controllers
         [HttpGet("{userId}/books/{bookId}/download")]
         public async Task<IActionResult> DownloadBook(string userId, int bookId)
         {
-            Book book = await _fileService.GetBookForUserAsync(userId, bookId);
+            Book book = await _fileService.GetBookForUserAsync(userId, bookId, false);
             var stream = await _fileService.DownloadBookAsync(book);
             stream.Position = 0;
             var result = File(stream, "application/x-mobipocket-mobi", book.FileName);

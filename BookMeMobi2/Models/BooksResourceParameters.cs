@@ -10,15 +10,18 @@ namespace BookMeMobi2.Models
     {
         private const int maxPageSize = 50;
         public int PageNumber { get; set; } = 1;
-        public bool Deleted { get; set; } = false;
-        public string SearchQuery { get; set; }
-        public string OrderBy { get; set; } = "UploadDate desc";
-
         private int _pageSize = 10;
         public int PageSize
         {
             get => _pageSize;
             set => _pageSize = (value > maxPageSize) ? maxPageSize : value;
         }
+
+        public bool Deleted { get; set; } = false;
+        public string SearchQuery { get; set; }
+        public string OrderBy { get; set; } = "UploadDate desc";
+        public bool? SentKindle { get; set; } = null;
+        public bool WithCover { get; set; } = false;
+
     }
 }

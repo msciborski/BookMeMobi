@@ -12,7 +12,13 @@ namespace BookMeMobi2.Helpers.Extensions
     {
         public static IEnumerable<Book> FilterBooks(this IEnumerable<Book> source, BooksResourceParameters parameters)
         {
-            return source.Where(b => b.IsDeleted == parameters.Deleted);
+            source = source.Where(b => b.IsDeleted == parameters.Deleted);
+            if (parameters.SentKindle.HasValue)
+            {
+                source =source.Where(b => b.IsSentToKindle == parameters.SentKindle.Value);
+            }
+
+            return source;
         }
 
         public static IEnumerable<Book> SearchBook(this IEnumerable<Book> source, string searchQuery)

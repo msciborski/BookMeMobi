@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BookMeMobi2.Entities;
 using BookMeMobi2.Helpers.Converters;
 using Newtonsoft.Json;
 
@@ -15,6 +16,7 @@ namespace BookMeMobi2.Models
         public string FileName { get; set; }
         public double Size { get; set; }
         public string Format { get; set; }
+        public Cover Cover { get; set; }
         public bool IsDeleted { get; set; }
         public DateTime? DeleteDate { get; set; }
         public bool IsSentToKindle { get; set; }

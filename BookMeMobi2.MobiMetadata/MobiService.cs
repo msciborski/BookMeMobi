@@ -17,6 +17,9 @@ namespace BookMeMobi2.MobiMetadata
             await document.PdbHeader.LoadPdbHeader();
             document.MobiHeader = new MobiHeader(stream, document.PdbHeader.MobiHeaderSize);
             await document.MobiHeader.LoadMobiHeader();
+
+            CoverExtractor coverExtractor = 
+            document.CoverExtractor = new CoverExtractor(stream);
             return document;
         }
     }

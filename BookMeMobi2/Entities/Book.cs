@@ -19,7 +19,11 @@ namespace BookMeMobi2.Entities
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeleteDate { get; set; }
         public bool IsSentToKindle { get; set; } = false;
+
         public string UserId { get; set; }
         public User User { get; set; }
+
+        public int CoverId { get; set; }
+        public Cover Cover { get; set; }
     }
 }

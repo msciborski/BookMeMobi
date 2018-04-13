@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Text;
 using BookMeMobi2.MobiMetadata.Headers;
 
@@ -17,7 +18,7 @@ namespace BookMeMobi2.MobiMetadata
         public string Author => GetAuthor();
         public DateTime? PublishingDate => GetPublishingDate();
         public string Asin => GetAsin();
-
+        public CoverExtractor CoverExtractor { get; internal set; }
         #endregion
 
 
