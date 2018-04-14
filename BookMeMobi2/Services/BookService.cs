@@ -44,53 +44,19 @@ namespace BookMeMobi2.Services
 
         public async Task<Book> GetBookForUserAsync(string userId, int bookId, bool withCover)
         {
-            User user = null;
-
-            if (withCover)
-            {
-                user = await _context.Users.Include(u => u.Books).ThenInclude(b => b.Cover).FirstOrDefaultAsync(u => u.Id.Equals(userId));
-            }
-            else
-            {
-                user = await _context.Users.Include(u => u.Books).FirstOrDefaultAsync(u => u.Id.Equals(userId));
-            }
-
-            if (user == null)
-            {
-                _logger.LogError($"User {userId} dosen't exist.");
-                throw new UserNoFoundException($"User {userId} no found.", 404);
-            }
-
-            var book = user.Books.FirstOrDefault(b => b.Id == bookId && !b.IsDeleted);
-            if (book == null)
-            {
-                _logger.LogError($"Book {bookId} dosen't exist.");
-                throw new BookNoFoundException($"Book {bookId} no found.", 404);
-            }
-
+            Book book = withCover ? await _context.Books.Include(b => b.Cover).FirstOrDefaultAsync(b => b.Id == bookId) : 
+                await _context.Books.FirstOrDefaultAsync(b => b.Id == bookId);
             return book;
         }
 
         public async Task<PagedList<BookDto>> GetBooksForUserAsync(string userId, BooksResourceParameters parameters)
         {
-            User user = null;
-
-            if (parameters.WithCover)
-            {
-                user = await _context.Users.Include(u => u.Books).ThenInclude(b => b.Cover).FirstOrDefaultAsync(u => u.Id.Equals(userId));
-            }
-            else
-            {
-                user = await _context.Users.Include(u => u.Books).FirstOrDefaultAsync(u => u.Id.Equals(userId));
-            }
-
-            if (user == null)
-            {
-                throw new UserNoFoundException($"User {userId} no found.", 404);
-            }
+            var userBooks = parameters.WithCover
+                ? _context.Books.Include(b => b.Cover).Where(b => b.UserId == userId)
+                : _context.Books.Where(b => b.UserId == userId);
 
             //Filter method
-            var books = user.Books.FilterBooks(parameters).SearchBook(parameters.SearchQuery).AsQueryable()
+            var books = userBooks.FilterBooks(parameters).SearchBook(parameters.SearchQuery).AsQueryable()
                 .ApplySort(parameters.OrderBy, _propertyMappingService.GetPropertyMapping<BookDto, Book>());
 
             var booksDto = _mapper.Map<IEnumerable<Book>, IEnumerable<BookDto>>(books);
@@ -99,18 +65,7 @@ namespace BookMeMobi2.Services
 
         public async Task<Book> DeleteBookAsync(string userId, int bookId)
         {
-            var user = await _context.Users.Include(u => u.Books).FirstOrDefaultAsync(u => u.Id.Equals(userId));
-            if (user == null)
-            {
-                throw new UserNoFoundException($"User {userId} no found.", 404);
-            }
-
-            var book = user.Books.FirstOrDefault(b => b.Id == bookId && !b.IsDeleted);
-            if (book == null)
-            {
-                throw new BookNoFoundException($"Book {bookId} no found.", 404);
-            }
-
+            var book = _context.Books.FirstOrDefault(b => b.Id == bookId);
             book.IsDeleted = true;
             book.DeleteDate = DateTime.Now.ToUniversalTime();
 
@@ -148,11 +103,6 @@ namespace BookMeMobi2.Services
         public async Task<BookDto> UploadBookAsync(IFormFile file, string userId)
         {
             var user = await _context.Users.FindAsync(userId);
-            if (user == null)
-            {
-                throw new UserNoFoundException($"User {userId} is no found.", 404);
-            }
-
             using (var stream = file.OpenReadStream())
             {
                 try

@@ -105,6 +105,7 @@ namespace BookMeMobi2.Controllers
         [Produces("application/json")]
         [ProducesResponseType(typeof(UserDto), 200)]
         [AllowAnonymous]
+        [ValidateUserExists]
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetUser(string userId)
         {

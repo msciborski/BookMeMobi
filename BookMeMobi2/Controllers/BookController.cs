@@ -43,7 +43,7 @@ namespace BookMeMobi2.Controllers
         [Produces("application/json")]
         [ProducesResponseType(typeof(PagedList<BookDto>), 200)]
         [ProducesResponseType(typeof(ApiError), 404)]
-        [ValidateModel]
+        [ValidateUserExists]
         [HttpGet("{userId}/books")]
         public async Task<IActionResult> GetBooks(string userId, [FromQuery] BooksResourceParameters parameters)
         {
@@ -62,7 +62,8 @@ namespace BookMeMobi2.Controllers
         [ProducesResponseType(typeof(BookDto), 200)]
         [ProducesResponseType(typeof(ApiError), 404)]
         [ProducesResponseType(typeof(ApiError), 500)]
-        [ValidateModel]
+        [ValidateUserExists]
+        [ValidateBookExists]
         [HttpGet("{userId}/books/{bookId}")]
         public async Task<IActionResult> GetBook(string userId, int bookId, [FromQuery] bool withCover = false)
         {
@@ -85,6 +86,8 @@ namespace BookMeMobi2.Controllers
         [ProducesResponseType(typeof(BookDto), 200)]
         [ProducesResponseType(typeof(ApiError), 404)]
         [ProducesResponseType(typeof(ApiError), 500)]
+        [ValidateUserExists]
+        [ValidateBookExists]
         [HttpDelete("{userId}/books/{bookId}")]
         public async Task<IActionResult> DeleteBook(string userId, int bookId)
         {
@@ -103,7 +106,7 @@ namespace BookMeMobi2.Controllers
         [ProducesResponseType(typeof(IEnumerable<BookDto>), 200)]
         [ProducesResponseType(typeof(ApiError), 404)]
         [ProducesResponseType(typeof(ApiError), 500)]
-        [ValidateModel]
+        [ValidateUserExists]
         [HttpPost("{userId}/books")]
         public async Task<IActionResult> UploadMobiFile([FromForm] IFormCollection fileCollection, string userId)
         {
@@ -141,6 +144,8 @@ namespace BookMeMobi2.Controllers
         [ProducesResponseType(typeof(FileStreamResult), 200)]
         [ProducesResponseType(typeof(ApiError), 404)]
         [ProducesResponseType(typeof(ApiError), 500)]
+        [ValidateUserExists]
+        [ValidateBookExists]
         [HttpGet("{userId}/books/{bookId}/download")]
         public async Task<IActionResult> DownloadBook(string userId, int bookId)
         {
@@ -151,6 +156,8 @@ namespace BookMeMobi2.Controllers
             return result;
         }
 
+        [ValidateUserExists]
+        [ValidateBookExists]
         [HttpGet("{userId}/books/{bookId}/send")]
         public async Task<IActionResult> SendBook(string userId, int bookId)
         {
