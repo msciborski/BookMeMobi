@@ -26,20 +26,18 @@ namespace BookMeMobi2.Services
         private readonly ILogger _logger;
         private readonly ApplicationDbContext _context;
         private readonly IPropertyMappingService _propertyMappingService;
-        private readonly string _baseBookPath = "/books/";
-        private readonly GoogleCredential _credential;
-        private readonly GoogleCloudStorageSettings _googleCloudStorageSettings;
         private readonly IMailService _mailService;
+        private readonly IStorageService _storageService;
 
-        public BookService(IOptions<GoogleCloudStorageSettings> options, IMapper mapper, ApplicationDbContext context, ILogger<BookService> logger, IPropertyMappingService propertyMappingService, IMailService mailService)
+        public BookService(IMapper mapper, ApplicationDbContext context, ILogger<BookService> logger, IPropertyMappingService propertyMappingService, 
+            IMailService mailService, IStorageService storageService)
         {
             _mapper = mapper;
             _logger = logger;
             _context = context;
-            _googleCloudStorageSettings = options.Value;
-            _credential = GoogleCredential.GetApplicationDefault();
             _propertyMappingService = propertyMappingService;
             _mailService = mailService;
+            _storageService = storageService;
         }
 
         public async Task<Book> GetBookForUserAsync(string userId, int bookId, bool withCover)
@@ -87,19 +85,6 @@ namespace BookMeMobi2.Services
             _context.Books.Update(book);
             await _context.SaveChangesAsync();
         }
-
-
-
-        public async Task<Stream> DownloadBookAsync(Book book)
-        {
-            using (var storage = await StorageClient.CreateAsync(_credential))
-            {
-                var stream = new MemoryStream();
-                await storage.DownloadObjectAsync(_googleCloudStorageSettings.BucketName, book.StoragePath, stream);
-
-                return stream;
-            }
-        }
         public async Task<BookDto> UploadBookAsync(IFormFile file, string userId)
         {
             var user = await _context.Users.FindAsync(userId);
@@ -108,7 +93,7 @@ namespace BookMeMobi2.Services
                 try
                 {
                     var book = await GetMobiMetadataAsync(stream);
-                    var storagePathToBook = await UploadBookAsync(stream, user, file.FileName);
+                    var storagePathToBook = await _storageService.UploadBookAsync(stream, user, file.FileName);
                     book.UploadDate = DateTime.Now.ToUniversalTime();
                     book.Size = Math.Round(ConvertBytesToMegabytes(file.Length), 3);
                     book.Format = GetEbookFormat(file.FileName);
@@ -141,17 +126,6 @@ namespace BookMeMobi2.Services
             await _context.Books.AddAsync(book);
             await _context.SaveChangesAsync();
         }
-        private async Task<string> UploadBookAsync(Stream file, User user, string bookName)
-        {
-            var bookPath = $"{_baseBookPath}{user.Id}/{bookName}";
-
-            using (var storage = await StorageClient.CreateAsync(_credential))
-            {
-                var uploadedObject =
-                    storage.UploadObject(_googleCloudStorageSettings.BucketName, bookPath, null, file);
-            }
-            return bookPath;
-        }
 
         private async Task<Book> GetMobiMetadataAsync(Stream stream)
         {
@@ -170,6 +144,11 @@ namespace BookMeMobi2.Services
             }
 
             return book;
+        }
+
+        public Task<Stream> DownloadBookAsync(Book book)
+        {
+            return _storageService.DownloadBookAsync(book.StoragePath);
         }
 
         private byte[] ConvertStreamToByteArray(Stream stream)

@@ -156,6 +156,9 @@ namespace BookMeMobi2.Controllers
             return result;
         }
 
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(ApiError), 404)]
+        [ProducesResponseType(typeof(ApiError),500)]
         [ValidateUserExists]
         [ValidateBookExists]
         [HttpGet("{userId}/books/{bookId}/send")]
