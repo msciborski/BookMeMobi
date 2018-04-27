@@ -32,7 +32,7 @@ namespace BookMeMobi2.Tests
                 //Arrange
                 await fixture.SeedDatabase(); ;
                 //Action
-                var bookDto = await fixture.FileService.GetBookForUserAsync("ID1", 1);
+                var bookDto = await fixture.FileService.GetBookForUserAsync("ID1", 1, false);
 
                 //Assert
                 bookDto.Id.ShouldEqual(1);
@@ -52,7 +52,7 @@ namespace BookMeMobi2.Tests
 
                 //Action&Assert
                 await Assert.ThrowsAsync<BookNoFoundException>(async () =>
-                    await fixture.FileService.GetBookForUserAsync("ID1", 11111));
+                    await fixture.FileService.GetBookForUserAsync("ID1", 11111, false));
             }
         }
 
@@ -66,7 +66,7 @@ namespace BookMeMobi2.Tests
 
                 //Action&Assert
                 await Assert.ThrowsAsync<UserNoFoundException>(async () =>
-                    await fixture.FileService.GetBookForUserAsync("ID1000", 1));
+                    await fixture.FileService.GetBookForUserAsync("ID1000", 1, false));
             }
 
 

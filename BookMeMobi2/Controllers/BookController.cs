@@ -140,8 +140,8 @@ namespace BookMeMobi2.Controllers
         /// <param name="userId">User id</param>
         /// <param name="bookId">Book id</param>
         /// <returns></returns>
-        [Produces("application/x-mobipocket-mobi")]
-        [ProducesResponseType(typeof(FileStreamResult), 200)]
+        //[Produces("application/x-mobipocket-mobi")]
+        //[ProducesResponseType(typeof(string), 200)]
         [ProducesResponseType(typeof(ApiError), 404)]
         [ProducesResponseType(typeof(ApiError), 500)]
         [ValidateUserExists]
@@ -150,10 +150,8 @@ namespace BookMeMobi2.Controllers
         public async Task<IActionResult> DownloadBook(string userId, int bookId)
         {
             Book book = await _fileService.GetBookForUserAsync(userId, bookId, false);
-            var stream = await _fileService.DownloadBookAsync(book);
-            stream.Position = 0;
-            var result = File(stream, "application/x-mobipocket-mobi", book.FileName);
-            return result;
+            var downloadDto = new DownloadBookDto(){Id = book.Id, Url = _fileService.GetDownloadUrl(userId, bookId, book.FileName)};
+            return Ok(downloadDto);
         }
 
         [Produces("application/json")]

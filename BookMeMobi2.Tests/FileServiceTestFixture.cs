@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -49,9 +50,13 @@ namespace BookMeMobi2.Tests
             GoogleCloudOptions = Microsoft.Extensions.Options.Options.Create(new GoogleCloudStorageSettings());
 
             var mailServiceMock = new Mock<IMailService>();
-
-            FileService = new BookService(GoogleCloudOptions, Mapper, Context, Logger, propertyMappingServiceMock.Object, mailServiceMock.Object);
-
+            var storageServiceMock = new Mock<IStorageService>();
+            storageServiceMock.Setup(m => m.GetDownloadUrl(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>()))
+                .Returns("");
+            storageServiceMock.Setup(m => m.UploadBookAsync(It.IsAny<Stream>(), It.IsAny<string>(),It.IsAny<int>(), It.IsAny<string>()));
+            storageServiceMock.Setup(m => m.DownloadBookAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>()));
+            //FileService = new BookService(GoogleCloudOptions, Mapper, Context, Logger, propertyMappingServiceMock.Object, mailServiceMock.Object);
+            FileService = new BookService(Mapper, Context, Logger, propertyMappingServiceMock.Object, mailServiceMock.Object, storageServiceMock.Object );
         }
 
         public async Task SeedDatabase()

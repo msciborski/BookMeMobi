@@ -77,7 +77,7 @@ namespace BookMeMobi2.Services
         {
             Book book = await GetBookForUserAsync(userId, bookId, false);
             User user = await _context.Users.FindAsync(userId);
-            Stream stream = await DownloadBookAsync(book);
+            Stream stream = await DownloadBookAsync(userId, bookId, book.FileName);
             Attachment attachment = new Attachment(stream, book.FileName);
             await _mailService.SendMailAsync(user.KindleEmail, book.FileName, attachment);
 
@@ -93,13 +93,15 @@ namespace BookMeMobi2.Services
                 try
                 {
                     var book = await GetMobiMetadataAsync(stream);
-                    var storagePathToBook = await _storageService.UploadBookAsync(stream, user, file.FileName);
+                    //pobieramy okładkę
+                    //uploadujemy okładkę, zwraca storagePath do okładki
+
                     book.UploadDate = DateTime.Now.ToUniversalTime();
                     book.Size = Math.Round(ConvertBytesToMegabytes(file.Length), 3);
                     book.Format = GetEbookFormat(file.FileName);
                     book.FileName = file.FileName;
-
-                    await AddFilesToDbAsync(book, user.Id, storagePathToBook);
+                    await AddFilesToDbAsync(book, user.Id);
+                    await _storageService.UploadBookAsync(stream, user.Id, book.Id, file.FileName);
 
                     var bookDto = _mapper.Map<Book, BookDto>(book);
                     return bookDto;
@@ -112,10 +114,9 @@ namespace BookMeMobi2.Services
             }
         }
 
-        private async Task AddFilesToDbAsync(Book book, string userId, string storagePath)
+        private async Task AddFilesToDbAsync(Book book, string userId)
         {
             book.UserId = userId;
-            book.StoragePath = storagePath;
 
             if (book.Cover != null)
             {
@@ -137,18 +138,23 @@ namespace BookMeMobi2.Services
                 ? mobiDocument.PublishingDate?.ToUniversalTime()
                 : null;
 
-            var coverStream = mobiDocument.CoverExtractor.Extract();
-            if (coverStream != null)
-            {
-                book.Cover = new Cover() { Image = ConvertStreamToByteArray(coverStream)};
-            }
+            //var coverStream = mobiDocument.CoverExtractor.Extract();
+            //if (coverStream != null)
+            //{
+            //    book.Cover = new Cover() { Image = ConvertStreamToByteArray(coverStream)};
+            //}
 
             return book;
         }
 
-        public Task<Stream> DownloadBookAsync(Book book)
+        public Task<Stream> DownloadBookAsync(string userId, int bookId, string bookFileName)
         {
-            return _storageService.DownloadBookAsync(book.StoragePath);
+            return _storageService.DownloadBookAsync(userId, bookId, bookFileName);
+        }
+
+        public string GetDownloadUrl(string userId, int bookId, string bookFileName)
+        {
+            return _storageService.GetDownloadUrl(userId, bookId, bookFileName);
         }
 
         private byte[] ConvertStreamToByteArray(Stream stream)

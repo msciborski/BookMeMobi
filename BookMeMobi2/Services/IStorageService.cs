@@ -9,7 +9,8 @@ namespace BookMeMobi2.Services
 {
     public interface IStorageService
     {
-        Task<string> UploadBookAsync(Stream file, User user, string bookName);
-        Task<Stream> DownloadBookAsync(string storagePath);
+        Task UploadBookAsync(Stream file, string userId, int bookId, string bookFileName);
+        Task<Stream> DownloadBookAsync(string userId, int bookId, string bookFileName);
+        string GetDownloadUrl(string userId, int bookId, string bookFileName);
     }
 }

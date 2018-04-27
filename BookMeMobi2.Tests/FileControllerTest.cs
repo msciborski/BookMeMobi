@@ -98,7 +98,7 @@ namespace BookMeMobi2.Tests
             var book = new Book {Id = 1, Title = "Testowy Title"};
 
             var fileServiceMock = new Mock<IBookService>();
-            fileServiceMock.Setup(m => m.GetBookForUserAsync(It.IsAny<string>(), It.IsAny<int>())).Returns(Task.FromResult(book));
+            fileServiceMock.Setup(m => m.GetBookForUserAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<bool>())).Returns(Task.FromResult(book));
 
             var fileController = new BookController(_fixture.Mapper, fileServiceMock.Object, _fixture.Logger);
 
@@ -124,7 +124,7 @@ namespace BookMeMobi2.Tests
         {
             //Arrange
             var fileServiceMock = new Mock<IBookService>();
-            fileServiceMock.Setup(m => m.GetBookForUserAsync(It.IsAny<string>(), It.IsAny<int>()))
+            fileServiceMock.Setup(m => m.GetBookForUserAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<bool>()))
                 .ThrowsAsync(new UserNoFoundException());
 
             var fileController = new BookController(_fixture.Mapper, fileServiceMock.Object, _fixture.Logger);
@@ -138,7 +138,7 @@ namespace BookMeMobi2.Tests
         {
             //Arrange
             var fileServiceMock = new Mock<IBookService>();
-            fileServiceMock.Setup(m => m.GetBookForUserAsync(It.IsAny<string>(), It.IsAny<int>()))
+            fileServiceMock.Setup(m => m.GetBookForUserAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<bool>()))
                 .Throws(new BookNoFoundException());
 
             var fileController = new BookController(_fixture.Mapper, fileServiceMock.Object, _fixture.Logger);
@@ -292,9 +292,9 @@ namespace BookMeMobi2.Tests
             var mockStream = new Mock<Stream>();
 
             var fileServiceMock = new Mock<IBookService>();
-            fileServiceMock.Setup(m => m.GetBookForUserAsync(It.IsAny<string>(), It.IsAny<int>()))
+            fileServiceMock.Setup(m => m.GetBookForUserAsync(It.IsAny<string>(), It.IsAny<int>(),It.IsAny<bool>()))
                 .Returns(Task.FromResult(new Book() {Id = 1}));
-            fileServiceMock.Setup(m => m.DownloadBookAsync(It.IsAny<Book>()))
+            fileServiceMock.Setup(m => m.DownloadBookAsync(It.IsAny<string>(),It.IsAny<int>(), It.IsAny<string>()))
                 .Returns(Task.FromResult(mockStream.Object));
 
             var fileController = new BookController(_fixture.Mapper, fileServiceMock.Object, _fixture.Logger);
@@ -315,9 +315,9 @@ namespace BookMeMobi2.Tests
             var mockStream = new Mock<Stream>();
 
             var fileServiceMock = new Mock<IBookService>();
-            fileServiceMock.Setup(m => m.GetBookForUserAsync(It.IsAny<string>(), It.IsAny<int>()))
+            fileServiceMock.Setup(m => m.GetBookForUserAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<bool>()))
                 .ThrowsAsync(new UserNoFoundException());
-            fileServiceMock.Setup(m => m.DownloadBookAsync(It.IsAny<Book>()))
+            fileServiceMock.Setup(m => m.DownloadBookAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>()))
                 .Returns(Task.FromResult(mockStream.Object));
 
             var fileController = new BookController(_fixture.Mapper, fileServiceMock.Object, _fixture.Logger);
@@ -333,9 +333,9 @@ namespace BookMeMobi2.Tests
             var mockStream = new Mock<Stream>();
 
             var fileServiceMock = new Mock<IBookService>();
-            fileServiceMock.Setup(m => m.GetBookForUserAsync(It.IsAny<string>(), It.IsAny<int>()))
+            fileServiceMock.Setup(m => m.GetBookForUserAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<bool>()))
                 .Returns(Task.FromResult(new Book() {Id = 1}));
-            fileServiceMock.Setup(m => m.DownloadBookAsync(It.IsAny<Book>())).ThrowsAsync(new Exception());
+            fileServiceMock.Setup(m => m.DownloadBookAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>())).ThrowsAsync(new Exception());
 
             var fileController = new BookController(_fixture.Mapper, fileServiceMock.Object, _fixture.Logger);
 

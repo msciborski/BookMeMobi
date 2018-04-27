@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using BookMeMobi2.Entities;
 using Google.Apis.Auth.OAuth2;
@@ -22,26 +23,37 @@ namespace BookMeMobi2.Services
             _credential = GoogleCredential.GetApplicationDefault();
         }
 
-        public async Task<string> UploadBookAsync(Stream file, User user, string bookName)
+        public async Task UploadBookAsync(Stream file, string userId, int bookId, string bookFileName)
         {
-            var bookPath = $"{_baseBookPath}{user.Id}/{bookName}";
+            var bookPath = $"{_baseBookPath}{userId}/{bookId}/{bookFileName}";
 
             using (var storage = await StorageClient.CreateAsync(_credential))
             {
                 var uploadedObject =
                     storage.UploadObject(_googleCloudStorageSettings.BucketName, bookPath, null, file);
             }
-            return bookPath;
         }
-        public async Task<Stream> DownloadBookAsync(string storagePath)
+        public async Task<Stream> DownloadBookAsync(string userId, int bookId, string bookFileName)
         {
+            var bookPath = $"{_baseBookPath}{userId}/{bookId}/{bookFileName}";
             using (var storage = await StorageClient.CreateAsync(_credential))
             {
                 var stream = new MemoryStream();
-                await storage.DownloadObjectAsync(_googleCloudStorageSettings.BucketName, storagePath, stream);
+                await storage.DownloadObjectAsync(_googleCloudStorageSettings.BucketName, bookPath, stream);
 
                 return stream;
             }
+        }
+
+        public string GetDownloadUrl(string userId, int bookId, string bookFileName)
+        {
+            var bookPath = $"{_baseBookPath}{userId}/{bookId}/{bookFileName}";
+            var initializer = new ServiceAccountCredential.Initializer(_googleCloudStorageSettings.Id);
+            UrlSigner urlSgSigner = UrlSigner.FromServiceAccountCredential(
+                new ServiceAccountCredential(initializer.FromPrivateKey(_googleCloudStorageSettings.PrivateKey)));
+            string url = urlSgSigner.Sign(_googleCloudStorageSettings.BucketName, bookPath, TimeSpan.FromMinutes(10),
+                HttpMethod.Get);
+            return url;
         }
     }
 }
