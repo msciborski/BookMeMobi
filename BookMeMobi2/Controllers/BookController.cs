@@ -82,7 +82,7 @@ namespace BookMeMobi2.Controllers
         {
             Book book = await _bookService.GetBookForUserAsync(userId, bookId);
 
-            var coverUrl = (book.Cover == null) ? _storageService.GetCoverUrl(userId, bookId, book.Cover.CoverName) : null;
+            var coverUrl = (book.Cover != null) ? _storageService.GetCoverUrl(userId, bookId, book.Cover.CoverName) : null;
 
             var bookDto = _mapper.Map<Book, BookDto>(book);
             bookDto.CoverUrl = coverUrl;
