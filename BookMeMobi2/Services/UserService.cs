@@ -9,6 +9,7 @@ using AutoMapper;
 using BookMeMobi2.Entities;
 using BookMeMobi2.Helpers.Exceptions;
 using BookMeMobi2.Helpers.Fliters;
+using BookMeMobi2.Models.User;
 using BookMeMobi2.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -108,6 +109,17 @@ namespace BookMeMobi2.Services
             }
 
             return stringBuilder.ToString();
+        }
+        public async Task UpdateUserAsync(string userId, UserUpdateDto model)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            user.Email = !String.IsNullOrEmpty(model.EmailAddress) ? model.EmailAddress : user.Email;
+            user.KindleEmail = !String.IsNullOrEmpty(model.KindleEmail) ? model.KindleEmail : user.KindleEmail;
+            user.FirstName = !String.IsNullOrEmpty(model.FirstName) ? model.FirstName : user.FirstName;
+            user.LastName = !String.IsNullOrEmpty(model.LastName) ? model.LastName : user.LastName;
+
+            await _userManager.UpdateAsync(user);
         }
     }
 }

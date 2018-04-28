@@ -9,6 +9,7 @@ using BookMeMobi2.Entities;
 using BookMeMobi2.Helpers.Exceptions;
 using BookMeMobi2.Helpers.Mappings;
 using BookMeMobi2.Models;
+using BookMeMobi2.Models.User;
 using BookMeMobi2.Services;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;

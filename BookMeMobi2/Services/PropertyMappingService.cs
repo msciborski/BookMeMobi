@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using BookMeMobi2.Entities;
 using BookMeMobi2.Models;
+using BookMeMobi2.Models.Book;
 
 namespace BookMeMobi2.Services
 {

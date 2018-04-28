@@ -10,6 +10,7 @@ using BookMeMobi2.Entities;
 using BookMeMobi2.Helpers.Exceptions;
 using BookMeMobi2.Helpers.Fliters;
 using BookMeMobi2.Models;
+using BookMeMobi2.Models.User;
 using BookMeMobi2.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -111,6 +112,15 @@ namespace BookMeMobi2.Controllers
         {
             var user = await _userService.GetUser(userId);
             return Ok(_mapper.Map<User, UserDto>(user));
+        }
+        [Produces("application/json")]
+        [ProducesResponseType(204)]
+        [ValidateUserExists]
+        [HttpPut("{userId}")]
+        public async Task<IActionResult> UpdateUser(string userId, [FromBody] UserUpdateDto model)
+        {
+            await _userService.UpdateUserAsync(userId, model);
+            return NoContent();
         }
     }
 }

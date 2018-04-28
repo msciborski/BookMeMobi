@@ -10,6 +10,7 @@ using BookMeMobi2.Controllers;
 using BookMeMobi2.Entities;
 using BookMeMobi2.Helpers.Exceptions;
 using BookMeMobi2.Models;
+using BookMeMobi2.Models.Book;
 using BookMeMobi2.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;

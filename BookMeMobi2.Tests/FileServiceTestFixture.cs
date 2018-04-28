@@ -7,6 +7,7 @@ using AutoMapper;
 using BookMeMobi2.Entities;
 using BookMeMobi2.Helpers.Mappings;
 using BookMeMobi2.Models;
+using BookMeMobi2.Models.Book;
 using BookMeMobi2.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

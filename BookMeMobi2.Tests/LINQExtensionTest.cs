@@ -6,6 +6,7 @@ using System.Text;
 using BookMeMobi2.Helpers;
 using BookMeMobi2.Helpers.Extensions;
 using BookMeMobi2.Models;
+using BookMeMobi2.Models.Book;
 using BookMeMobi2.Services;
 using Xunit;
 using Xunit.Extensions.AssertExtensions;

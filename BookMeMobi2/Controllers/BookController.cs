@@ -5,6 +5,7 @@ using AutoMapper;
 using BookMeMobi2.Entities;
 using BookMeMobi2.Helpers.Fliters;
 using BookMeMobi2.Models;
+using BookMeMobi2.Models.Book;
 using BookMeMobi2.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;

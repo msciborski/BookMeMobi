@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using BookMeMobi2.Entities;
 using BookMeMobi2.Models;
+using BookMeMobi2.Models.Book;
 using BookMeMobi2.Services;
 
 namespace BookMeMobi2.Helpers.Extensions
