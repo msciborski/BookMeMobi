@@ -29,7 +29,7 @@ namespace BookMeMobi2.Services
         private readonly IMailService _mailService;
         private readonly IStorageService _storageService;
 
-        public BookService(IMapper mapper, ApplicationDbContext context, ILogger<BookService> logger, IPropertyMappingService propertyMappingService, 
+        public BookService(IMapper mapper, ApplicationDbContext context, ILogger<BookService> logger, IPropertyMappingService propertyMappingService,
             IMailService mailService, IStorageService storageService)
         {
             _mapper = mapper;
@@ -40,25 +40,20 @@ namespace BookMeMobi2.Services
             _storageService = storageService;
         }
 
-        public async Task<Book> GetBookForUserAsync(string userId, int bookId, bool withCover)
+        public async Task<Book> GetBookForUserAsync(string userId, int bookId)
         {
-            Book book = withCover ? await _context.Books.Include(b => b.Cover).FirstOrDefaultAsync(b => b.Id == bookId) : 
-                await _context.Books.FirstOrDefaultAsync(b => b.Id == bookId);
+            Book book = await _context.Books.Include(b => b.Cover).FirstOrDefaultAsync(b => b.Id == bookId);
             return book;
         }
 
-        public async Task<PagedList<BookDto>> GetBooksForUserAsync(string userId, BooksResourceParameters parameters)
+        public async Task<IEnumerable<Book>> GetBooksForUserAsync(string userId, BooksResourceParameters parameters)
         {
-            var userBooks = parameters.WithCover
-                ? _context.Books.Include(b => b.Cover).Where(b => b.UserId == userId)
-                : _context.Books.Where(b => b.UserId == userId);
+            var userBooks = _context.Books.Include(b => b.Cover).Where(b => b.UserId == userId);
 
             //Filter method
             var books = userBooks.FilterBooks(parameters).SearchBook(parameters.SearchQuery).AsQueryable()
                 .ApplySort(parameters.OrderBy, _propertyMappingService.GetPropertyMapping<BookDto, Book>());
-
-            var booksDto = _mapper.Map<IEnumerable<Book>, IEnumerable<BookDto>>(books);
-            return new PagedList<BookDto>(booksDto.AsQueryable(), parameters.PageNumber, parameters.PageSize);
+            return books;
         }
 
         public async Task<Book> DeleteBookAsync(string userId, int bookId)
@@ -75,7 +70,7 @@ namespace BookMeMobi2.Services
 
         public async Task SendBook(string userId, int bookId)
         {
-            Book book = await GetBookForUserAsync(userId, bookId, false);
+            Book book = await GetBookForUserAsync(userId, bookId);
             User user = await _context.Users.FindAsync(userId);
             Stream stream = await DownloadBookAsync(userId, bookId, book.FileName);
             Attachment attachment = new Attachment(stream, book.FileName);
@@ -85,29 +80,42 @@ namespace BookMeMobi2.Services
             _context.Books.Update(book);
             await _context.SaveChangesAsync();
         }
-        public async Task<BookDto> UploadBookAsync(IFormFile file, string userId)
+        public async Task<Book> UploadBookAsync(IFormFile file, string userId)
         {
             var user = await _context.Users.FindAsync(userId);
+            Cover cover = null;
             using (var stream = file.OpenReadStream())
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
                 {
-                    var book = await GetMobiMetadataAsync(stream);
-                    //pobieramy okładkę
-                    //uploadujemy okładkę, zwraca storagePath do okładki
+                    var metadata = await GetMobiMetadataAsync(stream);
 
-                    book.UploadDate = DateTime.Now.ToUniversalTime();
-                    book.Size = Math.Round(ConvertBytesToMegabytes(file.Length), 3);
-                    book.Format = GetEbookFormat(file.FileName);
-                    book.FileName = file.FileName;
+                    var book = new Book
+                    {
+                        Author = metadata.Author,
+                        Title = metadata.Title,
+                        PublishingDate = metadata.PublishingDate,
+                        UploadDate = DateTime.Now.ToUniversalTime(),
+                        Size = Math.Round(ConvertBytesToMegabytes(file.Length), 3),
+                        FileName = file.FileName
+                    };
                     await AddFilesToDbAsync(book, user.Id);
                     await _storageService.UploadBookAsync(stream, user.Id, book.Id, file.FileName);
 
-                    var bookDto = _mapper.Map<Book, BookDto>(book);
-                    return bookDto;
+                    if (metadata.CoverStream != null)
+                    {
+                        var coverName = await _storageService.UploadCoverAsync(metadata.CoverStream, userId, book.Id, book.FileName);
+                        await AddCoverToDb(book, coverName);
+                    }
+
+                    transaction.Commit();
+
+                    return book;
                 }
                 catch (Exception e)
                 {
+                    transaction.Rollback();
                     _logger.LogCritical($"Exception occured. {e.Message}. Stack trace:\n{e.StackTrace}");
                     throw;
                 }
@@ -117,34 +125,37 @@ namespace BookMeMobi2.Services
         private async Task AddFilesToDbAsync(Book book, string userId)
         {
             book.UserId = userId;
-
-            if (book.Cover != null)
-            {
-                await _context.Covers.AddAsync(book.Cover);
-                book.CoverId = book.Cover.Id;
-            }
-
             await _context.Books.AddAsync(book);
             await _context.SaveChangesAsync();
         }
 
-        private async Task<Book> GetMobiMetadataAsync(Stream stream)
+        private async Task AddCoverToDb(Book book, string coverName)
         {
-            Book book = new Book();
+            Cover cover = new Cover(){CoverName = coverName};
+            await _context.Covers.AddAsync(cover);
+
+            book.Cover = cover;
+            _context.Books.Update(book);
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task<MobiMetadaDto> GetMobiMetadataAsync(Stream stream)
+        {
+            MobiMetadaDto mobiMetada = new MobiMetadaDto();
             var mobiDocument = await MobiService.LoadDocument(stream);
-            book.Author = mobiDocument.Author;
-            book.Title = mobiDocument.Title;
-            book.PublishingDate = (mobiDocument.PublishingDate.HasValue)
+            mobiMetada.Author = mobiDocument.Author;
+            mobiMetada.Title = mobiDocument.Title;
+            mobiMetada.PublishingDate = (mobiDocument.PublishingDate.HasValue)
                 ? mobiDocument.PublishingDate?.ToUniversalTime()
                 : null;
 
-            //var coverStream = mobiDocument.CoverExtractor.Extract();
-            //if (coverStream != null)
-            //{
-            //    book.Cover = new Cover() { Image = ConvertStreamToByteArray(coverStream)};
-            //}
+            var coverStream = mobiDocument.CoverExtractor.Extract();
+            if (coverStream != null)
+            {
+                mobiMetada.CoverStream = coverStream;
+            }
 
-            return book;
+            return mobiMetada;
         }
 
         public Task<Stream> DownloadBookAsync(string userId, int bookId, string bookFileName)

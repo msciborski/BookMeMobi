@@ -22,7 +22,7 @@ namespace BookMeMobi2.Entities
         public string UserId { get; set; }
         public User User { get; set; }
 
-        public int CoverId { get; set; }
+        public int? CoverId { get; set; }
         public Cover Cover { get; set; }
     }
 }

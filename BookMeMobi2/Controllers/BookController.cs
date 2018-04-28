@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using BookMeMobi2.Entities;
@@ -20,16 +21,17 @@ namespace BookMeMobi2.Controllers
         private readonly ILogger _logger;
         private readonly IMapper _mapper;
 
-        private readonly IBookService _fileService;
+        private readonly IBookService _bookService;
         private readonly IMailService _mailService;
         private readonly IUserService _userService;
+        private readonly IStorageService _storageService;
 
-
-        public BookController(IMapper mapper, IBookService storageService, ILogger<BookController> logger)
+        public BookController(IMapper mapper, IBookService bookService, ILogger<BookController> logger, IStorageService storageService)
         {
             _mapper = mapper;
             _logger = logger;
-            _fileService = storageService;
+            _bookService = bookService;
+            _storageService = storageService;
         }
 
 
@@ -47,8 +49,19 @@ namespace BookMeMobi2.Controllers
         [HttpGet("{userId}/books")]
         public async Task<IActionResult> GetBooks(string userId, [FromQuery] BooksResourceParameters parameters)
         {
-            PagedList<BookDto> booksDto = await _fileService.GetBooksForUserAsync(userId, parameters);
-            return Ok(booksDto);
+            List<BookDto> booksDto = new List<BookDto>();
+            var books = await _bookService.GetBooksForUserAsync(userId, parameters);
+
+            foreach (var book in books)
+            {
+                var coverUrl = (book.Cover != null) ? _storageService.GetCoverUrl(userId, book.Id, book.Cover.CoverName) : null;
+                var bookDto = _mapper.Map<Book, BookDto>(book);
+                bookDto.CoverUrl = coverUrl;
+                booksDto.Add(bookDto);
+            }
+
+            var pagedList = new PagedList<BookDto>(booksDto.AsQueryable(), parameters.PageNumber, parameters.PageSize);
+            return Ok(pagedList);
         }
 
 
@@ -65,15 +78,16 @@ namespace BookMeMobi2.Controllers
         [ValidateUserExists]
         [ValidateBookExists]
         [HttpGet("{userId}/books/{bookId}")]
-        public async Task<IActionResult> GetBook(string userId, int bookId, [FromQuery] bool withCover = false)
+        public async Task<IActionResult> GetBook(string userId, int bookId)
         {
-            Book book = await _fileService.GetBookForUserAsync(userId, bookId, withCover);
+            Book book = await _bookService.GetBookForUserAsync(userId, bookId);
 
-            if (!withCover)
-            {
-                book.Cover = null;
-            }
-            return Ok(_mapper.Map<Book, BookDto>(book));
+            var coverUrl = (book.Cover == null) ? _storageService.GetCoverUrl(userId, bookId, book.Cover.CoverName) : null;
+
+            var bookDto = _mapper.Map<Book, BookDto>(book);
+            bookDto.CoverUrl = coverUrl;
+
+            return Ok(bookDto);
         }
 
         /// <summary>
@@ -91,7 +105,7 @@ namespace BookMeMobi2.Controllers
         [HttpDelete("{userId}/books/{bookId}")]
         public async Task<IActionResult> DeleteBook(string userId, int bookId)
         {
-            var book = await _fileService.DeleteBookAsync(userId, bookId);
+            var book = await _bookService.DeleteBookAsync(userId, bookId);
             var bookDto = _mapper.Map<Book, BookDeleteDto>(book);
             return Ok(bookDto);
         }
@@ -125,7 +139,14 @@ namespace BookMeMobi2.Controllers
                     return BadRequest();
                 }
 
-                var bookDto = await _fileService.UploadBookAsync(file, userId);
+                var book = await _bookService.UploadBookAsync(file, userId);
+                var coverUrl = (book.Cover != null)
+                    ? _storageService.GetCoverUrl(userId, book.Id, book.Cover.CoverName)
+                    : null;
+
+                var bookDto = _mapper.Map<Book, BookDto>(book);
+                bookDto.CoverUrl = coverUrl;
+
                 files.Add(bookDto);
 
                 _logger.LogInformation($"{bookDto.FileName} is uploaded.");
@@ -140,8 +161,8 @@ namespace BookMeMobi2.Controllers
         /// <param name="userId">User id</param>
         /// <param name="bookId">Book id</param>
         /// <returns></returns>
-        //[Produces("application/x-mobipocket-mobi")]
-        //[ProducesResponseType(typeof(string), 200)]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(DownloadBookDto), 200)]
         [ProducesResponseType(typeof(ApiError), 404)]
         [ProducesResponseType(typeof(ApiError), 500)]
         [ValidateUserExists]
@@ -149,20 +170,20 @@ namespace BookMeMobi2.Controllers
         [HttpGet("{userId}/books/{bookId}/download")]
         public async Task<IActionResult> DownloadBook(string userId, int bookId)
         {
-            Book book = await _fileService.GetBookForUserAsync(userId, bookId, false);
-            var downloadDto = new DownloadBookDto(){Id = book.Id, Url = _fileService.GetDownloadUrl(userId, bookId, book.FileName)};
+            Book book = await _bookService.GetBookForUserAsync(userId, bookId);
+            var downloadDto = new DownloadBookDto() { Id = book.Id, Url = _bookService.GetDownloadUrl(userId, bookId, book.FileName) };
             return Ok(downloadDto);
         }
 
         [Produces("application/json")]
         [ProducesResponseType(typeof(ApiError), 404)]
-        [ProducesResponseType(typeof(ApiError),500)]
+        [ProducesResponseType(typeof(ApiError), 500)]
         [ValidateUserExists]
         [ValidateBookExists]
         [HttpGet("{userId}/books/{bookId}/send")]
         public async Task<IActionResult> SendBook(string userId, int bookId)
         {
-            await _fileService.SendBook(userId, bookId);
+            await _bookService.SendBook(userId, bookId);
 
             return Ok();
         }

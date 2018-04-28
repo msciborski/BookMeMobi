@@ -21,7 +21,6 @@ namespace BookMeMobi2.Models
         public string SearchQuery { get; set; }
         public string OrderBy { get; set; } = "UploadDate desc";
         public bool? SentKindle { get; set; } = null;
-        public bool WithCover { get; set; } = false;
 
     }
 }

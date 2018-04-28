@@ -8,6 +8,6 @@ namespace BookMeMobi2.Entities
     public class Cover
     {
         public int Id { get; set; }
-        public byte[] Image { get; set; }
+        public string CoverName { get; set; }
     }
 }

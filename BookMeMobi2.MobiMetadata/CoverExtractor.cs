@@ -14,6 +14,7 @@ namespace BookMeMobi2.MobiMetadata
         internal CoverExtractor(Stream mobiFile)
         {
             _stream = mobiFile;
+            _stream.Position = 0;
             _reader = new BinaryReader(mobiFile);
         }
 

@@ -33,6 +33,20 @@ namespace BookMeMobi2.Services
                     storage.UploadObject(_googleCloudStorageSettings.BucketName, bookPath, null, file);
             }
         }
+
+        public async Task<string> UploadCoverAsync(Stream cover, string userId, int bookId, string bookFileName)
+        {
+            var coverName = $"cover{bookId}.jpg";
+            var coverPath = $"{_baseBookPath}{userId}/{bookId}/{coverName}";
+
+            using (var storage = await StorageClient.CreateAsync(_credential))
+            {
+                var uploadedObject =
+                    storage.UploadObject(_googleCloudStorageSettings.BucketName, coverPath, null, cover);
+            }
+
+            return coverName;
+        }
         public async Task<Stream> DownloadBookAsync(string userId, int bookId, string bookFileName)
         {
             var bookPath = $"{_baseBookPath}{userId}/{bookId}/{bookFileName}";
@@ -53,6 +67,17 @@ namespace BookMeMobi2.Services
                 new ServiceAccountCredential(initializer.FromPrivateKey(_googleCloudStorageSettings.PrivateKey)));
             string url = urlSgSigner.Sign(_googleCloudStorageSettings.BucketName, bookPath, TimeSpan.FromMinutes(10),
                 HttpMethod.Get);
+            return url;
+        }
+
+        public string GetCoverUrl(string userId, int bookId, string coverName)
+        {
+            var coverPath = $"{_baseBookPath}{userId}/{bookId}/{coverName}";
+            var initializer = new ServiceAccountCredential.Initializer(_googleCloudStorageSettings.Id);
+            UrlSigner urlSgSigner = UrlSigner.FromServiceAccountCredential(
+                new ServiceAccountCredential(initializer.FromPrivateKey(_googleCloudStorageSettings.PrivateKey)));
+            string url = urlSgSigner.Sign(_googleCloudStorageSettings.BucketName, coverPath, TimeSpan.FromDays(5));
+
             return url;
         }
     }
