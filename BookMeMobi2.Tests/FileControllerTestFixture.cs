@@ -8,27 +8,38 @@ using BookMeMobi2.Controllers;
 using BookMeMobi2.Helpers.Mappings;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
 namespace BookMeMobi2.Tests
 {
-    public class FileControllerTestFixture : IDisposable
-    {
-        public ILogger<BookController> Logger { get; private set; }
-        public IMapper Mapper { get; private set; }
-
+    public class FileControllerTestFixture<TStartup> : IDisposable where TStartup : class
+     {
+        public readonly TestServer Server;
+        private readonly HttpClient _client;
+        public IMapper Mapper { get; }
         public FileControllerTestFixture()
         {
-            var loggerMock = new Mock<ILogger<BookController>>();
-            Logger = loggerMock.Object;
+            var builder = new WebHostBuilder()
+                .UseContentRoot($"C:\\Users\\msciborski\\Downloads\\source\\repos\\BookMeMobi2\\BookMeMobi2")
+                .ConfigureAppConfiguration((context, buil) =>
+                {
+                    var env = context.HostingEnvironment;
+                    buil.AddJsonFile("appsettings.json", true, true)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true);
+                    buil.AddEnvironmentVariables();
+                })
+                .UseStartup<TStartup>();
 
-            var config = new MapperConfiguration(cfg => cfg.AddProfile<AutoMapperProfile>());
-            Mapper = config.CreateMapper();
+            Server = new TestServer(builder);
+            _client = new HttpClient();
         }
         public void Dispose()
         {
+            Server.Dispose();
+            _client.Dispose();
         }
     }
 }

@@ -17,8 +17,10 @@ namespace BookMeMobi2.Tests
     {
         private readonly IOptions<SMTPSettings> _smtpSettings;
         private readonly ILogger<MailService> _logger;
+        private readonly MailServiceTestFixture<Startup> _fixture;
         public MailServiceTest(MailServiceTestFixture<Startup> fixture)
         {
+            _fixture = fixture;
             _smtpSettings =
                 (IOptions<SMTPSettings>)fixture.Server.Host.Services.GetService(typeof(IOptions<SMTPSettings>));
             _logger = new Mock<ILogger<MailService>>().Object;

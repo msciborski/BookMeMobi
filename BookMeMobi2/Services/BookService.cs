@@ -26,91 +26,39 @@ namespace BookMeMobi2.Services
         private readonly ILogger _logger;
         private readonly ApplicationDbContext _context;
         private readonly IPropertyMappingService _propertyMappingService;
-        private readonly string _baseBookPath = "/books/";
-        private readonly GoogleCredential _credential;
-        private readonly GoogleCloudStorageSettings _googleCloudStorageSettings;
         private readonly IMailService _mailService;
+        private readonly IStorageService _storageService;
 
-        public BookService(IOptions<GoogleCloudStorageSettings> options, IMapper mapper, ApplicationDbContext context, ILogger<BookService> logger, IPropertyMappingService propertyMappingService, IMailService mailService)
+        public BookService(IMapper mapper, ApplicationDbContext context, ILogger<BookService> logger, IPropertyMappingService propertyMappingService,
+            IMailService mailService, IStorageService storageService)
         {
             _mapper = mapper;
             _logger = logger;
             _context = context;
-            _googleCloudStorageSettings = options.Value;
-            _credential = GoogleCredential.GetApplicationDefault();
             _propertyMappingService = propertyMappingService;
             _mailService = mailService;
+            _storageService = storageService;
         }
 
-        public async Task<Book> GetBookForUserAsync(string userId, int bookId, bool withCover)
+        public async Task<Book> GetBookForUserAsync(string userId, int bookId)
         {
-            User user = null;
-
-            if (withCover)
-            {
-                user = await _context.Users.Include(u => u.Books).ThenInclude(b => b.Cover).FirstOrDefaultAsync(u => u.Id.Equals(userId));
-            }
-            else
-            {
-                user = await _context.Users.Include(u => u.Books).FirstOrDefaultAsync(u => u.Id.Equals(userId));
-            }
-
-            if (user == null)
-            {
-                _logger.LogError($"User {userId} dosen't exist.");
-                throw new UserNoFoundException($"User {userId} no found.", 404);
-            }
-
-            var book = user.Books.FirstOrDefault(b => b.Id == bookId && !b.IsDeleted);
-            if (book == null)
-            {
-                _logger.LogError($"Book {bookId} dosen't exist.");
-                throw new BookNoFoundException($"Book {bookId} no found.", 404);
-            }
-
+            Book book = await _context.Books.Include(b => b.Cover).FirstOrDefaultAsync(b => b.Id == bookId);
             return book;
         }
 
-        public async Task<PagedList<BookDto>> GetBooksForUserAsync(string userId, BooksResourceParameters parameters)
+        public async Task<IEnumerable<Book>> GetBooksForUserAsync(string userId, BooksResourceParameters parameters)
         {
-            User user = null;
-
-            if (parameters.WithCover)
-            {
-                user = await _context.Users.Include(u => u.Books).ThenInclude(b => b.Cover).FirstOrDefaultAsync(u => u.Id.Equals(userId));
-            }
-            else
-            {
-                user = await _context.Users.Include(u => u.Books).FirstOrDefaultAsync(u => u.Id.Equals(userId));
-            }
-
-            if (user == null)
-            {
-                throw new UserNoFoundException($"User {userId} no found.", 404);
-            }
+            var userBooks = _context.Books.Include(b => b.Cover).Where(b => b.UserId == userId);
 
             //Filter method
-            var books = user.Books.FilterBooks(parameters).SearchBook(parameters.SearchQuery).AsQueryable()
+            var books = userBooks.FilterBooks(parameters).SearchBook(parameters.SearchQuery).AsQueryable()
                 .ApplySort(parameters.OrderBy, _propertyMappingService.GetPropertyMapping<BookDto, Book>());
-
-            var booksDto = _mapper.Map<IEnumerable<Book>, IEnumerable<BookDto>>(books);
-            return new PagedList<BookDto>(booksDto.AsQueryable(), parameters.PageNumber, parameters.PageSize);
+            return books;
         }
 
         public async Task<Book> DeleteBookAsync(string userId, int bookId)
         {
-            var user = await _context.Users.Include(u => u.Books).FirstOrDefaultAsync(u => u.Id.Equals(userId));
-            if (user == null)
-            {
-                throw new UserNoFoundException($"User {userId} no found.", 404);
-            }
-
-            var book = user.Books.FirstOrDefault(b => b.Id == bookId && !b.IsDeleted);
-            if (book == null)
-            {
-                throw new BookNoFoundException($"Book {bookId} no found.", 404);
-            }
-
+            var book = _context.Books.FirstOrDefault(b => b.Id == bookId);
             book.IsDeleted = true;
             book.DeleteDate = DateTime.Now.ToUniversalTime();
 
@@ -122,9 +70,9 @@ namespace BookMeMobi2.Services
 
         public async Task SendBook(string userId, int bookId)
         {
-            Book book = await GetBookForUserAsync(userId, bookId, false);
+            Book book = await GetBookForUserAsync(userId, bookId);
             User user = await _context.Users.FindAsync(userId);
-            Stream stream = await DownloadBookAsync(book);
+            Stream stream = await DownloadBookAsync(userId, bookId, book.FileName);
             Attachment attachment = new Attachment(stream, book.FileName);
             await _mailService.SendMailAsync(user.KindleEmail, book.FileName, attachment);
 
@@ -132,94 +80,92 @@ namespace BookMeMobi2.Services
             _context.Books.Update(book);
             await _context.SaveChangesAsync();
         }
-
-
-
-        public async Task<Stream> DownloadBookAsync(Book book)
-        {
-            using (var storage = await StorageClient.CreateAsync(_credential))
-            {
-                var stream = new MemoryStream();
-                await storage.DownloadObjectAsync(_googleCloudStorageSettings.BucketName, book.StoragePath, stream);
-
-                return stream;
-            }
-        }
-        public async Task<BookDto> UploadBookAsync(IFormFile file, string userId)
+        public async Task<Book> UploadBookAsync(IFormFile file, string userId)
         {
             var user = await _context.Users.FindAsync(userId);
-            if (user == null)
-            {
-                throw new UserNoFoundException($"User {userId} is no found.", 404);
-            }
-
+            Cover cover = null;
             using (var stream = file.OpenReadStream())
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
                 {
-                    var book = await GetMobiMetadataAsync(stream);
-                    var storagePathToBook = await UploadBookAsync(stream, user, file.FileName);
-                    book.UploadDate = DateTime.Now.ToUniversalTime();
-                    book.Size = Math.Round(ConvertBytesToMegabytes(file.Length), 3);
-                    book.Format = GetEbookFormat(file.FileName);
-                    book.FileName = file.FileName;
+                    var metadata = await GetMobiMetadataAsync(stream);
 
-                    await AddFilesToDbAsync(book, user.Id, storagePathToBook);
+                    var book = new Book
+                    {
+                        Author = metadata.Author,
+                        Title = metadata.Title,
+                        PublishingDate = metadata.PublishingDate,
+                        UploadDate = DateTime.Now.ToUniversalTime(),
+                        Size = Math.Round(ConvertBytesToMegabytes(file.Length), 3),
+                        FileName = file.FileName
+                    };
+                    await AddFilesToDbAsync(book, user.Id);
+                    await _storageService.UploadBookAsync(stream, user.Id, book.Id, file.FileName);
 
-                    var bookDto = _mapper.Map<Book, BookDto>(book);
-                    return bookDto;
+                    if (metadata.CoverStream != null)
+                    {
+                        var coverName = await _storageService.UploadCoverAsync(metadata.CoverStream, userId, book.Id, book.FileName);
+                        await AddCoverToDb(book, coverName);
+                    }
+
+                    transaction.Commit();
+
+                    return book;
                 }
                 catch (Exception e)
                 {
+                    transaction.Rollback();
                     _logger.LogCritical($"Exception occured. {e.Message}. Stack trace:\n{e.StackTrace}");
                     throw;
                 }
             }
         }
 
-        private async Task AddFilesToDbAsync(Book book, string userId, string storagePath)
+        private async Task AddFilesToDbAsync(Book book, string userId)
         {
             book.UserId = userId;
-            book.StoragePath = storagePath;
-
-            if (book.Cover != null)
-            {
-                await _context.Covers.AddAsync(book.Cover);
-                book.CoverId = book.Cover.Id;
-            }
-
             await _context.Books.AddAsync(book);
             await _context.SaveChangesAsync();
         }
-        private async Task<string> UploadBookAsync(Stream file, User user, string bookName)
-        {
-            var bookPath = $"{_baseBookPath}{user.Id}/{bookName}";
 
-            using (var storage = await StorageClient.CreateAsync(_credential))
-            {
-                var uploadedObject =
-                    storage.UploadObject(_googleCloudStorageSettings.BucketName, bookPath, null, file);
-            }
-            return bookPath;
+        private async Task AddCoverToDb(Book book, string coverName)
+        {
+            Cover cover = new Cover(){CoverName = coverName};
+            await _context.Covers.AddAsync(cover);
+
+            book.Cover = cover;
+            _context.Books.Update(book);
+            await _context.SaveChangesAsync();
         }
 
-        private async Task<Book> GetMobiMetadataAsync(Stream stream)
+        private async Task<MobiMetadaDto> GetMobiMetadataAsync(Stream stream)
         {
-            Book book = new Book();
+            MobiMetadaDto mobiMetada = new MobiMetadaDto();
             var mobiDocument = await MobiService.LoadDocument(stream);
-            book.Author = mobiDocument.Author;
-            book.Title = mobiDocument.Title;
-            book.PublishingDate = (mobiDocument.PublishingDate.HasValue)
+            mobiMetada.Author = mobiDocument.Author;
+            mobiMetada.Title = mobiDocument.Title;
+            mobiMetada.PublishingDate = (mobiDocument.PublishingDate.HasValue)
                 ? mobiDocument.PublishingDate?.ToUniversalTime()
                 : null;
 
             var coverStream = mobiDocument.CoverExtractor.Extract();
             if (coverStream != null)
             {
-                book.Cover = new Cover() { Image = ConvertStreamToByteArray(coverStream)};
+                mobiMetada.CoverStream = coverStream;
             }
 
-            return book;
+            return mobiMetada;
+        }
+
+        public Task<Stream> DownloadBookAsync(string userId, int bookId, string bookFileName)
+        {
+            return _storageService.DownloadBookAsync(userId, bookId, bookFileName);
+        }
+
+        public string GetDownloadUrl(string userId, int bookId, string bookFileName)
+        {
+            return _storageService.GetDownloadUrl(userId, bookId, bookFileName);
         }
 
         private byte[] ConvertStreamToByteArray(Stream stream)

@@ -12,7 +12,6 @@ namespace BookMeMobi2.Entities
         public string Author { get; set; }
         public string FileName { get; set; }
         public DateTime? PublishingDate { get; set; }
-        public string StoragePath { get; set; }
         public DateTime UploadDate { get; set; }
         public double Size { get; set; }
         public string Format { get; set; }
@@ -23,7 +22,7 @@ namespace BookMeMobi2.Entities
         public string UserId { get; set; }
         public User User { get; set; }
 
-        public int CoverId { get; set; }
+        public int? CoverId { get; set; }
         public Cover Cover { get; set; }
     }
 }

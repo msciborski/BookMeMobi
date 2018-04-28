@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BookMeMobi2.Entities
+namespace BookMeMobi2.Models
 {
-    public class Cover
+    public class DownloadBookDto
     {
         public int Id { get; set; }
-        public string CoverName { get; set; }
+        public string Url { get; set; }
     }
 }

@@ -95,12 +95,6 @@ namespace BookMeMobi2.Services
         public async Task<User> GetUser(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
-
-            if (user == null)
-            {
-                throw new UserNoFoundException($"User {userId} no found.", 404);
-            }
-
             return user;
         }
 

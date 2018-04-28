@@ -10,5 +10,7 @@ namespace BookMeMobi2
     {
         [JsonIgnore]
         public string BucketName { get; set; }
+        public string PrivateKey { get; set; }
+        public string Id { get; set; }
     }
 }
