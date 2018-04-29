@@ -90,7 +90,7 @@ namespace BookMeMobi2.Tests
 
             var userServiceMock = new Mock<IUserService>();
             userServiceMock.Setup(m => m.Register(It.IsAny<UserRegisterDto>()))
-                .ReturnsAsync(new UserLoginDto() {Email = "test@test.com", FirstName = "TestName"});
+                .ReturnsAsync(new User() {Email = "test@test.com", FirstName = "TestName"});
 
             var usersController = new UsersController(userServiceMock.Object, _logger, _mapper);
 

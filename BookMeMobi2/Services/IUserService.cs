@@ -11,10 +11,12 @@ namespace BookMeMobi2.Services
     public interface IUserService
     {
         Task<UserLoginDto> SignIn(Credentials credentials);
-        Task<UserLoginDto> Register(UserRegisterDto userDto);
+        Task<User> Register(UserRegisterDto userDto);
+        Task ConfirmEmail(string userId, string token);
         Task Logout();
         PagedList<UserDto> GetAllUsers(int pageSize, int pageNumber);
         Task<User> GetUser(string userId);
         Task UpdateUserAsync(string userId, UserUpdateDto model);
+
     }
 }

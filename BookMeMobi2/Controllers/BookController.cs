@@ -87,7 +87,7 @@ namespace BookMeMobi2.Controllers
 
             var bookDto = _mapper.Map<Book, BookDto>(book);
             bookDto.CoverUrl = coverUrl;
-
+           
             return Ok(bookDto);
         }
 

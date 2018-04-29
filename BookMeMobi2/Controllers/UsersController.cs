@@ -67,9 +67,28 @@ namespace BookMeMobi2.Controllers
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] UserRegisterDto userDto)
         {
-            var userLoginDto = await _userService.Register(userDto);
-
+            var user = await _userService.Register(userDto);
+            var userLoginDto = _mapper.Map<User, UserLoginDto>(user);
             return new JsonResult(userLoginDto) { StatusCode = 201 };
+        }
+
+        [Produces("application/json")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(ApiError), 500)]
+        [ProducesResponseType(404)] 
+        [ValidateUserExists]
+        [AllowAnonymous]
+        [HttpGet("confirm", Name = "ConfirmEmail")]
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
+        {
+            if (String.IsNullOrWhiteSpace(token))
+            {
+                return BadRequest();
+            }
+
+            await _userService.ConfirmEmail(userId, token);
+
+            return Ok();
         }
         /// <summary>
         /// Logout user.

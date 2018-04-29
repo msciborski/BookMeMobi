@@ -8,6 +8,6 @@ namespace BookMeMobi2.Services
 {
     public interface IMailService
     {
-        Task SendMailAsync(string To, string subject, Attachment attachment);
+        Task SendMailAsync(string To, string subject, Attachment attachment = null, string messageContent = null);
     }
 }
