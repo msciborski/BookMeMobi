@@ -100,6 +100,7 @@ namespace BookMeMobi2.Services
                         Title = metadata.Title,
                         PublishingDate = metadata.PublishingDate,
                         UploadDate = DateTime.Now.ToUniversalTime(),
+                        Format = GetEbookFormat(file.FileName),
                         Size = Math.Round(ConvertBytesToMegabytes(file.Length), 3),
                         FileName = file.FileName
                     };
