@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Sockets;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,9 +11,13 @@ using AutoMapper;
 using BookMeMobi2.Entities;
 using BookMeMobi2.Helpers.Exceptions;
 using BookMeMobi2.Helpers.Fliters;
+using BookMeMobi2.Models.User;
 using BookMeMobi2.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -25,25 +31,34 @@ namespace BookMeMobi2.Services
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly ITokenService _tokenService;
+        private readonly IActionContextAccessor _actionContextAccessor;
+        private readonly IMailService _mailService;
 
         public UserService(ILogger<UserService> logger, IMapper mapper,UserManager<User> userManager, 
-            SignInManager<User> signInManager, ITokenService tokenService)
+            SignInManager<User> signInManager, ITokenService tokenService, IActionContextAccessor actionContextAccessor, IMailService mailService)
         {
             _logger = logger;
             _mapper = mapper;
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
+            _mailService = mailService;
+            _actionContextAccessor = actionContextAccessor;
         }
         //[ApiException]
         public async Task<UserLoginDto> SignIn(Credentials credentials)
         {
+            var user = await _userManager.FindByNameAsync(credentials.Username);
+            if (!user.EmailConfirmed)
+            {
+                throw new AppException("Email is not confirmed.");
+            }
+
             var result =
                 await _signInManager.PasswordSignInAsync(credentials.Username, credentials.Password, false, false);
             if (result.Succeeded)
             {
 
-                var user = await _userManager.FindByNameAsync(credentials.Username);
                 var token = _tokenService.CreateToken(user);
 
                 var userLoginDto = _mapper.Map<User, UserLoginDto>(user);
@@ -56,26 +71,68 @@ namespace BookMeMobi2.Services
             throw new AppException(result.ToString());
         }
 
-        public async Task<UserLoginDto> Register(UserRegisterDto userDto)
+        public async Task<User> Register(UserRegisterDto userDto)
         {
             var user = _mapper.Map<User>(userDto);
             var result = await _userManager.CreateAsync(user, userDto.Password);
 
             if (result.Succeeded)
             {
-                await _signInManager.SignInAsync(user, isPersistent: false);
-                var token = _tokenService.CreateToken(user);
 
                 _logger.LogInformation($"Succesful register user {user.Id}");
 
-                var userLoginDto = _mapper.Map<User, UserLoginDto>(user);
-                userLoginDto.Token = token;
+                await SendEmailConfirmation(user);
 
-                return userLoginDto;
+                return user;
             }
 
             var errors = Errors(result);
             throw new AppException(errors);
+        }
+
+        public async Task ConfirmEmail(string userId, string token)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (await _userManager.IsEmailConfirmedAsync(user))
+            {
+                throw new AppException("User email was confirmed.");
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+
+            if (!result.Succeeded)
+            {
+                throw new ConfirmationEmailException(Errors(result));
+            }
+        }
+
+        public async Task ForgotPassword(string userName)
+        {
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+            {
+                throw new UserNoFoundException($"User with username {userName} dosen't exist");
+            }
+            if(!(await _userManager.IsEmailConfirmedAsync(user)))
+            {
+                throw new AppException("Email was not confirmed.");
+            }
+
+            await SendResetPasswordEmail(user);
+
+        }
+
+        public async Task ResetPassword(string userId, UserResetPasswordDto model)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                throw new AppException(result.ToString());
+            }
         }
 
         public async Task Logout()
@@ -98,6 +155,18 @@ namespace BookMeMobi2.Services
             return user;
         }
 
+        public async Task UpdateUserAsync(string userId, UserUpdateDto model)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            user.Email = !String.IsNullOrEmpty(model.EmailAddress) ? model.EmailAddress : user.Email;
+            user.KindleEmail = !String.IsNullOrEmpty(model.KindleEmail) ? model.KindleEmail : user.KindleEmail;
+            user.FirstName = !String.IsNullOrEmpty(model.FirstName) ? model.FirstName : user.FirstName;
+            user.LastName = !String.IsNullOrEmpty(model.LastName) ? model.LastName : user.LastName;
+
+            await _userManager.UpdateAsync(user);
+        }
+
         private string Errors(IdentityResult result)
         {
             var items = result.Errors.Select(e => e.Description).AsEnumerable();
@@ -108,6 +177,24 @@ namespace BookMeMobi2.Services
             }
 
             return stringBuilder.ToString();
+        }
+
+        private async Task SendEmailConfirmation(User user)
+        {
+            var corfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+            var callBackUrl = $"http://bookmemobi.tk/confirm?userId={user.Id}&token={corfirmationToken}";
+
+            await _mailService.SendMailAsync(user.Email, "Registration Confirmation", null, callBackUrl);
+        }
+
+        private async Task SendResetPasswordEmail(User user)
+        {
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            var callBackUrl = $"http://bookmemobi.tk/resetPassword?userId={user.Id}&token={token}";
+
+            await _mailService.SendMailAsync(user.Email, "Reset password", null, callBackUrl);
         }
     }
 }

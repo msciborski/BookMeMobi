@@ -9,6 +9,7 @@ using BookMeMobi2.Entities;
 using BookMeMobi2.Helpers.Exceptions;
 using BookMeMobi2.Helpers.Mappings;
 using BookMeMobi2.Models;
+using BookMeMobi2.Models.User;
 using BookMeMobi2.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -89,7 +90,7 @@ namespace BookMeMobi2.Tests
 
             var userServiceMock = new Mock<IUserService>();
             userServiceMock.Setup(m => m.Register(It.IsAny<UserRegisterDto>()))
-                .ReturnsAsync(new UserLoginDto() {Email = "test@test.com", FirstName = "TestName"});
+                .ReturnsAsync(new User() {Email = "test@test.com", FirstName = "TestName"});
 
             var usersController = new UsersController(userServiceMock.Object, _logger, _mapper);
 

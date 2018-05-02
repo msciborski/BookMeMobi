@@ -20,14 +20,19 @@ namespace BookMeMobi2.Services
             _logger = logger;
         }
 
-        public async Task SendMailAsync(string To, string subject, Attachment attachment)
+        public async Task SendMailAsync(string To, string subject, Attachment attachment = null, string messageContent = null)
         {
             MailMessage message = new MailMessage();
             message.IsBodyHtml = false;
             message.From = new MailAddress(_smtpSettings.SMTPUserName);
             message.To.Add(new MailAddress(To));
+            message.Body = messageContent != null ? messageContent : "";
             message.Subject = subject;
-            message.Attachments.Add(attachment);
+
+            if (attachment != null)
+            {
+                message.Attachments.Add(attachment);
+            }
 
             using (SmtpClient client = new SmtpClient(_smtpSettings.SMTPHost, _smtpSettings.SMTPPort))
             {

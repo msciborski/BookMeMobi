@@ -10,6 +10,7 @@ using BookMeMobi2.Entities;
 using BookMeMobi2.Helpers.Exceptions;
 using BookMeMobi2.Helpers.Fliters;
 using BookMeMobi2.Models;
+using BookMeMobi2.Models.User;
 using BookMeMobi2.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -66,10 +67,52 @@ namespace BookMeMobi2.Controllers
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] UserRegisterDto userDto)
         {
-            var userLoginDto = await _userService.Register(userDto);
-
+            var user = await _userService.Register(userDto);
+            var userLoginDto = _mapper.Map<User, UserLoginDto>(user);
             return new JsonResult(userLoginDto) { StatusCode = 201 };
         }
+
+        [Produces("application/json")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(ApiError), 500)]
+        [ProducesResponseType(404)] 
+        [ValidateUserExists]
+        [AllowAnonymous]
+        [HttpGet("{userId}/confirm", Name = "ConfirmEmail")]
+        public async Task<IActionResult> ConfirmEmail(string userId, [FromQuery] string token)
+        {
+            if (String.IsNullOrWhiteSpace(token))
+            {
+                return BadRequest();
+            }
+
+            await _userService.ConfirmEmail(userId, token);
+
+            return Ok();
+        }
+
+        [HttpPost("remindPassword", Name = "RemindPassword")]
+        public async Task<IActionResult> ForgotPassword([FromBody] string userName)
+        {
+            if (String.IsNullOrWhiteSpace(userName))
+            {
+                return BadRequest();
+            }
+
+            await _userService.ForgotPassword(userName);
+            return Ok();
+        }
+
+        [ValidateModel]
+        [ValidateUserExists]
+        [HttpPost("{userId}/resetPassword")]
+        public async Task<IActionResult> ResetPassword(string userId, [FromBody] UserResetPasswordDto model)
+        {
+            await _userService.ResetPassword(userId, model);
+
+            return Ok();
+        }
+
         /// <summary>
         /// Logout user.
         /// </summary>
@@ -111,6 +154,15 @@ namespace BookMeMobi2.Controllers
         {
             var user = await _userService.GetUser(userId);
             return Ok(_mapper.Map<User, UserDto>(user));
+        }
+        [Produces("application/json")]
+        [ProducesResponseType(204)]
+        [ValidateUserExists]
+        [HttpPut("{userId}")]
+        public async Task<IActionResult> UpdateUser(string userId, [FromBody] UserUpdateDto model)
+        {
+            await _userService.UpdateUserAsync(userId, model);
+            return NoContent();
         }
     }
 }

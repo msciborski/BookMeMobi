@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using BookMeMobi2.Entities;
 using BookMeMobi2.Models;
+using BookMeMobi2.Models.Book;
 using Microsoft.AspNetCore.Http;
 
 namespace BookMeMobi2.Services

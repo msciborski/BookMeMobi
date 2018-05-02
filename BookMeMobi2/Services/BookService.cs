@@ -11,6 +11,8 @@ using BookMeMobi2.Helpers.Exceptions;
 using BookMeMobi2.Helpers.Extensions;
 using BookMeMobi2.MobiMetadata;
 using BookMeMobi2.Models;
+using BookMeMobi2.Models.User;
+using BookMeMobi2.Models.Book;
 using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Storage.V1;
 using Microsoft.AspNetCore.Http;

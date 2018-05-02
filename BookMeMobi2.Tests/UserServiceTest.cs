@@ -9,10 +9,12 @@ using BookMeMobi2.Entities;
 using BookMeMobi2.Helpers.Exceptions;
 using BookMeMobi2.Helpers.Mappings;
 using BookMeMobi2.Models;
+using BookMeMobi2.Models.User;
 using BookMeMobi2.Services;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -56,7 +58,9 @@ namespace BookMeMobi2.Tests
             fakeSignInManager.Setup(
                 m => m.PasswordSignInAsync(credentials.Username, credentials.Password, false, false)).ReturnsAsync(SignInResult.Success);
 
-            var userService = new UserService(_logger, _mapper, fakeUserManager.Object, fakeSignInManager.Object, _tokenService);
+            var mailServiceMock = new Mock<IMailService>();
+            var actionContextAccessorMock = new Mock<IActionContextAccessor>();
+            var userService = new UserService(_logger, _mapper, fakeUserManager.Object, fakeSignInManager.Object, _tokenService, actionContextAccessorMock.Object, mailServiceMock.Object);
 
             //Act
             var result = await userService.SignIn(credentials);
@@ -80,7 +84,9 @@ namespace BookMeMobi2.Tests
             fakeSignInManager.Setup(
                 m => m.PasswordSignInAsync(credentials.Username, credentials.Password, false, false)).ReturnsAsync(SignInResult.Failed);
 
-            var userService = new UserService(_logger, _mapper, fakeUserManager.Object, fakeSignInManager.Object, _tokenService);
+            var mailServiceMock = new Mock<IMailService>();
+            var actionContextAccessorMock = new Mock<IActionContextAccessor>();
+            var userService = new UserService(_logger, _mapper, fakeUserManager.Object, fakeSignInManager.Object, _tokenService, actionContextAccessorMock.Object, mailServiceMock.Object);
 
             //Act&&Assert
             await Assert.ThrowsAsync<AppException>(async () => await userService.SignIn(credentials));
@@ -103,8 +109,11 @@ namespace BookMeMobi2.Tests
             var fakeSignInManager = new Mock<FakeSignInManager>();
             fakeSignInManager.Setup(m => m.SignInAsync(It.IsAny<User>(), false, null))
                 .Returns(Task.CompletedTask);
-
-            var userService = new UserService(_logger, _mapper, fakeUserManager.Object, fakeSignInManager.Object, _tokenService);
+            var mailServiceMock = new Mock<IMailService>();
+            mailServiceMock.Setup(
+                m => m.SendMailAsync(It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<string>()));
+            var actionContextAccessorMock = new Mock<IActionContextAccessor>();
+            var userService = new UserService(_logger, _mapper, fakeUserManager.Object, fakeSignInManager.Object, _tokenService, actionContextAccessorMock.Object, mailServiceMock.Object);
 
             //Act
 
@@ -129,8 +138,9 @@ namespace BookMeMobi2.Tests
             var fakeSignInManager = new Mock<FakeSignInManager>();
             fakeSignInManager.Setup(m => m.SignInAsync(It.IsAny<User>(), false, null))
                 .Returns(Task.CompletedTask);
-
-            var userService = new UserService(_logger, _mapper, fakeUserManager.Object, fakeSignInManager.Object, _tokenService);
+            var mailServiceMock = new Mock<IMailService>();
+            var actionContextAccessorMock = new Mock<IActionContextAccessor>();
+            var userService = new UserService(_logger, _mapper, fakeUserManager.Object, fakeSignInManager.Object, _tokenService, actionContextAccessorMock.Object, mailServiceMock.Object);
 
             //Act&Assert
             await Assert.ThrowsAsync<AppException>(async () => await userService.Register(userRegisterDto));
@@ -164,9 +174,10 @@ namespace BookMeMobi2.Tests
             fakeUserManager.Setup(m => m.Users).Returns(users.AsQueryable);
 
             var fakeSignInManager = new Mock<FakeSignInManager>();
-
+            var mailServiceMock = new Mock<IMailService>();
+            var actionContextAccessorMock = new Mock<IActionContextAccessor>();
             var userService = new UserService(_logger, _mapper, fakeUserManager.Object, 
-                fakeSignInManager.Object, _tokenService);
+                fakeSignInManager.Object, _tokenService, actionContextAccessorMock.Object, mailServiceMock.Object);
 
             //Action
 
@@ -200,9 +211,11 @@ namespace BookMeMobi2.Tests
             fakeUserManager.Setup(m => m.Users).Returns(users.AsQueryable);
 
             var fakeSignInManager = new Mock<FakeSignInManager>();
+            var mailServiceMock = new Mock<IMailService>();
+            var actionContextAccessorMock = new Mock<IActionContextAccessor>();
 
             var userService = new UserService(_logger, _mapper, fakeUserManager.Object,
-                fakeSignInManager.Object, _tokenService);
+                fakeSignInManager.Object, _tokenService, actionContextAccessorMock.Object, mailServiceMock.Object);
 
             //Action
 
@@ -226,9 +239,10 @@ namespace BookMeMobi2.Tests
             fakeUserManager.Setup(m => m.FindByIdAsync(It.IsAny<string>())).ReturnsAsync(user);
 
             var fakeSignInManager = new Mock<FakeSignInManager>();
-
+            var mailServiceMock = new Mock<IMailService>();
+            var actionContextAccessorMock = new Mock<IActionContextAccessor>();
             var userService = new UserService(_logger, _mapper, fakeUserManager.Object, 
-                fakeSignInManager.Object, _tokenService);
+                fakeSignInManager.Object, _tokenService, actionContextAccessorMock.Object, mailServiceMock.Object);
 
             //Act
             var result = await userService.GetUser("ID1");
@@ -246,9 +260,10 @@ namespace BookMeMobi2.Tests
             fakeUserManager.Setup(m => m.FindByIdAsync(It.IsAny<string>())).Throws(new UserNoFoundException());
 
             var fakeSignInManager = new Mock<FakeSignInManager>();
-
+            var mailServiceMock = new Mock<IMailService>();
+            var actionContextAccessorMock = new Mock<IActionContextAccessor>();
             var userService = new UserService(_logger, _mapper, fakeUserManager.Object,
-                fakeSignInManager.Object, _tokenService);
+                fakeSignInManager.Object, _tokenService, actionContextAccessorMock.Object, mailServiceMock.Object);
 
             //Act&Assert
             await Assert.ThrowsAsync<UserNoFoundException>(async () => await userService.GetUser("IDNOTFOUND"));

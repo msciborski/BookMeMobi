@@ -14,7 +14,9 @@ using Google.Cloud.Diagnostics.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -58,7 +60,7 @@ namespace BookMeMobi2
                 o.Password.RequireDigit = true;
                 o.Password.RequiredLength = 6;
                 o.Password.RequireUppercase = true;
-                o.Password.RequireUppercase = true;
+                o.SignIn.RequireConfirmedEmail = true;
             }).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
             var secret = Encoding.ASCII.GetBytes(Configuration["JWTSettings:Secret"]);
@@ -101,6 +103,7 @@ namespace BookMeMobi2
             services.AddTransient<IStorageService, GoogleStorageService>();
             services.AddTransient<IPropertyMappingService, PropertyMappingService>();
             services.AddScoped<ValidateModelAttribute>();
+            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

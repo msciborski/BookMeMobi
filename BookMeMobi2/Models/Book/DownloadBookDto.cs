@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BookMeMobi2.Models
+namespace BookMeMobi2.Models.Book
 {
     public class DownloadBookDto
     {

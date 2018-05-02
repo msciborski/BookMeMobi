@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using AutoMapper;
 using BookMeMobi2.Entities;
 using BookMeMobi2.Models;
+using BookMeMobi2.Models.Book;
+using BookMeMobi2.Models.User;
 
 namespace BookMeMobi2.Helpers.Mappings
 {
