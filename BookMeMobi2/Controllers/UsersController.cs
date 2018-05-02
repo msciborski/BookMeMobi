@@ -78,8 +78,8 @@ namespace BookMeMobi2.Controllers
         [ProducesResponseType(404)] 
         [ValidateUserExists]
         [AllowAnonymous]
-        [HttpGet("confirm", Name = "ConfirmEmail")]
-        public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
+        [HttpGet("{userId}/confirm", Name = "ConfirmEmail")]
+        public async Task<IActionResult> ConfirmEmail(string userId, [FromQuery] string token)
         {
             if (String.IsNullOrWhiteSpace(token))
             {
@@ -90,6 +90,29 @@ namespace BookMeMobi2.Controllers
 
             return Ok();
         }
+
+        [HttpPost("remindPassword", Name = "RemindPassword")]
+        public async Task<IActionResult> ForgotPassword([FromBody] string userName)
+        {
+            if (String.IsNullOrWhiteSpace(userName))
+            {
+                return BadRequest();
+            }
+
+            await _userService.ForgotPassword(userName);
+            return Ok();
+        }
+
+        [ValidateModel]
+        [ValidateUserExists]
+        [HttpPost("{userId}/resetPassword")]
+        public async Task<IActionResult> ResetPassword(string userId, [FromBody] UserResetPasswordDto model)
+        {
+            await _userService.ResetPassword(userId, model);
+
+            return Ok();
+        }
+
         /// <summary>
         /// Logout user.
         /// </summary>

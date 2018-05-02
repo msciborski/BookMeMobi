@@ -60,7 +60,6 @@ namespace BookMeMobi2
                 o.Password.RequireDigit = true;
                 o.Password.RequiredLength = 6;
                 o.Password.RequireUppercase = true;
-                o.Password.RequireUppercase = true;
                 o.SignIn.RequireConfirmedEmail = true;
             }).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 

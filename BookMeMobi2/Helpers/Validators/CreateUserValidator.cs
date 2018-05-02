@@ -6,7 +6,7 @@ using BookMeMobi2.Models;
 using BookMeMobi2.Models.User;
 using FluentValidation;
 
-namespace BookMeMobi2.Helpers.Validators
+namespace BookMeMobi2.Helpers.Validators 
 {
     public class CreateUserValidator : AbstractValidator<UserRegisterDto>
     {

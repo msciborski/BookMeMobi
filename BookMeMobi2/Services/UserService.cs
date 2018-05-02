@@ -93,11 +93,45 @@ namespace BookMeMobi2.Services
         public async Task ConfirmEmail(string userId, string token)
         {
             var user = await _userManager.FindByIdAsync(userId);
+
+            if (await _userManager.IsEmailConfirmedAsync(user))
+            {
+                throw new AppException("User email was confirmed.");
+            }
+
             var result = await _userManager.ConfirmEmailAsync(user, token);
 
             if (!result.Succeeded)
             {
                 throw new ConfirmationEmailException(Errors(result));
+            }
+        }
+
+        public async Task ForgotPassword(string userName)
+        {
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+            {
+                throw new UserNoFoundException($"User with username {userName} dosen't exist");
+            }
+            if(!(await _userManager.IsEmailConfirmedAsync(user)))
+            {
+                throw new AppException("Email was not confirmed.");
+            }
+
+            await SendResetPasswordEmail(user);
+
+        }
+
+        public async Task ResetPassword(string userId, UserResetPasswordDto model)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                throw new AppException(result.ToString());
             }
         }
 
@@ -145,15 +179,22 @@ namespace BookMeMobi2.Services
             return stringBuilder.ToString();
         }
 
-        public async Task SendEmailConfirmation(User user)
+        private async Task SendEmailConfirmation(User user)
         {
-            var actionContext = _actionContextAccessor.ActionContext;
             var corfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
-            IUrlHelper urlHelper = new UrlHelper(actionContext);
-            var callBackUrl = urlHelper.Action("ConfirmEmail", "Users", new {userId = user.Id, token = corfirmationToken});
+            var callBackUrl = $"http://bookmemobi.tk/confirm?userId={user.Id}&token={corfirmationToken}";
 
             await _mailService.SendMailAsync(user.Email, "Registration Confirmation", null, callBackUrl);
+        }
+
+        private async Task SendResetPasswordEmail(User user)
+        {
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            var callBackUrl = $"http://bookmemobi.tk/resetPassword?userId={user.Id}&token={token}";
+
+            await _mailService.SendMailAsync(user.Email, "Reset password", null, callBackUrl);
         }
     }
 }

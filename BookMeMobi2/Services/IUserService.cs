@@ -13,6 +13,8 @@ namespace BookMeMobi2.Services
         Task<UserLoginDto> SignIn(Credentials credentials);
         Task<User> Register(UserRegisterDto userDto);
         Task ConfirmEmail(string userId, string token);
+        Task ForgotPassword(string userName);
+        Task ResetPassword(string userId, UserResetPasswordDto model);
         Task Logout();
         PagedList<UserDto> GetAllUsers(int pageSize, int pageNumber);
         Task<User> GetUser(string userId);
