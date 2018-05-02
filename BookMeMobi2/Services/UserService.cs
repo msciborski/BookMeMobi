@@ -49,6 +49,10 @@ namespace BookMeMobi2.Services
         public async Task<UserLoginDto> SignIn(Credentials credentials)
         {
             var user = await _userManager.FindByNameAsync(credentials.Username);
+            if (user == null)
+            {
+                throw new UserNoFoundException($"User {credentials.Username} dosen't exist.");
+            }
             if (!user.EmailConfirmed)
             {
                 throw new AppException("Email is not confirmed.");

@@ -61,6 +61,8 @@ namespace BookMeMobi2
                 o.Password.RequiredLength = 6;
                 o.Password.RequireUppercase = true;
                 o.SignIn.RequireConfirmedEmail = true;
+
+                o.Tokens.EmailConfirmationTokenProvider = TokenOptions.DefaultEmailProvider;
             }).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
             var secret = Encoding.ASCII.GetBytes(Configuration["JWTSettings:Secret"]);

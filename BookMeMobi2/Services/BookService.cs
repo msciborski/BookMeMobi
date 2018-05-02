@@ -79,6 +79,7 @@ namespace BookMeMobi2.Services
             await _mailService.SendMailAsync(user.KindleEmail, book.FileName, attachment);
 
             book.IsSentToKindle = true;
+
             _context.Books.Update(book);
             await _context.SaveChangesAsync();
         }
