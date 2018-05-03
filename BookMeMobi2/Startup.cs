@@ -45,6 +45,7 @@ namespace BookMeMobi2
             services.Configure<GoogleCloudStorageSettings>(Configuration.GetSection("GoogleCloudStorage"));
             services.Configure<StackdriveSettings>(Configuration.GetSection("Stackdrive"));
             services.Configure<SMTPSettings>(Configuration.GetSection("SMTP"));
+            services.Configure<SendGridSettings>(Configuration.GetSection("SendGrid"));
 
             services.AddCors();
 
@@ -101,7 +102,7 @@ namespace BookMeMobi2
             services.AddTransient<IBookService, BookService>();
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<ITokenService, TokenService>();
-            services.AddTransient<IMailService, MailService>();
+            services.AddTransient<IMailService, SendGridMailService>();
             services.AddTransient<IStorageService, GoogleStorageService>();
             services.AddTransient<IPropertyMappingService, PropertyMappingService>();
             services.AddScoped<ValidateModelAttribute>();

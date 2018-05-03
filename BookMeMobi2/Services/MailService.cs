@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
@@ -20,7 +21,7 @@ namespace BookMeMobi2.Services
             _logger = logger;
         }
 
-        public async Task SendMailAsync(string To, string subject, Attachment attachment = null, string messageContent = null)
+        public async Task SendMailAsync(string To, string subject, string messageContent = null, Stream stream = null, string fileName = null)
         {
             MailMessage message = new MailMessage();
             message.IsBodyHtml = false;
@@ -29,9 +30,9 @@ namespace BookMeMobi2.Services
             message.Body = messageContent != null ? messageContent : "";
             message.Subject = subject;
 
-            if (attachment != null)
+            if (stream != null && !String.IsNullOrEmpty(fileName))
             {
-                message.Attachments.Add(attachment);
+                Attachment attachment = new Attachment(stream, fileName);
             }
 
             using (SmtpClient client = new SmtpClient(_smtpSettings.SMTPHost, _smtpSettings.SMTPPort))
