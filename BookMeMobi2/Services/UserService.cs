@@ -189,7 +189,7 @@ namespace BookMeMobi2.Services
 
             var callBackUrl = $"http://bookmemobi.tk/confirm?userId={user.Id}&token={corfirmationToken}";
 
-            await _mailService.SendMailAsync(user.Email, "Registration Confirmation", null, callBackUrl);
+            await _mailService.SendMailAsync(user.Email, "Confirmation mail", callBackUrl);
         }
 
         private async Task SendResetPasswordEmail(User user)
@@ -198,7 +198,7 @@ namespace BookMeMobi2.Services
 
             var callBackUrl = $"http://bookmemobi.tk/resetPassword?userId={user.Id}&token={token}";
 
-            await _mailService.SendMailAsync(user.Email, "Reset password", null, callBackUrl);
+            await _mailService.SendMailAsync(user.Email, "Reset password", callBackUrl);
         }
     }
 }

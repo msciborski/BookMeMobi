@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -110,8 +111,9 @@ namespace BookMeMobi2.Tests
             fakeSignInManager.Setup(m => m.SignInAsync(It.IsAny<User>(), false, null))
                 .Returns(Task.CompletedTask);
             var mailServiceMock = new Mock<IMailService>();
-            mailServiceMock.Setup(
-                m => m.SendMailAsync(It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<string>()));
+            mailServiceMock.Setup(m => m.SendMailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<Stream>(), It.IsAny<string>()));
+
             var actionContextAccessorMock = new Mock<IActionContextAccessor>();
             var userService = new UserService(_logger, _mapper, fakeUserManager.Object, fakeSignInManager.Object, _tokenService, actionContextAccessorMock.Object, mailServiceMock.Object);
 

@@ -75,8 +75,7 @@ namespace BookMeMobi2.Services
             Book book = await GetBookForUserAsync(userId, bookId);
             User user = await _context.Users.FindAsync(userId);
             Stream stream = await DownloadBookAsync(userId, bookId, book.FileName);
-            Attachment attachment = new Attachment(stream, book.FileName);
-            await _mailService.SendMailAsync(user.KindleEmail, book.FileName, attachment);
+            await _mailService.SendMailAsync(user.Email, $"{book.Title}", null, stream, book.FileName);
 
             book.IsSentToKindle = true;
 
