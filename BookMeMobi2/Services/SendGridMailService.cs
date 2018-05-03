@@ -33,7 +33,8 @@ namespace BookMeMobi2.Services
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _settings.ApiKey);
         }
 
-        public async Task SendMailAsync(string To, string subject, string messageContent = null, Stream stream = null, string fileName = null)
+        public async Task SendMailAsync(string To, string subject, string messageContent = null, Stream stream = null,
+            string fileName = null)
         {
             var sendGridMessage = new SendGridMessage();
             sendGridMessage.AddPersonalization(To, subject);
@@ -45,6 +46,8 @@ namespace BookMeMobi2.Services
             {
                 await sendGridMessage.AddAttchament(fileName, stream);
             }
+
+            sendGridMessage.From = new EmailAddress(){Email = "bookme@mobi.tk"};
 
             var jsonRequest = JsonConvert.SerializeObject(sendGridMessage, _serializerSettings);
 
@@ -59,4 +62,5 @@ namespace BookMeMobi2.Services
 
 
         }
+    }
 }

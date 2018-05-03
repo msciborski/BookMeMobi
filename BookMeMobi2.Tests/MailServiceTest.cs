@@ -31,8 +31,8 @@ namespace BookMeMobi2.Tests
         {
             //Assert
             var mailService = new MailService(_smtpSettings, _logger);
-            
-            await mailService.SendMailAsync("norbini12@gmail.com", "test", new Attachment(new MemoryStream(), "test.mobi"));
+
+            await mailService.SendMailAsync("norbini12@gmail.com", "Test", "test", new MemoryStream(), "test.test");
         }
     }
 }
