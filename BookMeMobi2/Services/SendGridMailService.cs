@@ -53,7 +53,7 @@ namespace BookMeMobi2.Services
 
             var respone = await _client.PostAsync(_settings.SendUrl,
                 new StringContent(jsonRequest, Encoding.UTF8, "application/json"));
-            var responseContent = await respone.Content.ReadAsStringAsync();
+
             if (!respone.IsSuccessStatusCode)
             {
                 throw new Exception("Cant send mail.");
