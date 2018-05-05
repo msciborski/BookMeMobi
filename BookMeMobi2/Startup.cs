@@ -11,6 +11,8 @@ using BookMeMobi2.Options;
 using BookMeMobi2.Services;
 using FluentValidation.AspNetCore;
 using Google.Cloud.Diagnostics.AspNetCore;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -24,6 +26,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace BookMeMobi2
@@ -87,6 +90,10 @@ namespace BookMeMobi2
 
             services.AddAutoMapper();
 
+
+
+                services.AddHangfire(config => config.UsePostgreSqlStorage(Configuration.GetConnectionString("HangFireDb")));
+
             services.AddMvc(o => o.Filters.Add(typeof(ApiExceptionAttributeImpl))).AddFluentValidation(o => o.RegisterValidatorsFromAssemblyContaining<Startup>());
 
             services.AddSwaggerGen(c =>
@@ -123,6 +130,10 @@ namespace BookMeMobi2
             
             app.UseCors(o => o.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().AllowCredentials());
             app.UseStaticFiles();
+
+            app.UseHangfireDashboard();
+            app.UseHangfireServer();
+
             app.UseMvc();
 
             app.UseSwagger();
