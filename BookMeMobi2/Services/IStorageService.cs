@@ -14,5 +14,7 @@ namespace BookMeMobi2.Services
         Task<Stream> DownloadBookAsync(string userId, int bookId, string bookFileName);
         string GetDownloadUrl(string userId, int bookId, string bookFileName);
         string GetCoverUrl(string userId, int bookId, string coverName);
+        Task DeleteBookAsync(string userId, int bookId, string bookFileName);
+        Task DeleteCoverAsync(string userId, int bookId, string bookFileName);
     }
 }

@@ -33,6 +33,14 @@ namespace BookMeMobi2.Services
                     storage.UploadObject(_googleCloudStorageSettings.BucketName, bookPath, null, file);
             }
         }
+        public async Task DeleteBookAsync(string userId, int bookId, string bookFileName)
+        {
+            var bookPath = $"{_baseBookPath}{userId}/{bookId}/{bookFileName}";
+            using (var storage = await StorageClient.CreateAsync(_credential))
+            {
+                await storage.DeleteObjectAsync(_googleCloudStorageSettings.BucketName, bookPath);
+            }
+        }
 
         public async Task<string> UploadCoverAsync(Stream cover, string userId, int bookId, string bookFileName)
         {
@@ -47,6 +55,17 @@ namespace BookMeMobi2.Services
 
             return coverName;
         }
+
+        public async Task DeleteCoverAsync(string userId, int bookId, string bookFileName)
+        {
+            var coverName = $"cover{bookId}.jpg";
+            var coverPath = $"{_baseBookPath}{userId}/{bookId}/{coverName}";
+
+            using (var storage = await StorageClient.CreateAsync(_credential))
+            {
+                await storage.DeleteObjectAsync(_googleCloudStorageSettings.BucketName, coverPath);
+            }
+        }
         public async Task<Stream> DownloadBookAsync(string userId, int bookId, string bookFileName)
         {
             var bookPath = $"{_baseBookPath}{userId}/{bookId}/{bookFileName}";
@@ -58,6 +77,8 @@ namespace BookMeMobi2.Services
                 return stream;
             }
         }
+
+
 
         public string GetDownloadUrl(string userId, int bookId, string bookFileName)
         {

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using BookMeMobi2.Entities;
+using BookMeMobi2.Hangfire;
 using BookMeMobi2.Helpers.Fliters;
 using BookMeMobi2.Options;
 using BookMeMobi2.Services;
@@ -114,10 +115,11 @@ namespace BookMeMobi2
             services.AddTransient<IPropertyMappingService, PropertyMappingService>();
             services.AddScoped<ValidateModelAttribute>();
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            services.AddScoped<ReccuringDbJobs>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
         {
             if (env.IsDevelopment())
             {
@@ -131,8 +133,15 @@ namespace BookMeMobi2
             app.UseCors(o => o.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().AllowCredentials());
             app.UseStaticFiles();
 
+            GlobalConfiguration.Configuration.UseActivator(new HangfireActivator(serviceProvider));
+
+            //app.UseHangfireDashboard("/hangfire", new DashboardOptions()
+            //{
+            //    Authorization = new[] {new CustomAuthorizeFilter()}
+            //});
             app.UseHangfireDashboard();
             app.UseHangfireServer();
+            RecurringJob.AddOrUpdate<ReccuringDbJobs>(x =>  x.DeleteSoftDeletedBooksOlderThan30DaysAsync(), Cron.Daily(3));
 
             app.UseMvc();
 
