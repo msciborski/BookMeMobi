@@ -91,6 +91,9 @@ namespace BookMeMobi2.Controllers
             return Ok();
         }
 
+        [Produces("application/json")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(ApiError), 500)]
         [HttpPost("remindPassword", Name = "RemindPassword")]
         public async Task<IActionResult> ForgotPassword([FromBody] string userName)
         {
@@ -103,6 +106,9 @@ namespace BookMeMobi2.Controllers
             return Ok();
         }
 
+        [Produces("application/json")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(ApiError), 500)]
         [ValidateModel]
         [ValidateUserExists]
         [HttpPost("{userId}/resetPassword")]
@@ -155,6 +161,7 @@ namespace BookMeMobi2.Controllers
             var user = await _userService.GetUser(userId);
             return Ok(_mapper.Map<User, UserDto>(user));
         }
+
         [Produces("application/json")]
         [ProducesResponseType(204)]
         [ValidateUserExists]
