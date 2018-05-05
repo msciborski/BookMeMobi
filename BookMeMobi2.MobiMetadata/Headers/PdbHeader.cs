@@ -7,101 +7,139 @@ using BookMeMobi2.MobiMetadata.Utilities;
 
 namespace BookMeMobi2.MobiMetadata.Headers
 {
-    public class PdbHeader
+    public class PDBHeader
     {
-        private readonly Stream _stream;
+        private Stream _stream;
 
-        #region Byte arrays
+        #region ByteArrays
 
-        public byte[] _name = new byte[32];
-        public byte[] _attributes = new byte[2];
-        public byte[] _version = new byte[2];
-        public byte[] _createDate = new byte[4];
-        public byte[] _lastBackupDate = new byte[4];
-        public byte[] _modificationDate = new byte[4];
-        public byte[] _modificationNumber = new byte[4];
-        public byte[] _appInfoId = new byte[4];
-        public byte[] _sortInfoId = new byte[4];
-        public byte[] _type = new byte[4];
-        public byte[] _creator = new byte[4];
-        public byte[] _uniqueIdSeed = new byte[4];
-        public byte[] _nextRecordListId = new byte[4];
-        public byte[] _numberOfRecords = new byte[2];
-        public byte[] _gapToData = new byte[2];
+        private byte[] _name = new byte[32];
+        private byte[] _attributes = new byte[2];
+        private byte[] _version = new byte[2];
+        private byte[] _creationDate = new byte[4];
+        private byte[] _backupDate = new byte[4];
+        private byte[] _modificationDate = new byte[4];
+        private byte[] _modificationNumber = new byte[4];
+        private byte[] _applicationInfoId = new byte[4];
+        private byte[] _applicationSortId = new byte[4];
+        private byte[] _type = new byte[4];
+        private byte[] _creator = new byte[4];
+        private byte[] _uniqeIdSeed = new byte[4];
+        private byte[] _nextRecordList = new byte[2];
+        private byte[] _recordsCount = new byte[4];
 
+        private byte[] _gapData = new byte[2];
         #endregion
 
         #region Properties
+        public string Name
+        {
+            get { return StreamUtils.ToString(_name); }
+        }
 
-        public string Name => ByteUtils.ToString(_name);
-        public int Attributes => ByteUtils.GetInt32(_attributes);
-        public int Version => ByteUtils.GetInt32(_version);
-        public DateTime? CreateDate => GetHeaderDate(_createDate);
-        public DateTime? ModificationDate => GetHeaderDate(_modificationDate);
-        public DateTime? LastBackupDate => GetHeaderDate(_lastBackupDate);
-        public int ModificationNumber => ByteUtils.GetInt32(_modificationNumber);
-        public int AppInfoId => ByteUtils.GetInt32(_appInfoId);
-        public int SortInfoId => ByteUtils.GetInt32(_sortInfoId);
-        public int Type => ByteUtils.GetInt32(_type);
-        public int Creator => ByteUtils.GetInt32(_creator);
-        public int UniqueIdSeed => ByteUtils.GetInt32(_uniqueIdSeed);
-        public int NextRecordListId => ByteUtils.GetInt32(_nextRecordListId);
-        public int NumberOfRecords => ByteUtils.GetInt32(_numberOfRecords);
-        public List<PdbRecord> Records { get; set; }
-        public int GapToData => ByteUtils.GetInt32(_gapToData);
-        public int MobiHeaderSize => Records.Count > 1 ? Records[1].Offset - Records[0].Offset : 0;
-        public int OffsetAfterMobiHeader => Records.Count > 1 ? Records[1].Offset : 0;
+        public void SetName(string name)
+        {
+            var nameBytes = Encoding.UTF8.GetBytes(name);
+            var nameLength = nameBytes.Length;
+            _name = new byte[32];
+            Array.Copy(nameBytes, 0, _name, 0, nameLength);
+        }
 
+        public int Attributes => StreamUtils.ToInt16(_attributes);
+        public int Version => StreamUtils.ToInt16(_version);
+        public DateTime? CreationDate => StreamUtils.ToDateTime(_creationDate);
+        public DateTime? BackupDate => StreamUtils.ToDateTime(_backupDate);
+        public DateTime? ModificationDate => StreamUtils.ToDateTime(_modificationDate);
+        public int ModificationNumber => StreamUtils.ToInt32(_modificationNumber);
+        public int ApplicationInfoId => StreamUtils.ToInt32(_applicationInfoId);
+        public int ApplicationSortId => StreamUtils.ToInt32(_applicationSortId);
+        public int Type => StreamUtils.ToInt32(_type);
+        public int Creator => StreamUtils.ToInt32(_creator);
+        public int UniqueIdSeed => StreamUtils.ToInt32(_uniqeIdSeed);
+        public int NextRecordList => StreamUtils.ToInt32(_nextRecordList);
+        public int RecordsCount => StreamUtils.ToInt32(_recordsCount);
+        public long MobiHeaderSize => GetMobiHeaderSize();
+        public List<PDBRecord> PDBRecords { get; } = new List<PDBRecord>();
+
+        public int OffsetAfterMobiHeader => PDBRecords.Count > 1 ? PDBRecords[1].Offset : 0;
         #endregion
 
 
-
-
-        internal PdbHeader(Stream stream)
+        public PDBHeader(Stream stream)
         {
             _stream = stream;
         }
 
-        internal async Task LoadPdbHeader()
+        public async Task LoadPDBHeader()
         {
+            Console.WriteLine($"PDB Header start: {_stream.Position}");
+            await _stream.ReadBytesFromStreamAsync(_name);
+            await _stream.ReadBytesFromStreamAsync(_attributes);
+            await _stream.ReadBytesFromStreamAsync(_version);
+            await _stream.ReadBytesFromStreamAsync(_creationDate);
+            await _stream.ReadBytesFromStreamAsync(_backupDate);
+            await _stream.ReadBytesFromStreamAsync(_modificationDate);
+            await _stream.ReadBytesFromStreamAsync(_modificationNumber);
+            await _stream.ReadBytesFromStreamAsync(_applicationInfoId);
+            await _stream.ReadBytesFromStreamAsync(_applicationSortId);
+            await _stream.ReadBytesFromStreamAsync(_type);
+            await _stream.ReadBytesFromStreamAsync(_creator);
+            await _stream.ReadBytesFromStreamAsync(_uniqeIdSeed);
+            await _stream.ReadBytesFromStreamAsync(_nextRecordList);
+            await _stream.ReadBytesFromStreamAsync(_recordsCount);
 
-            await _stream.ReadAsync(_name, 0, _name.Length);
-            await _stream.ReadAsync(_attributes, 0, _attributes.Length);
-            await _stream.ReadAsync(_version, 0, _version.Length);
-            await _stream.ReadAsync(_createDate, 0, _createDate.Length);
-            await _stream.ReadAsync(_lastBackupDate, 0, _lastBackupDate.Length);
-            await _stream.ReadAsync(_modificationDate, 0, _modificationDate.Length);
-            await _stream.ReadAsync(_modificationNumber, 0, _modificationNumber.Length);
-            await _stream.ReadAsync(_appInfoId, 0, _appInfoId.Length);
-            await _stream.ReadAsync(_sortInfoId, 0, _sortInfoId.Length);
-            await _stream.ReadAsync(_type, 0, _type.Length);
-            await _stream.ReadAsync(_creator, 0, _creator.Length);
-            await _stream.ReadAsync(_uniqueIdSeed, 0, _uniqueIdSeed.Length);
-            await _stream.ReadAsync(_nextRecordListId, 0, _nextRecordListId.Length);
-            await _stream.ReadAsync(_numberOfRecords, 0, _numberOfRecords.Length);
+            //Read PDB Records
+            await LoadPDBRecords();
 
-            Records = new List<PdbRecord>();
-            for (var i = 0; i < NumberOfRecords; i++)
-            {
-                var pdbRecord = new PdbRecord(_stream);
-                await pdbRecord.LoadRecordInfo();
-                Records.Add(pdbRecord);
+            //Skip GapData (2 bytes)
+            await _stream.ReadBytesFromStreamAsync(_gapData);
 
-            }
+            Console.WriteLine($"PDB Header end: {_stream.Position}");
 
-            await _stream.ReadAsync(_gapToData, 0, _gapToData.Length);
+            //Console.WriteLine($"Stream position: {_stream.Position}");
+            //Console.WriteLine($"PDBRecordsList.Length: {PDBRecords.Count}");
+            //Console.WriteLine($"RecordsCount: {RecordsCount}");
+
         }
 
-        private DateTime? GetHeaderDate(byte[] secondBytes)
+        public async Task Write(Stream stream)
         {
+            await stream.WriteAsync(_name, 0, _name.Length);
+            await stream.WriteAsync(_attributes, 0, _attributes.Length);
+            await stream.WriteAsync(_version, 0, _version.Length);
+            await stream.WriteAsync(_creationDate, 0, _creationDate.Length);
+            await stream.WriteAsync(_backupDate, 0, _backupDate.Length);
+            await stream.WriteAsync(_modificationDate, 0, _modificationDate.Length);
+            await stream.WriteAsync(_modificationNumber, 0, _modificationNumber.Length);
+            await stream.WriteAsync(_applicationInfoId, 0, _applicationInfoId.Length);
+            await stream.WriteAsync(_applicationSortId, 0, _applicationSortId.Length);
+            await stream.WriteAsync(_type, 0, _type.Length);
+            await stream.WriteAsync(_creator, 0, _creator.Length);
+            await stream.WriteAsync(_uniqeIdSeed, 0, _uniqeIdSeed.Length);
+            await stream.WriteAsync(_nextRecordList, 0, _nextRecordList.Length);
+            await stream.WriteAsync(_recordsCount, 0, _recordsCount.Length);
 
-            int seconds = ByteUtils.GetInt32(secondBytes);
+            foreach (var pdbRecord in PDBRecords)
+            {
+                await pdbRecord.Write(stream);
+            }
 
-            if (seconds == 0)
-                return null;
+            await stream.WriteAsync(_gapData, 0, _gapData.Length);
+        }
 
-            var date = new DateTime(1970, 1, 1, 0, 0, 0);
-            return date.AddSeconds(seconds);
+        private async Task LoadPDBRecords()
+        {
+            for (int i = 0; i < RecordsCount; i++)
+            {
+                PDBRecord pdbRecord = new PDBRecord(_stream);
+                await pdbRecord.LoadPDBRecord();
+                PDBRecords.Add(pdbRecord);
+            }
+        }
+
+        private long GetMobiHeaderSize()
+        {
+            return (PDBRecords.Count > 1) ? PDBRecords[1].Offset - PDBRecords[0].Offset : 0;
         }
     }
 }

@@ -11,8 +11,8 @@ namespace BookMeMobi2.MobiMetadata
     {
         #region Properties
 
-        public PdbHeader PdbHeader { get; set; }
-        public MobiHeader MobiHeader { get; set; }
+        public PDBHeader PdbHeader { get; set; }
+        public MOBIHeader MobiHeader { get; set; }
         //public string FilePath { get; private set; }
         public string Title => GetTitle();
         public string Author => GetAuthor();

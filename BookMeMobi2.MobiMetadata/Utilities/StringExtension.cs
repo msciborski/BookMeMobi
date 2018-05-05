@@ -29,5 +29,9 @@ namespace BookMeMobi2.MobiMetadata.Utilities
 
             return s;
         }
+        public static string ReplaceNullTerminatorWithEmpty(this string source)
+        {
+            return source.Replace("\0", "");
+        }
     }
 }

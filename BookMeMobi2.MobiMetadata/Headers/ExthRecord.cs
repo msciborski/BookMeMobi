@@ -7,51 +7,67 @@ using BookMeMobi2.MobiMetadata.Utilities;
 
 namespace BookMeMobi2.MobiMetadata.Headers
 {
-    public class ExthRecord
+    public class EXTHRecord
     {
-        private readonly Stream _stream;
-        #region Byte arrays
+        private Stream _stream;
 
-        private byte[] _type = new byte[4];
-        private byte[] _length = new byte[4];
+        #region ByteArrays
 
+        private byte[] _recordType = new byte[4];
+        private byte[] _recordLength = new byte[4];
+        private byte[] _data;
 
         #endregion
 
         #region Properties
-        public int Type => ByteUtils.GetInt32(_type);
 
-        public int Length => ByteUtils.GetInt32(_length);
-
-        public int Size => GetSize();
-
-        public byte[] Data { get; set; }
-
-        public string Value => ByteUtils.ToString(Data);
+        public int Size => _data.Length + 8;
+        public int RecordType => StreamUtils.ToInt32(_recordType);
+        public int RecordLength => StreamUtils.ToInt32(_recordLength);
+        public string Value => StreamUtils.ToString(_data);
 
         #endregion
 
-
-        internal ExthRecord(Stream stream)
+        public EXTHRecord(Stream stream)
         {
             _stream = stream;
-
-            //LoadExthRecords();
         }
 
-        internal async Task LoadExthRecords()
+        public EXTHRecord(int type, string data)
         {
-            await _stream.ReadAsync(_type, 0, _type.Length);
-            await _stream.ReadAsync(_length, 0, _length.Length);
+            var typeBytes = BitConverter.GetBytes(type);
+            var dataBytes = Encoding.UTF8.GetBytes(data);
 
-            Data = new byte[Length - 8];
+            var length = data?.Length ?? 0;
+            length = length + 8;
+            var lengthBytes = BitConverter.GetBytes(length);
 
-            await _stream.ReadAsync(Data, 0, Data.Length);
+            _data = dataBytes;
+            _recordType = typeBytes;
+            _recordLength = lengthBytes;
+
         }
 
-        private int GetSize()
+        public void SetData(byte[] data)
         {
-            return Data.Length + 8;
+            _data = data;
+            _recordLength = StreamUtils.IntToBytes(data.Length + 8);
+        }
+
+        public async Task LoadEXTHRecord()
+        {
+            await _stream.ReadBytesFromStreamAsync(_recordType);
+            await _stream.ReadBytesFromStreamAsync(_recordLength);
+
+            _data = new byte[RecordLength - 8];
+            await _stream.ReadBytesFromStreamAsync(_data);
+        }
+
+        public async Task Write(Stream stream)
+        {
+            await stream.WriteAsync(_recordType, 0, _recordType.Length);
+            await stream.WriteAsync(_recordLength, 0, _recordLength.Length);
+            await stream.WriteAsync(_data, 0, _data.Length);
         }
     }
 }
