@@ -3,65 +3,123 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using BookMeMobi2.MobiMetadata.Headers;
 
 namespace BookMeMobi2.MobiMetadata
 {
+
     public class MobiDocument
     {
-        #region Properties
+        private Stream _stream;
 
-        public PDBHeader PdbHeader { get; set; }
-        public MOBIHeader MobiHeader { get; set; }
-        //public string FilePath { get; private set; }
-        public string Title => GetTitle();
-        public string Author => GetAuthor();
-        public DateTime? PublishingDate => GetPublishingDate();
-        public string Asin => GetAsin();
-        public CoverExtractor CoverExtractor { get; internal set; }
-        #endregion
-
-
-        internal MobiDocument()
+        public string Author
         {
+            get => GetAuthor();
+            set => SetAuthor(value);
         }
 
-        private string GetAsin()
+        public string Title
         {
-            if (MobiHeader == null)
-                return "";
-
-            var firstAsin = MobiHeader.GetExthRecordValue(113);
-            var secondAsin = MobiHeader.GetExthRecordValue(504);
-
-            return firstAsin ?? secondAsin;
+            get => GetTitle();
+            set => SetTitle(value);
         }
 
+        public DateTime? PublishingDate
+        {
+            get => GetPublishingDate();
+            set => SetPublishingDate(value);
+        }
+
+        public string ISBN
+        {
+            get => GetISBN();
+            set => SetISBN(value);
+        }
+
+        public MobiDocument(Stream stream)
+        {
+            _stream = stream;
+        }
+
+        public PDBHeader PDBHeader { get; set; }
+        public MOBIHeader MOBIHeader { get; set; }
+        public CoverExtractor CoverExtractor { get; set; }
+
+
+        public async Task Write(Stream stream)
+        {
+            await PDBHeader.Write(stream);
+            await MOBIHeader.Write(stream);
+
+            var readOffset = PDBHeader.OffsetAfterMobiHeader;
+            var bytesRead = 0;
+            var buffer = new byte[4096];
+            _stream.Seek(readOffset, SeekOrigin.Begin);
+
+            while ((bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            {
+                await stream.WriteAsync(buffer, 0, bytesRead);
+            }
+        }
         private string GetAuthor()
         {
-            if (MobiHeader == null)
+            if (MOBIHeader == null)
+            {
                 return "";
+            }
 
-            return MobiHeader.GetExthRecordValue(100);
+            return MOBIHeader.EXTHHeader.GetEXTHRecordValue(100);
         }
-
-        private DateTime? GetPublishingDate()
+        private void SetAuthor(string author)
         {
-            if (MobiHeader == null)
-                return null;
-
-            var date = MobiHeader.GetExthRecordValue(106);
-            return Convert.ToDateTime(date);
+            var authorBytes = Encoding.UTF8.GetBytes(author);
+            MOBIHeader.EXTHHeader.ModifyExthRecord(100, authorBytes);
         }
 
         private string GetTitle()
         {
+            if (MOBIHeader == null)
+                return PDBHeader.Name;
+            return MOBIHeader.FullName;
+        }
 
-            if (MobiHeader == null)
-                return PdbHeader.Name;
+        private void SetTitle(string title)
+        {
+            PDBHeader.SetName(title);
+        }
 
-            return MobiHeader.FullName;
+        private DateTime? GetPublishingDate()
+        {
+            if (MOBIHeader == null)
+            {
+                return null;
+            }
+
+            var publishingDate = MOBIHeader.EXTHHeader.GetEXTHRecordValue(106);
+            Console.WriteLine(publishingDate);
+            return Convert.ToDateTime(publishingDate);
+        }
+
+        private void SetPublishingDate(DateTime? publishingDate)
+        {
+            var date = publishingDate.HasValue ? publishingDate.Value.ToShortDateString() : "";
+            var dateBytes = Encoding.UTF8.GetBytes(date);
+            MOBIHeader.EXTHHeader.ModifyExthRecord(106, dateBytes);
+        }
+
+        private string GetISBN()
+        {
+            if (MOBIHeader == null)
+                return "";
+            return MOBIHeader.EXTHHeader.GetEXTHRecordValue(104);
+        }
+
+        private void SetISBN(string isbn)
+        {
+            var isbnBytes = Encoding.UTF8.GetBytes(isbn);
+            MOBIHeader.EXTHHeader.ModifyExthRecord(104, isbnBytes);
         }
 
     }
-}
+
