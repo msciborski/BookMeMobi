@@ -121,7 +121,7 @@ namespace BookMeMobi2.MobiMetadata.Headers
             await _stream.ReadBytesFromStreamAsync(_exthFlags);
 
             //Skip bytes with data, that i dont need, and noone need
-            _restOfTheMobiHeader = new byte[HeaderLength + 16 - 132];
+            _restOfTheMobiHeader = new byte[(HeaderLength + 16) - 132];
             await _stream.ReadBytesFromStreamAsync(_restOfTheMobiHeader);
             Console.WriteLine($"Cursor position (restOfTheMobiHeader): {_stream.Position}");
 
@@ -163,6 +163,12 @@ namespace BookMeMobi2.MobiMetadata.Headers
             await stream.WriteAsync(_fileVersion, 0, _fileVersion.Length);
             await stream.WriteAsync(_extraOrtographicnamesKesyFirstNonBookIndex, 0,
                 _extraOrtographicnamesKesyFirstNonBookIndex.Length);
+
+            var fullNameOffset = 132 + _restOfTheMobiHeader.Length + EXTHHeader.Size;
+            var fullNameOffsetBytes = StreamUtils.IntToBytes(fullNameOffset);
+
+            _fullNameOffset = fullNameOffsetBytes;
+
             await stream.WriteAsync(_fullNameOffset, 0, _fullNameOffset.Length);
             await stream.WriteAsync(_fullNameLength, 0, _fullNameLength.Length);
             await stream.WriteAsync(_locale, 0, _locale.Length);

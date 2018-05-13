@@ -12,7 +12,6 @@ namespace BookMeMobi2.MobiMetadata
     public class MobiDocument
     {
         private Stream _stream;
-
         public string Author
         {
             get => GetAuthor();
@@ -49,10 +48,11 @@ namespace BookMeMobi2.MobiMetadata
 
         public async Task Write(Stream stream)
         {
+            var readOffset = PDBHeader.OffsetAfterMobiHeader;
+
             await PDBHeader.Write(stream);
             await MOBIHeader.Write(stream);
 
-            var readOffset = PDBHeader.OffsetAfterMobiHeader;
             var bytesRead = 0;
             var buffer = new byte[4096];
             _stream.Seek(readOffset, SeekOrigin.Begin);
@@ -69,7 +69,8 @@ namespace BookMeMobi2.MobiMetadata
                 return "";
             }
 
-            return MOBIHeader.EXTHHeader.GetEXTHRecordValue(100);
+            var authorRecord = MOBIHeader.EXTHHeader.GetEXTHRecordValue(100);
+            return authorRecord;
         }
         private void SetAuthor(string author)
         {
@@ -87,6 +88,7 @@ namespace BookMeMobi2.MobiMetadata
         private void SetTitle(string title)
         {
             PDBHeader.SetName(title);
+            MOBIHeader.SetFullName(title);
         }
 
         private DateTime? GetPublishingDate()
@@ -122,4 +124,5 @@ namespace BookMeMobi2.MobiMetadata
         }
 
     }
+}
 

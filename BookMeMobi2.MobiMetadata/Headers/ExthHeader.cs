@@ -77,10 +77,7 @@ namespace BookMeMobi2.MobiMetadata.Headers
 
         private int GetPaddingSize(int dataSize)
         {
-            int paddingSize = dataSize % 4;
-            if (paddingSize != 0)
-                paddingSize = 4 - paddingSize;
-            return paddingSize;
+            return 4 - dataSize % 4;
         }
 
         private async Task GetEXTHRecords()
@@ -124,6 +121,7 @@ namespace BookMeMobi2.MobiMetadata.Headers
         private void RecomputeFields()
         {
             _headerLength = StreamUtils.IntToBytes(Size);
+            //_headerLength = StreamUtils.IntToBytes(GetDataSize() + 12);
             _recordCount = StreamUtils.IntToBytes(EXTHRecords.Count);
         }
     }

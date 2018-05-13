@@ -25,11 +25,9 @@ namespace BookMeMobi2.MobiMetadata
 
         public static async Task<MemoryStream> SaveMobiDocument(MobiDocument document)
         {
-            using (MemoryStream memoryStream = new MemoryStream())
-            {
-                await document.Write(memoryStream);
-                return memoryStream;
-            }
+            MemoryStream memoryStream = new MemoryStream();
+            await document.Write(memoryStream);
+            return memoryStream;
         }
     }
 }

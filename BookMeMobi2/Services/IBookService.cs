@@ -19,5 +19,6 @@ namespace BookMeMobi2.Services
         Task<Book> DeleteBookAsync(string userId, int bookId);
         Task SendBook(string userId, int bookId);
         string GetDownloadUrl(string userId, int bookId, string bookFileName);
+        Task UpdateBookAsync(string userId, int bookId, BookUpdateDto model);
     }
 }
