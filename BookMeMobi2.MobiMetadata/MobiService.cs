@@ -9,18 +9,25 @@ namespace BookMeMobi2.MobiMetadata
 {
     public static class MobiService
     {
-        public static async Task<MobiDocument> LoadDocument(Stream stream)
+        public static async Task<MobiDocument> GetMobiDocument(Stream stream)
         {
+            var mobiDocument = new MobiDocument(stream);
+            mobiDocument.PDBHeader = new PDBHeader(stream);
+            await mobiDocument.PDBHeader.LoadPDBHeader();
 
-            var document = new MobiDocument();
-            document.PdbHeader = new PdbHeader(stream);
-            await document.PdbHeader.LoadPdbHeader();
-            document.MobiHeader = new MobiHeader(stream, document.PdbHeader.MobiHeaderSize);
-            await document.MobiHeader.LoadMobiHeader();
+            mobiDocument.MOBIHeader = new MOBIHeader(stream, mobiDocument.PDBHeader.MobiHeaderSize);
+            await mobiDocument.MOBIHeader.LoadMobiHeader();
 
-            CoverExtractor coverExtractor = 
-            document.CoverExtractor = new CoverExtractor(stream);
-            return document;
+            stream.Position = 0;
+            mobiDocument.CoverExtractor = new CoverExtractor(stream);
+            return mobiDocument;
+        }
+
+        public static async Task<MemoryStream> SaveMobiDocument(MobiDocument document)
+        {
+            MemoryStream memoryStream = new MemoryStream();
+            await document.Write(memoryStream);
+            return memoryStream;
         }
     }
 }

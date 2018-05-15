@@ -18,6 +18,9 @@ namespace BookMeMobi2.Entities
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeleteDate { get; set; }
         public bool IsSentToKindle { get; set; } = false;
+        public bool HasBeenEdited { get; set; } = false;
+        public DateTime? LastEditDate { get; set; }
+
 
         public string UserId { get; set; }
         public User User { get; set; }

@@ -1,85 +1,128 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BookMeMobi2.MobiMetadata.Utilities;
 
 namespace BookMeMobi2.MobiMetadata.Headers
 {
-    public class ExthHeader
+    public class EXTHHeader
     {
-        private readonly Stream _stream;
+        private Stream _stream;
 
-        #region Byte arrays
-
-        private byte[] _id = new byte[4];
+        #region ByteArrays
         private byte[] _headerLength = new byte[4];
         private byte[] _recordCount = new byte[4];
+
+        private byte[] _identifier = new byte[4];
+        private byte[] _padding;
 
         #endregion
 
         #region Properties
 
-        public string Id => ByteUtils.ToString(_id);
-        public int HeaderLength => ByteUtils.GetInt32(_headerLength);
-        public int RecordCount => ByteUtils.GetInt32(_recordCount);
-
-        public List<ExthRecord> Records { get; set; }
+        public int HeaderLength => StreamUtils.ToInt32(_headerLength);
+        public int RecordCount => StreamUtils.ToInt32(_recordCount);
         public int Size => GetSize();
+        public List<EXTHRecord> EXTHRecords { get; } = new List<EXTHRecord>();
 
         #endregion
 
-        internal ExthHeader(Stream stream)
+        public EXTHHeader(Stream stream)
         {
             _stream = stream;
         }
 
-        internal async Task LoadExthHeader()
+        public async Task LoadEXTHHeader()
         {
-            await _stream.ReadAsync(_id, 0, _id.Length);
-            if (Id != "EXTH")
-                throw new ApplicationException("EXTHHeader is invalid.");
+            await _stream.ReadBytesFromStreamAsync(_identifier);
+            await _stream.ReadBytesFromStreamAsync(_headerLength);
+            await _stream.ReadBytesFromStreamAsync(_recordCount);
 
-            await _stream.ReadAsync(_headerLength, 0, _headerLength.Length);
-            await _stream.ReadAsync(_recordCount, 0, _recordCount.Length);
+            await GetEXTHRecords();
 
-            Records = new List<ExthRecord>();
+            int paddingSize = GetPaddingSize(GetDataSize());
+            _padding = new byte[paddingSize];
+            await _stream.ReadBytesFromStreamAsync(_padding);
 
-            for (int i = 0; i < RecordCount; i++)
+        }
+
+        public async Task Write(Stream stream)
+        {
+            await stream.WriteAsync(_identifier, 0, _identifier.Length);
+            await stream.WriteAsync(_headerLength, 0, _headerLength.Length);
+            await stream.WriteAsync(_recordCount, 0, _recordCount.Length);
+
+            foreach (var record in EXTHRecords)
             {
-                var record = new ExthRecord(_stream);
-                await record.LoadExthRecords();
-                Records.Add(record);
+                await record.Write(stream);
             }
 
             var padding = new byte[GetPaddingSize(GetDataSize())];
-            await _stream.ReadAsync(padding, 0, padding.Length);
+            await stream.WriteAsync(padding, 0, padding.Length);
         }
 
         private int GetSize()
         {
             int dataSize = GetDataSize();
-            int paddingSize = GetPaddingSize(dataSize);
-
-            return 12 + dataSize + paddingSize;
+            return 12 + dataSize + GetPaddingSize(dataSize);
         }
 
         private int GetDataSize()
         {
-            int dataSize = 0;
-            foreach (var record in Records)
-            {
-                dataSize += record.Size;
-            }
-            return dataSize;
+            return EXTHRecords.Sum(r => r.Size);
         }
+
         private int GetPaddingSize(int dataSize)
         {
-            int paddingSize = dataSize % 4;
-            if (paddingSize != 0) paddingSize = 4 - paddingSize;
+            return 4 - dataSize % 4;
+        }
 
-            return paddingSize;
+        private async Task GetEXTHRecords()
+        {
+            for (int i = 0; i < RecordCount; i++)
+            {
+                var exthRecord = new EXTHRecord(_stream);
+                await exthRecord.LoadEXTHRecord();
+                EXTHRecords.Add(exthRecord);
+            }
+        }
+        public EXTHRecord GetExthRecord(int type)
+        {
+            if (EXTHRecords == null)
+            {
+                return null;
+            }
+
+            var record = EXTHRecords.FirstOrDefault(r => r.RecordType == type);
+            return record;
+        }
+        public string GetEXTHRecordValue(int type)
+        {
+            if (EXTHRecords == null)
+                return "";
+
+            var record = EXTHRecords.FirstOrDefault(r => r.RecordType == type);
+
+            if (record == null)
+                return "";
+            return record.Value;
+        }
+
+        public void ModifyExthRecord(int type, byte[] data)
+        {
+            var record = GetExthRecord(type);
+            record.SetData(data);
+            RecomputeFields();
+        }
+
+        private void RecomputeFields()
+        {
+            _headerLength = StreamUtils.IntToBytes(Size);
+            //_headerLength = StreamUtils.IntToBytes(GetDataSize() + 12);
+            _recordCount = StreamUtils.IntToBytes(EXTHRecords.Count);
         }
     }
 }
