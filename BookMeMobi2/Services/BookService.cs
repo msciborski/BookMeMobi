@@ -115,6 +115,9 @@ namespace BookMeMobi2.Services
                 book.Title = model.Title;
             }
 
+            book.HasBeenEdited = true;
+            book.LastEditDate = DateTime.Now.ToUniversalTime();
+
             _context.Books.Update(book);
             await _context.SaveChangesAsync();
         }
