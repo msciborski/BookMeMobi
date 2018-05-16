@@ -68,13 +68,13 @@ namespace BookMeMobi2.Helpers.Extensions
 
                 if (!mappingDictionary.ContainsKey(propertyName))
                 {
-                    throw new ArgumentException($"Key mapping for {propertyName} is missing.");
+                    return source;
                 }
 
                 var propertyMappingValue = mappingDictionary[propertyName];
                 if (propertyMappingValue == null)
                 {
-                    throw new ArgumentNullException("propertyMappingValue");
+                    return source;
                 }
 
                 foreach (var destinationProperty in propertyMappingValue.DestinationProperties.Reverse())
