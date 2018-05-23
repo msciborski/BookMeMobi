@@ -50,7 +50,7 @@ namespace BookMeMobi2
             services.Configure<StackdriveSettings>(Configuration.GetSection("Stackdrive"));
             services.Configure<SMTPSettings>(Configuration.GetSection("SMTP"));
             services.Configure<SendGridSettings>(Configuration.GetSection("SendGrid"));
-
+            services.Configure<AWSS3Settings>(Configuration.GetSection("AWSS3"));
             services.AddCors();
 
             //services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
@@ -125,7 +125,8 @@ namespace BookMeMobi2
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<ITokenService, TokenService>();
             services.AddTransient<IMailService, SendGridMailService>();
-            services.AddTransient<IStorageService, GoogleStorageService>();
+            // services.AddTransient<IStorageService, GoogleStorageService>();
+            services.AddTransient<IStorageService, AWSS3StorageService>();            
             services.AddTransient<IPropertyMappingService, PropertyMappingService>();
             services.AddScoped<ValidateModelAttribute>();
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
