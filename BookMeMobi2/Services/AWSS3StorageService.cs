@@ -3,13 +3,13 @@ using System.Threading.Tasks;
 using BookMeMobi2.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using A
 using Amazon.S3;
 using Amazon.S3.Model;
 using BookMeMobi2.Helpers.Exceptions;
 using Amazon.Runtime;
 using System.Text;
 using System;
+using System.Net;
 
 namespace BookMeMobi2.Services
 {
@@ -29,19 +29,41 @@ namespace BookMeMobi2.Services
                         Amazon.RegionEndpoint.EUCentral1);
         }
 
-        public Task DeleteBookAsync(string userId, int bookId, string bookFileName)
+        public async Task DeleteBookAsync(string userId, int bookId, string bookFileName)
         {
-            throw new System.NotImplementedException();
+            var bookPath = $"{_bookPath}";
+            await DeleteFile(bookPath);
         }
 
-        public Task DeleteCoverAsync(string userId, int bookId, string bookFileName)
+        public async Task DeleteCoverAsync(string userId, int bookId, string bookFileName)
         {
-            throw new System.NotImplementedException();
+            var coverPath  = $"{_coverPath}";
+            await DeleteFile(coverPath);
         }
 
-        public Task<Stream> DownloadBookAsync(string userId, int bookId, string bookFileName)
+        private async Task DeleteFile(string path)
         {
-            throw new System.NotImplementedException();
+            var request = new DeleteObjectRequest
+            {
+                BucketName = _AWSS3Settings.BucketName,
+                Key = path
+            };
+            await storageClient.DeleteObjectAsync(request);
+        }
+
+        public async Task<Stream> DownloadBookAsync(string userId, int bookId, string bookFileName)
+        {
+            var bookPath = $"{_bookPath}";
+            var request = new GetObjectRequest
+            {
+                BucketName = _AWSS3Settings.BucketName,
+                Key = bookPath
+            };
+            var response = await storageClient.GetObjectAsync(request);
+            
+            //Check response http code if download succseful
+
+            return response.ResponseStream;
         }
 
         public string GetCoverUrl(string userId, int bookId, string coverName)
@@ -52,9 +74,10 @@ namespace BookMeMobi2.Services
 
         public string GetDownloadUrl(string userId, int bookId, string bookFileName)
         {
-            var bookPath  =  $"{_bookPath}";
+            var bookPath = $"{_bookPath}";
             return GetPreSignedUrl(bookPath, DateTime.Now.AddMinutes(5));
         }
+
         private string GetPreSignedUrl(string path, DateTime expirationTime)
         {
             var request = new GetPreSignedUrlRequest
@@ -70,14 +93,24 @@ namespace BookMeMobi2.Services
         public async Task UploadBookAsync(Stream file, string userId, int bookId, string bookFileName)
         {
             var bookPath = $"{_bookPath}";
+            await UploadFile(file, bookPath);
+        }
 
+        public async Task<string> UploadCoverAsync(Stream cover, string userId, int bookId, string bookFileName)
+        {
+            var coverPath = $"{_coverPath}";
+            await UploadFile(cover, coverPath);
+            return coverPath;
+        }
 
+        private async Task UploadFile(Stream file, string path)
+        {
             if (file != null || file.Length <= 0)
             {
                 var request = new PutObjectRequest
                 {
                     BucketName = _AWSS3Settings.BucketName,
-                    Key = bookPath,
+                    Key = path,
                     InputStream = file,
                     CannedACL = S3CannedACL.Private
                 };
@@ -89,36 +122,11 @@ namespace BookMeMobi2.Services
                     throw new AppException(CreateErrorFromResponseMetada(response.ResponseMetadata),
                                 500);
                 }
+
             }
             throw new AppException("Book stream is empty.", 400);
         }
 
-        public async Task<string> UploadCoverAsync(Stream cover, string userId, int bookId, string bookFileName)
-        {
-            var coverPath = $"{_coverPath}";
-
-            if (cover != null || cover.Length <= 0)
-            {
-                var request = new PutObjectRequest
-                {
-                    BucketName = _AWSS3Settings.BucketName,
-                    Key = coverPath,
-                    InputStream = cover,
-                    CannedACL = S3CannedACL.Private
-                };
-
-                var response = await storageClient.PutObjectAsync(request);
-
-                if (response.HttpStatusCode != HttpStatusCode.OK)
-                {
-                    throw new AppException(CreateErrorFromResponseMetada(response.ResponseMetadata),
-                                500);
-                }
-
-            }
-            throw new AppException("Cover stream is empty.", 400);
-
-        }
         private string CreateErrorFromResponseMetada(ResponseMetadata responseMetadata)
         {
             StringBuilder stringBuilder = new StringBuilder();
