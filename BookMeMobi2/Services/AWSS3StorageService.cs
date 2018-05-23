@@ -9,6 +9,7 @@ using Amazon.S3.Model;
 using BookMeMobi2.Helpers.Exceptions;
 using Amazon.Runtime;
 using System.Text;
+using System;
 
 namespace BookMeMobi2.Services
 {
@@ -45,12 +46,25 @@ namespace BookMeMobi2.Services
 
         public string GetCoverUrl(string userId, int bookId, string coverName)
         {
-            throw new System.NotImplementedException();
+            var coverPath = $"{_coverPath}";
+            return GetPreSignedUrl(coverPath, DateTime.Now.AddHours(24));
         }
 
         public string GetDownloadUrl(string userId, int bookId, string bookFileName)
         {
-            throw new System.NotImplementedException();
+            var bookPath  =  $"{_bookPath}";
+            return GetPreSignedUrl(bookPath, DateTime.Now.AddMinutes(5));
+        }
+        private string GetPreSignedUrl(string path, DateTime expirationTime)
+        {
+            var request = new GetPreSignedUrlRequest
+            {
+                BucketName = _AWSS3Settings.BucketName,
+                Key = path,
+                Expires = expirationTime
+            };
+
+            return storageClient.GetPreSignedURL(request);
         }
 
         public async Task UploadBookAsync(Stream file, string userId, int bookId, string bookFileName)
@@ -102,7 +116,7 @@ namespace BookMeMobi2.Services
                 }
 
             }
-                        throw new AppException("Cover stream is empty.", 400);
+            throw new AppException("Cover stream is empty.", 400);
 
         }
         private string CreateErrorFromResponseMetada(ResponseMetadata responseMetadata)
