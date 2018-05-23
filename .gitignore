@@ -267,3 +267,4 @@ appsettings.json
 appsettings.Development.json
 
 app.yaml
+/Dockerfile
