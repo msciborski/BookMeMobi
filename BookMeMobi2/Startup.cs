@@ -50,7 +50,7 @@ namespace BookMeMobi2
             services.Configure<StackdriveSettings>(Configuration.GetSection("Stackdrive"));
             services.Configure<SMTPSettings>(Configuration.GetSection("SMTP"));
             services.Configure<SendGridSettings>(Configuration.GetSection("SendGrid"));
-
+            services.Configure<AWSS3Settings>(Configuration.GetSection("AWSS3"));
             services.AddCors();
 
             //services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
@@ -93,7 +93,7 @@ namespace BookMeMobi2
 
 
 
-                services.AddHangfire(config => config.UsePostgreSqlStorage(Configuration.GetConnectionString("HangFireDb")));
+            services.AddHangfire(config => config.UsePostgreSqlStorage(Configuration.GetConnectionString("HangFireDb")));
 
             services.AddMvc(o => o.Filters.Add(typeof(ApiExceptionAttributeImpl))).AddFluentValidation(o => o.RegisterValidatorsFromAssemblyContaining<Startup>());
 
@@ -104,14 +104,29 @@ namespace BookMeMobi2
                     Version = "v1",
                     Title = "BookMeMobi API"
                 });
+
                 c.IncludeXmlComments(GetXmlCommentsPath());
+
+                c.AddSecurityDefinition("Bearer", new ApiKeyScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme",
+                    Name = "Authorization",
+                    In = "header",
+                    Type = "apiKey"
+                });
+
+                c.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>>
+                {
+                    {"Bearer", Enumerable.Empty<string>() }
+                });
             });
 
             services.AddTransient<IBookService, BookService>();
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<ITokenService, TokenService>();
             services.AddTransient<IMailService, SendGridMailService>();
-            services.AddTransient<IStorageService, GoogleStorageService>();
+            // services.AddTransient<IStorageService, GoogleStorageService>();
+            services.AddTransient<IStorageService, AWSS3StorageService>();            
             services.AddTransient<IPropertyMappingService, PropertyMappingService>();
             services.AddScoped<ValidateModelAttribute>();
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
@@ -128,20 +143,20 @@ namespace BookMeMobi2
 
             app.UseDeveloperExceptionPage();
             loggerFactory.AddDebug();
-            loggerFactory.AddGoogle(Configuration["Stackdriver:ProjectId"]);
             
+
             app.UseCors(o => o.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().AllowCredentials());
             app.UseStaticFiles();
 
             GlobalConfiguration.Configuration.UseActivator(new HangfireActivator(serviceProvider));
 
-            //app.UseHangfireDashboard("/hangfire", new DashboardOptions()
-            //{
-            //    Authorization = new[] {new CustomAuthorizeFilter()}
-            //});
+            app.UseHangfireDashboard("/hangfire", new DashboardOptions()
+            {
+                Authorization = new[] { new CustomAuthorizeFilter() }
+            });
             app.UseHangfireDashboard();
             app.UseHangfireServer();
-            RecurringJob.AddOrUpdate<ReccuringDbJobs>(x =>  x.DeleteSoftDeletedBooksOlderThan30DaysAsync(), Cron.Daily(3));
+            RecurringJob.AddOrUpdate<ReccuringDbJobs>(x => x.DeleteSoftDeletedBooksOlderThan30DaysAsync(), Cron.Daily(3));
 
             app.UseMvc();
 

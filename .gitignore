@@ -267,3 +267,8 @@ appsettings.json
 appsettings.Development.json
 
 app.yaml
+/Dockerfile
+.vscode/launch.json
+.vscode/tasks.json
+.vscode/settings.json
+.vscode/settings.json
