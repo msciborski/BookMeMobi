@@ -42,7 +42,7 @@ namespace BookMeMobi2.Services
             }
         }
 
-        public async Task<string> UploadCoverAsync(Stream cover, string userId, int bookId, string bookFileName)
+        public async Task UploadCoverAsync(Stream cover, string userId, int bookId, string bookFileName)
         {
             var coverName = $"cover{bookId}.jpg";
             var coverPath = $"{_baseBookPath}{userId}/{bookId}/{coverName}";
@@ -52,8 +52,6 @@ namespace BookMeMobi2.Services
                 var uploadedObject =
                     storage.UploadObject(_googleCloudStorageSettings.BucketName, coverPath, null, cover);
             }
-
-            return coverName;
         }
 
         public async Task DeleteCoverAsync(string userId, int bookId, string bookFileName)

@@ -161,7 +161,8 @@ namespace BookMeMobi2.Services
 
                     if (metadata.CoverStream != null)
                     {
-                        var coverName = await _storageService.UploadCoverAsync(metadata.CoverStream, userId, book.Id, book.FileName);
+                        var coverName = $"cover{book.Title}.jpg";
+                        await _storageService.UploadCoverAsync(metadata.CoverStream, userId, book.Id, coverName);
                         await AddCoverToDb(book, coverName);
                     }
 

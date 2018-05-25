@@ -65,18 +65,18 @@ namespace BookMeMobi2.Helpers.Fliters
             }
             else
             {
-#if !DEBUG
+//#if !DEBUG
 
-                var msg = "An unhandled error occured.";
-                string stack = null;
-                var loggMsg = context.Exception.GetBaseException().Message;
-                _logger.LogCritical(loggMsg);
+                //var msg = "An unhandled error occured.";
+                //string stack = null;
+                //var loggMsg = context.Exception.GetBaseException().Message;
+                //_logger.LogCritical(loggMsg);
 
-#else
+//#else
                 var msg = context.Exception.GetBaseException().Message;
                 string stack = context.Exception.StackTrace;
                 _logger.LogCritical(msg);
-#endif
+//#endif
                 apiError = new ApiError(msg);
                 apiError.Detail = stack;
 
