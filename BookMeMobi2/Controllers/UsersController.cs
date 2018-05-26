@@ -94,6 +94,7 @@ namespace BookMeMobi2.Controllers
         [Produces("application/json")]
         [ProducesResponseType(200)]
         [ProducesResponseType(typeof(ApiError), 500)]
+        [AllowAnonymous]        
         [HttpPost("remindPassword", Name = "RemindPassword")]
         public async Task<IActionResult> ForgotPassword([FromBody] string userName)
         {
@@ -111,6 +112,7 @@ namespace BookMeMobi2.Controllers
         [ProducesResponseType(typeof(ApiError), 500)]
         [ValidateModel]
         [ValidateUserExists]
+        [AllowAnonymous]
         [HttpPost("{userId}/resetPassword")]
         public async Task<IActionResult> ResetPassword(string userId, [FromBody] UserResetPasswordDto model)
         {
