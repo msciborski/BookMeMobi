@@ -188,14 +188,13 @@ namespace BookMeMobi2.Controllers
 
             return Ok();
         }
-
+        
         [ValidateUserExists]
         [ValidateModel]
         [HttpPut("{userId}/books/{bookId}")]
         public async Task<IActionResult> UpdateBook(string userId, int bookId, [FromBody] BookUpdateDto model)
         {
             await _bookService.UpdateBookAsync(userId, bookId, model);
-
             return NoContent();
         }
 
