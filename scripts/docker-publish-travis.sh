@@ -1,6 +1,5 @@
 pip install --user awscli
-export PATH=$PATH:$HOME/.local/bin
-$(aws ecr get-login --no-include-email --region eu-central-1)
+eval $(aws ecr get-login --no-include-email --region eu-central-1)
 docker build -t bookmemobi2 .
 docker ps
 docker tag bookmemobi2:latest 601510060817.dkr.ecr.eu-central-1.amazonaws.com/bookmemobi2:latest
