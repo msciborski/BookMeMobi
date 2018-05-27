@@ -3,13 +3,12 @@ dist: trusty
 sudo: required
 mono: none
 dotnet: 2.0.0
-services: docker
 branches:
-	only:
-		- master
+  only:
+    - master
 before_script:
-	- chmod -R a+x scripts
+  - chmod -R a+x scripts
 script:
-	- ./scripts/dotnet-build.sh
-	- ./scripts/dotnet-publish.sh
-	- ./scripts/docker-publish-travis.sh
+  - ./scripts/dotnet-build.sh
+  - ./scripts/dotnet-publish.sh
+  - ./scripts/docker-publish-travis.sh
