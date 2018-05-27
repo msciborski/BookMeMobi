@@ -1,3 +1,4 @@
+pip install --user awscli
 export PATH=$PATH:$HOME/.local/bin
 $(aws ecr get-login --no-include-email --region eu-central-1)
 docker build -t bookmemobi2 .
