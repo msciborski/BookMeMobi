@@ -1,6 +1,14 @@
 language: csharp
+dist: trusty
+sudo: required
 mono: none
 dotnet: 2.0.0
+branches:
+	only:
+		- master
+before_script:
+	- chmod -R a+x scripts
 script:
-  - dotnet restore
-  - dotnet build 
+	- ./scripts/dotnet-build.sh
+	- ./scripts/dotnet-publish.sh
+	- ./scripts/docker-publish-travis.sh
