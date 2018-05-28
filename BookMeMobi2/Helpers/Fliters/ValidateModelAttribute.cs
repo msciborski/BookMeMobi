@@ -31,7 +31,7 @@ namespace BookMeMobi2.Helpers.Fliters
             if (!context.ModelState.IsValid)
             {
                 _logger.LogError(GetErrorFromModelState(context.ModelState));
-                context.Result = new JsonResult(new ApiError(context.ModelState)) {StatusCode = 400};
+                context.Result = new JsonResult(new ApiError("Model is invalid.")) {StatusCode = 400};
             }
         }
 
