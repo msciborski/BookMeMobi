@@ -156,7 +156,7 @@ namespace BookMeMobi2
             // });
             // app.UseHangfireDashboard();
             // app.UseHangfireServer();
-            RecurringJob.AddOrUpdate<ReccuringDbJobs>(x => x.DeleteSoftDeletedBooksOlderThan30DaysAsync(), Cron.Daily(3));
+            //RecurringJob.AddOrUpdate<ReccuringDbJobs>(x => x.DeleteSoftDeletedBooksOlderThan30DaysAsync(), Cron.Daily(3));
 
             app.UseMvc();
 
