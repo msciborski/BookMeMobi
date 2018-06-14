@@ -13,7 +13,7 @@ namespace BookMeMobi2.Entities
         public string FacebookId { get; set; }
         public string PictureUrl { get; set; }
         public string KindleEmail { get; set; }
-
+        public bool IsVerifiedAmazonConnection { get; set; }
         public virtual ICollection<Book> Books { get; set; }
     }
 }

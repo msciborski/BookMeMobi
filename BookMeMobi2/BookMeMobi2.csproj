@@ -10,58 +10,59 @@
     <OutputPath>bin\Debug\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="Migrations\20180314194043_Initial.cs" />
-    <Compile Remove="Migrations\20180314194043_Initial.Designer.cs" />
-    <Compile Remove="Migrations\20180314195729_Initial.cs" />
-    <Compile Remove="Migrations\20180314195729_Initial.Designer.cs" />
-    <Compile Remove="Migrations\20180317192443_BookEntityMigration.cs" />
-    <Compile Remove="Migrations\20180317192443_BookEntityMigration.Designer.cs" />
-    <Compile Remove="Migrations\20180318115904_BookUrlMigration.cs" />
-    <Compile Remove="Migrations\20180318115904_BookUrlMigration.Designer.cs" />
-    <Compile Remove="Migrations\20180320194144_AlterBookTableWIthStoragePath.cs" />
-    <Compile Remove="Migrations\20180320194144_AlterBookTableWIthStoragePath.Designer.cs" />
-    <Compile Remove="Migrations\20180321205225_AlterBookTableUploadDateField.cs" />
-    <Compile Remove="Migrations\20180321205225_AlterBookTableUploadDateField.Designer.cs" />
-    <Compile Remove="Migrations\20180322163617_KeySizeMigration.cs" />
-    <Compile Remove="Migrations\20180322163617_KeySizeMigration.Designer.cs" />
-    <Compile Remove="Migrations\20180322164550_KeySizeMigration1.cs" />
-    <Compile Remove="Migrations\20180322164550_KeySizeMigration1.Designer.cs" />
-    <Compile Remove="Migrations\20180322165556_KeySizeMigration2.cs" />
-    <Compile Remove="Migrations\20180322165556_KeySizeMigration2.Designer.cs" />
-    <Compile Remove="Migrations\20180322171747_MySqlMigration.cs" />
-    <Compile Remove="Migrations\20180322171747_MySqlMigration.Designer.cs" />
+    <Compile Remove="Migrations\20180314194043_Initial.cs"/>
+    <Compile Remove="Migrations\20180314194043_Initial.Designer.cs"/>
+    <Compile Remove="Migrations\20180314195729_Initial.cs"/>
+    <Compile Remove="Migrations\20180314195729_Initial.Designer.cs"/>
+    <Compile Remove="Migrations\20180317192443_BookEntityMigration.cs"/>
+    <Compile Remove="Migrations\20180317192443_BookEntityMigration.Designer.cs"/>
+    <Compile Remove="Migrations\20180318115904_BookUrlMigration.cs"/>
+    <Compile Remove="Migrations\20180318115904_BookUrlMigration.Designer.cs"/>
+    <Compile Remove="Migrations\20180320194144_AlterBookTableWIthStoragePath.cs"/>
+    <Compile Remove="Migrations\20180320194144_AlterBookTableWIthStoragePath.Designer.cs"/>
+    <Compile Remove="Migrations\20180321205225_AlterBookTableUploadDateField.cs"/>
+    <Compile Remove="Migrations\20180321205225_AlterBookTableUploadDateField.Designer.cs"/>
+    <Compile Remove="Migrations\20180322163617_KeySizeMigration.cs"/>
+    <Compile Remove="Migrations\20180322163617_KeySizeMigration.Designer.cs"/>
+    <Compile Remove="Migrations\20180322164550_KeySizeMigration1.cs"/>
+    <Compile Remove="Migrations\20180322164550_KeySizeMigration1.Designer.cs"/>
+    <Compile Remove="Migrations\20180322165556_KeySizeMigration2.cs"/>
+    <Compile Remove="Migrations\20180322165556_KeySizeMigration2.Designer.cs"/>
+    <Compile Remove="Migrations\20180322171747_MySqlMigration.cs"/>
+    <Compile Remove="Migrations\20180322171747_MySqlMigration.Designer.cs"/>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="wwwroot\" />
+    <Folder Include="wwwroot\"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Automapper" Version="6.2.2" />
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="3.2.0" />
-    <PackageReference Include="FluentValidation.AspNetCore" Version="7.5.2" />
-    <PackageReference Include="Google.Cloud.Diagnostics.AspNetCore" Version="2.0.0" />
-    <PackageReference Include="Google.Cloud.Storage.V1" Version="2.1.0" />
-    <PackageReference Include="HangFire" Version="1.7.0-beta1" />
-    <PackageReference Include="Hangfire.AspNetCore" Version="1.7.0-beta1" />
-    <PackageReference Include="Hangfire.PostgreSql" Version="1.4.8.1" />
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.6" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.3" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.0.1" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="2.3.0" />
-    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.0.8.3" />
-    <PackageReference Include="AWSSDK.S3" Version="3.3.18.2" />
+    <PackageReference Include="Automapper" Version="6.2.2"/>
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="3.2.0"/>
+    <PackageReference Include="FluentValidation.AspNetCore" Version="7.5.2"/>
+    <PackageReference Include="Google.Cloud.Diagnostics.AspNetCore" Version="2.0.0"/>
+    <PackageReference Include="Google.Cloud.Storage.V1" Version="2.1.0"/>
+    <PackageReference Include="HangFire" Version="1.7.0-beta1"/>
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.7.0-beta1"/>
+    <PackageReference Include="Hangfire.PostgreSql" Version="1.4.8.1"/>
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.6"/>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.3"/>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2"/>
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.0.1"/>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="2.3.0"/>
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.0.8.3"/>
+    <PackageReference Include="AWSSDK.S3" Version="3.3.18.2"/>
   </ItemGroup>
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.3" />
+    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.3"/>
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.3"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BookMeMobi2.MobiMetadata\BookMeMobi2.MobiMetadata.csproj" />
-    <ProjectReference Include="..\BookMeMobi2.SendGrid\BookMeMobi2.SendGrid.csproj" />
+    <ProjectReference Include="..\BookMeMobi2.MobiMetadata\BookMeMobi2.MobiMetadata.csproj"/>
+    <ProjectReference Include="..\BookMeMobi2.SendGrid\BookMeMobi2.SendGrid.csproj"/>
   </ItemGroup>
   <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
     <ItemGroup>
-      <DocFile Include="bin\*\*\*.xml" />
+      <DocFile Include="bin\*\*\*.xml"/>
     </ItemGroup>
-    <Copy SourceFiles="@(DocFile)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="false" />
+    <Copy SourceFiles="@(DocFile)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="false"/>
   </Target>
 </Project>

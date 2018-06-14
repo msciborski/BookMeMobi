@@ -191,7 +191,7 @@ namespace BookMeMobi2.Entities
             var passwordHasher = new PasswordHasher<User>();
             var hashedPassword = passwordHasher.HashPassword(user, password);
             user.PasswordHash = hashedPassword;
-            
+
             var userStore = new UserStore<User>(this);
             await userStore.CreateAsync(user);
         }

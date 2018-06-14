@@ -167,6 +167,7 @@ namespace BookMeMobi2.Services
             user.KindleEmail = !String.IsNullOrEmpty(model.KindleEmail) ? model.KindleEmail : user.KindleEmail;
             user.FirstName = !String.IsNullOrEmpty(model.FirstName) ? model.FirstName : user.FirstName;
             user.LastName = !String.IsNullOrEmpty(model.LastName) ? model.LastName : user.LastName;
+            user.IsVerifiedAmazonConnection = model.IsVerifiedAmazonConnection ? model.IsVerifiedAmazonConnection : user.IsVerifiedAmazonConnection; 
 
             await _userManager.UpdateAsync(user);
         }
