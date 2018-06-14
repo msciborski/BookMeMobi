@@ -11,8 +11,8 @@ using BookMeMobi2.Helpers.Exceptions;
 using BookMeMobi2.Helpers.Extensions;
 using BookMeMobi2.MobiMetadata;
 using BookMeMobi2.Models;
-using BookMeMobi2.Models.User;
 using BookMeMobi2.Models.Book;
+using BookMeMobi2.Models.User;
 using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Storage.V1;
 using Microsoft.AspNetCore.Http;
@@ -32,7 +32,7 @@ namespace BookMeMobi2.Services
         private readonly IStorageService _storageService;
 
         public BookService(IMapper mapper, ApplicationDbContext context, ILogger<BookService> logger, IPropertyMappingService propertyMappingService,
-            IMailService mailService, IStorageService storageService)
+          IMailService mailService, IStorageService storageService)
         {
             _mapper = mapper;
             _logger = logger;
@@ -54,7 +54,7 @@ namespace BookMeMobi2.Services
 
             //Filter method
             var books = userBooks.FilterBooks(parameters).SearchBook(parameters.SearchQuery).AsQueryable()
-                .ApplySort(parameters.OrderBy, _propertyMappingService.GetPropertyMapping<BookDto, Book>());
+              .ApplySort(parameters.OrderBy, _propertyMappingService.GetPropertyMapping<BookDto, Book>());
             return books;
         }
 
@@ -72,20 +72,36 @@ namespace BookMeMobi2.Services
 
         public async Task UpdateBookAsync(string userId, int bookId, BookUpdateDto model)
         {
-            var book = await GetBookForUserAsync(userId, bookId);
-            var bookStream = await DownloadBookAsync(userId, bookId, book.FileName);
-            var streamPosition = bookStream.Position;
-            bookStream.Position = 0;
-            var mobiDocument = await MobiService.GetMobiDocument(bookStream);
+            Book book = null;
+            Stream bookStream = null;
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
 
-            var editedBookStream = await UpdateMobiMetadata(mobiDocument, model);
-            editedBookStream.Position = 0;
-            await _storageService.UploadBookAsync(editedBookStream, userId, bookId, book.FileName);
+                    book = await GetBookForUserAsync(userId, bookId);
+                    bookStream = await DownloadBookAsync(userId, bookId, book.FileName);
+                    bookStream.Position = 0;
+                    var mobiDocument = await MobiService.GetMobiDocument(bookStream);
 
+                    var editedBookStream = await UpdateMobiMetadata(mobiDocument, model);
+                    editedBookStream.Position = 0;
+                    await _storageService.UploadBookAsync(editedBookStream, userId, bookId, book.FileName);
 
-            await UpdateBookDb(book, model);
+                    await UpdateBookDb(book, model);
 
-            var editedBookStreamPosition = editedBookStream.Position;
+                }
+                catch (DbException e)
+                {
+                    transaction.Rollback();
+                    bookStream.Position = 0;
+                    var mobiDocument = await MobiService.GetMobiDocument(bookStream);
+                    var editedBookStream = await UpdateMobiMetadata(mobiDocument, new BookUpdateDto { Title = book.Title, Author = book.Author });
+                    await _storageService.UploadBookAsync(editedBookStream, userId, book.Id, book.FileName);
+                    throw;
+                }
+            }
+
         }
 
         public async Task<Stream> UpdateMobiMetadata(MobiDocument mobiDocument, BookUpdateDto model)
@@ -105,21 +121,29 @@ namespace BookMeMobi2.Services
 
         public async Task UpdateBookDb(Book book, BookUpdateDto model)
         {
-            if (!String.IsNullOrEmpty(model.Author))
+            try
             {
-                book.Author = model.Author;
+                if (!String.IsNullOrEmpty(model.Author))
+                {
+                    book.Author = model.Author;
+                }
+
+                if (!String.IsNullOrEmpty(model.Title))
+                {
+                    book.Title = model.Title;
+                }
+
+                book.HasBeenEdited = true;
+                book.LastEditDate = DateTime.Now.ToUniversalTime();
+
+                _context.Books.Update(book);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                throw new DbException(e.Message, e.InnerException);
             }
 
-            if (!String.IsNullOrEmpty(model.Title))
-            {
-                book.Title = model.Title;
-            }
-
-            book.HasBeenEdited = true;
-            book.LastEditDate = DateTime.Now.ToUniversalTime();
-
-            _context.Books.Update(book);
-            await _context.SaveChangesAsync();
         }
 
         public async Task SendBook(string userId, int bookId)
@@ -137,8 +161,11 @@ namespace BookMeMobi2.Services
 
         public async Task<Book> UploadBookAsync(IFormFile file, string userId)
         {
+
             var user = await _context.Users.FindAsync(userId);
             Cover cover = null;
+            Book book = null;
+
             using (var stream = file.OpenReadStream())
             using (var transaction = await _context.Database.BeginTransactionAsync())
             {
@@ -146,7 +173,7 @@ namespace BookMeMobi2.Services
                 {
                     var metadata = await GetMobiMetadataAsync(stream);
 
-                    var book = new Book
+                    book = new Book
                     {
                         Author = metadata.Author,
                         Title = metadata.Title,
@@ -172,12 +199,26 @@ namespace BookMeMobi2.Services
                 }
                 catch (Exception e)
                 {
+                    await RollBackChangesInStorage(book, userId);
                     transaction.Rollback();
+
                     _logger.LogCritical($"Exception occured. {e.Message}. Stack trace:\n{e.StackTrace}");
                     throw;
                 }
             }
 
+        }
+        private async Task RollBackChangesInStorage(Book book, string userId)
+        {
+            if (book != null)
+            {
+                await _storageService.DeleteBookAsync(userId, book.Id, book.FileName);
+                if (book.Cover != null)
+                {
+                    await _storageService.DeleteCoverAsync(userId, book.Id, book.FileName);
+                }
+
+            }
         }
 
         private async Task AddFilesToDbAsync(Book book, string userId)
@@ -189,7 +230,7 @@ namespace BookMeMobi2.Services
 
         private async Task AddCoverToDb(Book book, string coverName)
         {
-            Cover cover = new Cover(){CoverName = coverName};
+            Cover cover = new Cover() { CoverName = coverName };
             await _context.Covers.AddAsync(cover);
 
             book.Cover = cover;
@@ -203,9 +244,9 @@ namespace BookMeMobi2.Services
             var mobiDocument = await MobiService.GetMobiDocument(stream);
             mobiMetada.Author = mobiDocument.Author;
             mobiMetada.Title = mobiDocument.Title;
-            mobiMetada.PublishingDate = (mobiDocument.PublishingDate.HasValue)
-                ? mobiDocument.PublishingDate?.ToUniversalTime()
-                : null;
+            mobiMetada.PublishingDate = (mobiDocument.PublishingDate.HasValue) ?
+              mobiDocument.PublishingDate?.ToUniversalTime() :
+              null;
 
             var coverStream = mobiDocument.CoverExtractor.Extract();
             if (coverStream != null)
