@@ -63,8 +63,10 @@ namespace BookMeMobi2.Services
             var response = await storageClient.GetObjectAsync(request);
 
             //Check response http code if download succseful
+            Stream stream = new MemoryStream();
+            await response.ResponseStream.CopyToAsync(stream);
 
-            return response.ResponseStream;
+            return stream;
         }
 
         public string GetCoverUrl(string userId, int bookId, string coverName)

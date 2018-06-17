@@ -89,7 +89,7 @@ namespace BookMeMobi2.Services
                     await _storageService.UploadBookAsync(editedBookStream, userId, bookId, book.FileName);
 
                     await UpdateBookDb(book, model);
-
+                    transaction.Commit();
                 }
                 catch (DbException e)
                 {
@@ -135,9 +135,11 @@ namespace BookMeMobi2.Services
 
                 book.HasBeenEdited = true;
                 book.LastEditDate = DateTime.Now.ToUniversalTime();
-
+                
                 _context.Books.Update(book);
                 await _context.SaveChangesAsync();
+
+
             }
             catch (Exception e)
             {
