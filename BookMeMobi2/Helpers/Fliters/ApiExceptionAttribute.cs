@@ -77,7 +77,7 @@ namespace BookMeMobi2.Helpers.Fliters
                 string stack = context.Exception.StackTrace;
                 _logger.LogCritical(msg);
 //#endif
-                apiError = new ApiError(msg);
+                apiError = new ApiError(context.Exception.Message);
                 apiError.Detail = stack;
 
                 context.HttpContext.Response.StatusCode = 500;
