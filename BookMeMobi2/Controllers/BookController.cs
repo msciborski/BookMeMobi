@@ -17,6 +17,7 @@ namespace BookMeMobi2.Controllers
 {
     [Route("/api/users")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [ValidateToken]
     public class BookController : Controller
     {
         private readonly ILogger _logger;
