@@ -59,12 +59,12 @@ namespace BookMeMobi2.Tests
 
             var fileServiceMock = new Mock<IBookService>();
             fileServiceMock.Setup(m => m.GetBooksForUserAsync(It.IsAny<string>(), It.IsAny<BooksResourceParameters>()))
-                .Returns(Task.FromResult(books.AsEnumerable()));
+                .Returns(books.AsEnumerable());
             var storageMock = new Mock<IStorageService>();
             var fileController = new BookController(_mapper, fileServiceMock.Object, _logger, storageMock.Object);
 
             //Act
-            IActionResult actionResult = await fileController.GetBooks("ID1", new BooksResourceParameters());
+            IActionResult actionResult = fileController.GetBooks("ID1", new BooksResourceParameters());
 
             //Assert
             actionResult.ShouldNotBeNull();
@@ -90,7 +90,7 @@ namespace BookMeMobi2.Tests
             var fileController = new BookController(_mapper, fileServiceMock.Object, _logger, storageMock.Object);
             
             //Act&Assert
-            await Assert.ThrowsAsync<UserNoFoundException>(async () => await fileController.GetBooks("ID11111", new BooksResourceParameters()));
+            await Assert.ThrowsAsync<UserNoFoundException>(async () => fileController.GetBooks("ID11111", new BooksResourceParameters()));
         }
 
         #endregion
