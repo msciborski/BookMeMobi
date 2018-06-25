@@ -23,8 +23,9 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace BookMeMobi2.Controllers
 {
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/users")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [ValidateToken]
     public class UsersController : Controller
     {
         private readonly ILogger _logger;

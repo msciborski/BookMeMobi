@@ -95,7 +95,9 @@ namespace BookMeMobi2
 
             // services.AddHangfire(config => config.UsePostgreSqlStorage(Configuration.GetConnectionString("HangFireDb")));
 
-            services.AddMvc(o => o.Filters.Add(typeof(ApiExceptionAttributeImpl))).AddFluentValidation(o => o.RegisterValidatorsFromAssemblyContaining<Startup>());
+            services.AddMvc(o => {
+                o.Filters.Add(typeof(ApiExceptionAttributeImpl));
+            }).AddFluentValidation(o => o.RegisterValidatorsFromAssemblyContaining<Startup>());
 
             services.AddSwaggerGen(c =>
             {
@@ -157,6 +159,8 @@ namespace BookMeMobi2
             // app.UseHangfireDashboard();
             // app.UseHangfireServer();
             //RecurringJob.AddOrUpdate<ReccuringDbJobs>(x => x.DeleteSoftDeletedBooksOlderThan30DaysAsync(), Cron.Daily(3));
+
+            app.UseAuthentication();
 
             app.UseMvc();
 
