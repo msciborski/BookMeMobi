@@ -49,10 +49,10 @@ namespace BookMeMobi2.Controllers
         [ProducesResponseType(typeof(ApiError), 404)]
         [ValidateUserExists]
         [HttpGet("{userId}/books")]
-        public async Task<IActionResult> GetBooks(string userId, [FromQuery] BooksResourceParameters parameters)
+        public IActionResult GetBooks(string userId, [FromQuery] BooksResourceParameters parameters)
         {
             List<BookDto> booksDto = new List<BookDto>();
-            var books = await _bookService.GetBooksForUserAsync(userId, parameters);
+            var books = _bookService.GetBooksForUserAsync(userId, parameters);
 
             foreach (var book in books)
             {

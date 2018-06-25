@@ -48,7 +48,7 @@ namespace BookMeMobi2.Services
             return book;
         }
 
-        public async Task<IEnumerable<Book>> GetBooksForUserAsync(string userId, BooksResourceParameters parameters)
+        public IEnumerable<Book> GetBooksForUserAsync(string userId, BooksResourceParameters parameters)
         {
             var userBooks = _context.Books.Include(b => b.Cover).Where(b => b.UserId == userId);
 
