@@ -9,6 +9,7 @@ namespace BookMeMobi2.Services
 {
     public interface ITokenService
     {
-        TokenResource CreateToken(User user);
+        TokenResource CreateToken(string userId);
+        TokenResource CreateRefreshToken(string userId);
     }
 }

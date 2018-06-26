@@ -22,7 +22,7 @@ namespace BookMeMobi2.Services
             _options = options.Value;
         }
 
-        public TokenResource CreateToken(User user)
+        public TokenResource CreateToken(string userId)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_options.Secret);
@@ -31,7 +31,7 @@ namespace BookMeMobi2.Services
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.Name, user.Id.ToString())
+                    new Claim(ClaimTypes.Name, userId)
                 }),
                 Expires = expiry,
                 SigningCredentials =
@@ -41,6 +41,28 @@ namespace BookMeMobi2.Services
             var tokenString = tokenHandler.WriteToken(token);
 
             return new TokenResource {Token = tokenString, Expiry = expiry.ToUnixTimeStamp()} ;
+        }
+        
+        public TokenResource CreateRefreshToken(string userId)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var now = DateTime.UtcNow;
+            var key = Encoding.ASCII.GetBytes(_options.Secret);
+            var expiry = now.AddMinutes(_options.RefreshTokenExpiry);
+
+            var tokenDescriptor = new SecurityTokenDescriptor()
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(ClaimTypes.Name, userId)
+                }),
+                Expires = expiry,
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
+
+            return new TokenResource {Token = tokenString, Expiry = expiry.ToUnixTimeStamp()};
         }
     }
 }

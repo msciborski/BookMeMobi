@@ -63,10 +63,13 @@ namespace BookMeMobi2.Services
             if (result.Succeeded)
             {
 
-                var token = _tokenService.CreateToken(user);
+                var accessToken = _tokenService.CreateToken(user.Id);
+                var refreshToken = _tokenService.CreateRefreshToken(user.Id);
+                List<TokenResource> tokens = new List<TokenResource> {accessToken, refreshToken};
 
                 var userLoginDto = _mapper.Map<User, UserLoginDto>(user);
-                userLoginDto.Token = token;
+                userLoginDto.Tokens = tokens;
+                
 
                 _logger.LogInformation($"{user.Id} sign in.");
 
