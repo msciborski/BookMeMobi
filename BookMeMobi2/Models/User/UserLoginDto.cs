@@ -14,6 +14,6 @@ namespace BookMeMobi2.Models.User
         public string LastName { get; set; }
         public string KindleEmail { get; set; }
         public bool IsVerifiedAmazonConnection { get; set; }
-        public IEnumerable<TokenResource> Tokens { get; set; }
+        public IDictionary<string, TokenResource> Tokens { get; set; } 
     }
 }

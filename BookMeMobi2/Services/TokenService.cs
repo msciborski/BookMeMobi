@@ -62,7 +62,9 @@ namespace BookMeMobi2.Services
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
 
-            return new TokenResource {Token = tokenString, Expiry = expiry.ToUnixTimeStamp()};
+            return new TokenResource { Token = tokenString, Expiry = expiry.ToUnixTimeStamp()};
         }
+
+
     }
 }

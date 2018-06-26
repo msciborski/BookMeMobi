@@ -31,11 +31,10 @@ namespace BookMeMobi2.Services
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly ITokenService _tokenService;
-        private readonly IActionContextAccessor _actionContextAccessor;
         private readonly IMailService _mailService;
 
-        public UserService(ILogger<UserService> logger, IMapper mapper,UserManager<User> userManager, 
-            SignInManager<User> signInManager, ITokenService tokenService, IActionContextAccessor actionContextAccessor, IMailService mailService)
+        public UserService(ILogger<UserService> logger, IMapper mapper, UserManager<User> userManager,
+            SignInManager<User> signInManager, ITokenService tokenService, IMailService mailService)
         {
             _logger = logger;
             _mapper = mapper;
@@ -43,7 +42,6 @@ namespace BookMeMobi2.Services
             _signInManager = signInManager;
             _tokenService = tokenService;
             _mailService = mailService;
-            _actionContextAccessor = actionContextAccessor;
         }
         //[ApiException]
         public async Task<UserLoginDto> SignIn(Credentials credentials)
@@ -65,11 +63,15 @@ namespace BookMeMobi2.Services
 
                 var accessToken = _tokenService.CreateToken(user.Id);
                 var refreshToken = _tokenService.CreateRefreshToken(user.Id);
-                List<TokenResource> tokens = new List<TokenResource> {accessToken, refreshToken};
+                IDictionary<string, TokenResource> tokens = new Dictionary<string, TokenResource> 
+                {
+                    { "accessToken", accessToken },
+                    { "refreshToken", refreshToken}
+                };
 
                 var userLoginDto = _mapper.Map<User, UserLoginDto>(user);
                 userLoginDto.Tokens = tokens;
-                
+
 
                 _logger.LogInformation($"{user.Id} sign in.");
 
@@ -121,7 +123,7 @@ namespace BookMeMobi2.Services
             {
                 throw new UserNoFoundException($"User with username {userName} dosen't exist");
             }
-            if(!(await _userManager.IsEmailConfirmedAsync(user)))
+            if (!(await _userManager.IsEmailConfirmedAsync(user)))
             {
                 throw new AppException("Email was not confirmed.");
             }
@@ -170,9 +172,14 @@ namespace BookMeMobi2.Services
             user.KindleEmail = !String.IsNullOrEmpty(model.KindleEmail) ? model.KindleEmail : user.KindleEmail;
             user.FirstName = !String.IsNullOrEmpty(model.FirstName) ? model.FirstName : user.FirstName;
             user.LastName = !String.IsNullOrEmpty(model.LastName) ? model.LastName : user.LastName;
-            user.IsVerifiedAmazonConnection = model.IsVerifiedAmazonConnection ? model.IsVerifiedAmazonConnection : user.IsVerifiedAmazonConnection; 
+            user.IsVerifiedAmazonConnection = model.IsVerifiedAmazonConnection ? model.IsVerifiedAmazonConnection : user.IsVerifiedAmazonConnection;
 
             await _userManager.UpdateAsync(user);
+        }
+
+        public async Task RefreshToken(string userId, string refreshToken)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
         }
 
         private string Errors(IdentityResult result)
