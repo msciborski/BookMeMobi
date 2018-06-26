@@ -6,8 +6,10 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using BookMeMobi2.Entities;
+using BookMeMobi2.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using BookMeMobi2.Helpers.Extensions;
 
 namespace BookMeMobi2.Services
 {
@@ -20,24 +22,25 @@ namespace BookMeMobi2.Services
             _options = options.Value;
         }
 
-        public string CreateToken(User user)
+        public TokenResource CreateToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_options.Secret);
+            var expiry = DateTime.UtcNow.AddMinutes(_options.AccessTokenExpiry);
             var tokenDescriptor = new SecurityTokenDescriptor()
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim(ClaimTypes.Name, user.Id.ToString())
                 }),
-                Expires = DateTime.UtcNow.AddDays(7),
+                Expires = expiry,
                 SigningCredentials =
                     new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
 
-            return tokenString;
+            return new TokenResource {Token = tokenString, Expiry = expiry.ToUnixTimeStamp()} ;
         }
     }
 }

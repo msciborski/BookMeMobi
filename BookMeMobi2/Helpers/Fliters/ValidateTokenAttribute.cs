@@ -21,7 +21,7 @@ namespace BookMeMobi2.Helpers.Fliters
                     var userIdFromToken = context.HttpContext.User.Identity.Name;
                     if (!userId.Equals(userIdFromToken))
                     {
-                        context.Result = new UnauthorizedResult();
+                        context.Result = new ForbidResult();
                         return;
                     }
                 }
