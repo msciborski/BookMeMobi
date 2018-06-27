@@ -19,7 +19,7 @@ namespace BookMeMobi2.Services
         PagedList<UserDto> GetAllUsers(int pageSize, int pageNumber);
         Task<User> GetUser(string userId);
         Task UpdateUserAsync(string userId, UserUpdateDto model);
-        Dictionary<string, TokenResource> RefreshToken(string userId, string refreshToken);
+        IDictionary<string, TokenResource> RefreshToken(string userId, string refreshToken);
 
 
     }

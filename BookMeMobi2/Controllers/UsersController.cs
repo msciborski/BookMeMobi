@@ -174,5 +174,13 @@ namespace BookMeMobi2.Controllers
             await _userService.UpdateUserAsync(userId, model);
             return NoContent();
         }
+
+        [AllowAnonymous]
+        [HttpPost("{userId}/refreshToken")]
+        public async Task<IActionResult> RefreshToken(string userId, [FromBody] string refreshToken)
+        {
+            var tokens = _userService.RefreshToken(userId, refreshToken);
+            return Ok(tokens);
+        }
     }
 }

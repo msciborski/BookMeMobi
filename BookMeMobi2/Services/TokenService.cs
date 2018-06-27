@@ -64,6 +64,7 @@ namespace BookMeMobi2.Services
 
             return new TokenResource { Token = tokenString, Expiry = expiry.ToUnixTimeStamp()};
         }
+        
         public bool ValidateRefreshToken(string userId, string refreshToken)
         {
             var decodedToken = DecodeToken(refreshToken);
@@ -75,6 +76,7 @@ namespace BookMeMobi2.Services
                 var expiry = payload.Exp;
                 var unixTimeStampNow = DateTime.UtcNow.ToUnixTimeStamp();
                 var differenceBetweenExpiryAndNow = expiry - unixTimeStampNow;
+
                 if(userId.Equals((string)payloadUserId) && differenceBetweenExpiryAndNow > 0)
                 {
                     return true;
