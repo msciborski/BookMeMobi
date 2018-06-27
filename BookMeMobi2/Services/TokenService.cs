@@ -64,6 +64,31 @@ namespace BookMeMobi2.Services
 
             return new TokenResource { Token = tokenString, Expiry = expiry.ToUnixTimeStamp()};
         }
+        public bool ValidateRefreshToken(string userId, string refreshToken)
+        {
+            var decodedToken = DecodeToken(refreshToken);
+            var payload = decodedToken.Payload;
+
+            if(payload.ContainsKey("unique_name") && payload.ContainsKey("exp"))
+            {
+                payload.TryGetValue("unique_name", out var payloadUserId);
+                var expiry = payload.Exp;
+                var unixTimeStampNow = DateTime.UtcNow.ToUnixTimeStamp();
+                var differenceBetweenExpiryAndNow = expiry - unixTimeStampNow;
+                if(userId.Equals((string)payloadUserId) && differenceBetweenExpiryAndNow > 0)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public JwtSecurityToken DecodeToken(string token)
+        {
+            var jwtHandler = new JwtSecurityTokenHandler();
+            var decodedToken = jwtHandler.ReadJwtToken(token);
+
+            return decodedToken;
+        }
 
 
     }
