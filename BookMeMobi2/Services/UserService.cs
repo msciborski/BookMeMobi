@@ -177,9 +177,20 @@ namespace BookMeMobi2.Services
             await _userManager.UpdateAsync(user);
         }
 
-        public async Task RefreshToken(string userId, string refreshToken)
+        public IDictionary<string,TokenResource> RefreshToken(string userId, string refreshToken)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            if(_tokenService.ValidateRefreshToken(userId, refreshToken))
+            {
+                IDictionary<string, TokenResource> tokens = new Dictionary<string, TokenResource>
+                {
+                    { "accessToken", _tokenService.CreateToken(userId) },
+                    { "refreshToken", _tokenService.CreateRefreshToken(userId) }
+                };
+
+                return tokens;
+            }
+
+            throw new AppException("Token is invalid or expired.", 401);
         }
 
         private string Errors(IdentityResult result)
