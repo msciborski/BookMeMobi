@@ -1,11 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 using System;
 using System.Collections.Generic;
 
 namespace BookMeMobi2.Migrations
 {
-    public partial class MySqlInitialMigration : Migration
+    public partial class ChangeConnectorCharset : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -34,6 +33,8 @@ namespace BookMeMobi2.Migrations
                     EmailConfirmed = table.Column<bool>(nullable: false),
                     FacebookId = table.Column<string>(nullable: true),
                     FirstName = table.Column<string>(nullable: true),
+                    IsVerifiedAmazonConnection = table.Column<bool>(nullable: false),
+                    KindleEmail = table.Column<string>(nullable: true),
                     LastName = table.Column<string>(nullable: true),
                     LockoutEnabled = table.Column<bool>(nullable: false),
                     LockoutEnd = table.Column<DateTimeOffset>(nullable: true),
@@ -53,11 +54,24 @@ namespace BookMeMobi2.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Covers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("MySQL:AutoIncrement", true),
+                    CoverName = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Covers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
                     Id = table.Column<int>(maxLength: 128, nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySQL:AutoIncrement", true),
                     ClaimType = table.Column<string>(nullable: true),
                     ClaimValue = table.Column<string>(nullable: true),
                     RoleId = table.Column<string>(maxLength: 128, nullable: false)
@@ -78,7 +92,7 @@ namespace BookMeMobi2.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(maxLength: 128, nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySQL:AutoIncrement", true),
                     ClaimType = table.Column<string>(nullable: true),
                     ClaimValue = table.Column<string>(nullable: true),
                     UserId = table.Column<string>(maxLength: 128, nullable: false)
@@ -163,11 +177,18 @@ namespace BookMeMobi2.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySQL:AutoIncrement", true),
                     Author = table.Column<string>(nullable: true),
-                    FullName = table.Column<string>(nullable: true),
+                    CoverId = table.Column<int>(nullable: true),
+                    DeleteDate = table.Column<DateTime>(nullable: true),
+                    FileName = table.Column<string>(nullable: true),
+                    Format = table.Column<string>(nullable: true),
+                    HasBeenEdited = table.Column<bool>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    IsSentToKindle = table.Column<bool>(nullable: false),
+                    LastEditDate = table.Column<DateTime>(nullable: true),
                     PublishingDate = table.Column<DateTime>(nullable: true),
-                    StoragePath = table.Column<string>(nullable: true),
+                    Size = table.Column<double>(nullable: false),
                     Title = table.Column<string>(nullable: true),
                     UploadDate = table.Column<DateTime>(nullable: false),
                     UserId = table.Column<string>(nullable: true)
@@ -175,6 +196,12 @@ namespace BookMeMobi2.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Books", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Books_Covers_CoverId",
+                        column: x => x.CoverId,
+                        principalTable: "Covers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Books_AspNetUsers_UserId",
                         column: x => x.UserId,
@@ -221,6 +248,11 @@ namespace BookMeMobi2.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Books_CoverId",
+                table: "Books",
+                column: "CoverId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Books_UserId",
                 table: "Books",
                 column: "UserId");
@@ -248,6 +280,9 @@ namespace BookMeMobi2.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Covers");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
