@@ -19,7 +19,9 @@ namespace BookMeMobi2.Helpers.Fliters
                 {
                     var userId = context.ActionArguments["userId"] as string;
                     var userIdFromToken = context.HttpContext.User.Identity.Name;
-                    if (!userId.Equals(userIdFromToken))
+
+                    //if token == null, then anonymous access is set
+                    if (userIdFromToken != null && (!userId.Equals(userIdFromToken)))
                     {
                         context.Result = new ForbidResult();
                         return;

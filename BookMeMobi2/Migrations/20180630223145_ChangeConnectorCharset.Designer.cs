@@ -4,21 +4,19 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
+using MySql.Data.EntityFrameworkCore.Storage.Internal;
 using System;
 
 namespace BookMeMobi2.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20180427184213_AlterBookTableDeleteStoragrPathColumn")]
-    partial class AlterBookTableDeleteStoragrPathColumn
+    [Migration("20180630223145_ChangeConnectorCharset")]
+    partial class ChangeConnectorCharset
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn)
                 .HasAnnotation("ProductVersion", "2.0.2-rtm-10011");
 
             modelBuilder.Entity("BookMeMobi2.Entities.Book", b =>
@@ -28,7 +26,7 @@ namespace BookMeMobi2.Migrations
 
                     b.Property<string>("Author");
 
-                    b.Property<int>("CoverId");
+                    b.Property<int?>("CoverId");
 
                     b.Property<DateTime?>("DeleteDate");
 
@@ -36,9 +34,13 @@ namespace BookMeMobi2.Migrations
 
                     b.Property<string>("Format");
 
+                    b.Property<bool>("HasBeenEdited");
+
                     b.Property<bool>("IsDeleted");
 
                     b.Property<bool>("IsSentToKindle");
+
+                    b.Property<DateTime?>("LastEditDate");
 
                     b.Property<DateTime?>("PublishingDate");
 
@@ -57,6 +59,10 @@ namespace BookMeMobi2.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Books");
+
+                    b.HasAnnotation("MySQL:Charset", "utf8");
+
+                    b.HasAnnotation("MySQL:Collation", "utf8_general_ci");
                 });
 
             modelBuilder.Entity("BookMeMobi2.Entities.Cover", b =>
@@ -64,7 +70,7 @@ namespace BookMeMobi2.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<byte[]>("Image");
+                    b.Property<string>("CoverName");
 
                     b.HasKey("Id");
 
@@ -90,6 +96,8 @@ namespace BookMeMobi2.Migrations
                     b.Property<string>("FacebookId");
 
                     b.Property<string>("FirstName");
+
+                    b.Property<bool>("IsVerifiedAmazonConnection");
 
                     b.Property<string>("KindleEmail");
 
@@ -256,8 +264,7 @@ namespace BookMeMobi2.Migrations
                 {
                     b.HasOne("BookMeMobi2.Entities.Cover", "Cover")
                         .WithMany()
-                        .HasForeignKey("CoverId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("CoverId");
 
                     b.HasOne("BookMeMobi2.Entities.User", "User")
                         .WithMany("Books")
