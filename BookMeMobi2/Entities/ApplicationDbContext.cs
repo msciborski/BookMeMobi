@@ -16,6 +16,8 @@ namespace BookMeMobi2.Entities
 
         public DbSet<Book> Books { get; set; }
         public DbSet<Cover> Covers { get; set; }
+        public DbSet<Tag> Tags { get; set; }
+        public DbSet<BookTag> BookTags { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -62,6 +64,19 @@ namespace BookMeMobi2.Entities
                     (p => p.Id).HasMaxLength(128));
             builder.Entity<IdentityRoleClaim<string>>(entity => entity.Property
                     (p => p.RoleId).HasMaxLength(128));
+
+            //Configure Book - tag many to many relationship
+            builder.Entity<BookTag>()
+                .HasKey(bt => new {bt.BookId, bt.TagId});
+            builder.Entity<BookTag>()
+                .HasOne(bt => bt.Book)
+                .WithMany(b => b.BookTags)
+                .HasForeignKey(bt => bt.BookId);
+            builder.Entity<BookTag>()
+                .HasOne(bt => bt.Tag)
+                .WithMany(t => t.BookTags)
+                .HasForeignKey(bt => bt.TagId);
+
         }
 
         public async Task SeedDatabaseWithUsersAndBooks()

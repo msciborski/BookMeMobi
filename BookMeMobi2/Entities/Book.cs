@@ -28,5 +28,7 @@ namespace BookMeMobi2.Entities
 
         public int? CoverId { get; set; }
         public Cover Cover { get; set; }
+
+        public ICollection<BookTag> BookTags { get; set; }
     }
 }
