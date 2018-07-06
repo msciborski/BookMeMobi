@@ -38,7 +38,7 @@ namespace BookMeMobi2.Controllers
 
 
         /// <summary>
-        /// Returns user's books. 
+        /// Returns user's books.
         /// </summary>
         /// <param name="userId">User ID</param>
         /// <param name="pageSize">Page size, defualt 10</param>
@@ -88,7 +88,7 @@ namespace BookMeMobi2.Controllers
 
             var bookDto = _mapper.Map<Book, BookDto>(book);
             bookDto.CoverUrl = coverUrl;
-           
+
             return Ok(bookDto);
         }
 
@@ -189,7 +189,7 @@ namespace BookMeMobi2.Controllers
 
             return Ok();
         }
-        
+
         [ValidateUserExists]
         [ValidateModel]
         [HttpPut("{userId}/books/{bookId}")]
@@ -198,6 +198,5 @@ namespace BookMeMobi2.Controllers
             await _bookService.UpdateBookAsync(userId, bookId, model);
             return NoContent();
         }
-
     }
 }

@@ -51,7 +51,7 @@ namespace BookMeMobi2.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> SignIn([FromBody] Credentials credentials)
         {
-            var userLoginDto = await _userService.SignIn(credentials);
+            var userLoginDto = await _userService.SignInAsync(credentials);
             return Ok(userLoginDto);
         }
 
@@ -68,7 +68,7 @@ namespace BookMeMobi2.Controllers
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] UserRegisterDto userDto)
         {
-            var user = await _userService.Register(userDto);
+            var user = await _userService.RegisterAsync(userDto);
             var userLoginDto = _mapper.Map<User, UserLoginDto>(user);
             return new JsonResult(userLoginDto) { StatusCode = 201 };
         }
@@ -76,7 +76,7 @@ namespace BookMeMobi2.Controllers
         [Produces("application/json")]
         [ProducesResponseType(200)]
         [ProducesResponseType(typeof(ApiError), 500)]
-        [ProducesResponseType(404)] 
+        [ProducesResponseType(404)]
         [ValidateUserExists]
         [AllowAnonymous]
         [HttpGet("{userId}/confirm", Name = "ConfirmEmail")]
@@ -87,7 +87,7 @@ namespace BookMeMobi2.Controllers
                 return BadRequest();
             }
 
-            await _userService.ConfirmEmail(userId, token);
+            await _userService.ConfirmEmailAsync(userId, token);
 
             return Ok();
         }
@@ -95,7 +95,7 @@ namespace BookMeMobi2.Controllers
         [Produces("application/json")]
         [ProducesResponseType(200)]
         [ProducesResponseType(typeof(ApiError), 500)]
-        [AllowAnonymous]        
+        [AllowAnonymous]
         [HttpPost("remindPassword", Name = "RemindPassword")]
         public async Task<IActionResult> ForgotPassword([FromBody] string userName)
         {
@@ -104,7 +104,7 @@ namespace BookMeMobi2.Controllers
                 return BadRequest();
             }
 
-            await _userService.ForgotPassword(userName);
+            await _userService.ForgotPasswordAsync(userName);
             return Ok();
         }
 
@@ -117,7 +117,7 @@ namespace BookMeMobi2.Controllers
         [HttpPost("{userId}/resetPassword")]
         public async Task<IActionResult> ResetPassword(string userId, [FromBody] UserResetPasswordDto model)
         {
-            await _userService.ResetPassword(userId, model);
+            await _userService.ResetPasswordAsync(userId, model);
 
             return Ok();
         }
@@ -131,7 +131,7 @@ namespace BookMeMobi2.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            await _userService.Logout();
+            await _userService.LogoutAsync();
             return Ok();
         }
 
@@ -161,7 +161,7 @@ namespace BookMeMobi2.Controllers
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetUser(string userId)
         {
-            var user = await _userService.GetUser(userId);
+            var user = await _userService.GetUserAsync(userId);
             return Ok(_mapper.Map<User, UserDto>(user));
         }
 

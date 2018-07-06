@@ -44,7 +44,7 @@ namespace BookMeMobi2.Services
             _mailService = mailService;
         }
         //[ApiException]
-        public async Task<UserLoginDto> SignIn(Credentials credentials)
+        public async Task<UserLoginDto> SignInAsync(Credentials credentials)
         {
             var user = await _userManager.FindByNameAsync(credentials.Username);
             if (user == null)
@@ -63,7 +63,7 @@ namespace BookMeMobi2.Services
 
                 var accessToken = _tokenService.CreateToken(user.Id);
                 var refreshToken = _tokenService.CreateRefreshToken(user.Id);
-                IDictionary<string, TokenResource> tokens = new Dictionary<string, TokenResource> 
+                IDictionary<string, TokenResource> tokens = new Dictionary<string, TokenResource>
                 {
                     { "accessToken", accessToken },
                     { "refreshToken", refreshToken}
@@ -80,7 +80,7 @@ namespace BookMeMobi2.Services
             throw new AppException(result.ToString());
         }
 
-        public async Task<User> Register(UserRegisterDto userDto)
+        public async Task<User> RegisterAsync(UserRegisterDto userDto)
         {
             var user = _mapper.Map<User>(userDto);
             var result = await _userManager.CreateAsync(user, userDto.Password);
@@ -99,7 +99,7 @@ namespace BookMeMobi2.Services
             throw new AppException(errors);
         }
 
-        public async Task ConfirmEmail(string userId, string token)
+        public async Task ConfirmEmailAsync(string userId, string token)
         {
             var user = await _userManager.FindByIdAsync(userId);
 
@@ -116,7 +116,7 @@ namespace BookMeMobi2.Services
             }
         }
 
-        public async Task ForgotPassword(string userName)
+        public async Task ForgotPasswordAsync(string userName)
         {
             var user = await _userManager.FindByNameAsync(userName);
             if (user == null)
@@ -132,7 +132,7 @@ namespace BookMeMobi2.Services
 
         }
 
-        public async Task ResetPassword(string userId, UserResetPasswordDto model)
+        public async Task ResetPasswordAsync(string userId, UserResetPasswordDto model)
         {
             var user = await _userManager.FindByIdAsync(userId);
 
@@ -144,7 +144,7 @@ namespace BookMeMobi2.Services
             }
         }
 
-        public async Task Logout()
+        public async Task LogoutAsync()
         {
             await _signInManager.SignOutAsync();
 
@@ -158,7 +158,7 @@ namespace BookMeMobi2.Services
             return new PagedList<UserDto>(usersDto.AsQueryable(), pageNumber, pageSize);
         }
 
-        public async Task<User> GetUser(string userId)
+        public async Task<User> GetUserAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
             return user;

@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2005
@@ -6,8 +6,6 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BookMeMobi2", "BookMeMobi2\BookMeMobi2.csproj", "{6F42F7C3-45DE-4E2C-812A-5A1062804F3C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BookMeMobi2.MobiMetadata", "BookMeMobi2.MobiMetadata\BookMeMobi2.MobiMetadata.csproj", "{57F62BBA-E004-42F1-8CDD-5A1CB92C1129}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BookMeMobi2.Tests", "BookMeMobi2.Tests\BookMeMobi2.Tests.csproj", "{40ADAAE6-BBC1-4D97-A04B-B52D1FA445DB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookMeMobi2.SendGrid", "BookMeMobi2.SendGrid\BookMeMobi2.SendGrid.csproj", "{1B596567-B6FB-4826-9027-7B68C2568B68}"
 EndProject
@@ -25,10 +23,6 @@ Global
 		{57F62BBA-E004-42F1-8CDD-5A1CB92C1129}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57F62BBA-E004-42F1-8CDD-5A1CB92C1129}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57F62BBA-E004-42F1-8CDD-5A1CB92C1129}.Release|Any CPU.Build.0 = Release|Any CPU
-		{40ADAAE6-BBC1-4D97-A04B-B52D1FA445DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{40ADAAE6-BBC1-4D97-A04B-B52D1FA445DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{40ADAAE6-BBC1-4D97-A04B-B52D1FA445DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{40ADAAE6-BBC1-4D97-A04B-B52D1FA445DB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1B596567-B6FB-4826-9027-7B68C2568B68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1B596567-B6FB-4826-9027-7B68C2568B68}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B596567-B6FB-4826-9027-7B68C2568B68}.Release|Any CPU.ActiveCfg = Release|Any CPU

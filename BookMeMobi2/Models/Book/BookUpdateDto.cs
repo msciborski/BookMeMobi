@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BookMeMobi2.Entities;
 
 namespace BookMeMobi2.Models.Book
 {
@@ -9,6 +10,6 @@ namespace BookMeMobi2.Models.Book
     {
         public string Title { get; set; }
         public string Author { get; set; }
-
+        public IEnumerable<Tag> Tags { get; set; }
     }
 }

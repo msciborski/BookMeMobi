@@ -10,14 +10,14 @@ namespace BookMeMobi2.Services
 {
     public interface IUserService
     {
-        Task<UserLoginDto> SignIn(Credentials credentials);
-        Task<User> Register(UserRegisterDto userDto);
-        Task ConfirmEmail(string userId, string token);
-        Task ForgotPassword(string userName);
-        Task ResetPassword(string userId, UserResetPasswordDto model);
-        Task Logout();
+        Task<UserLoginDto> SignInAsync(Credentials credentials);
+        Task<User> RegisterAsync(UserRegisterDto userDto);
+        Task ConfirmEmailAsync(string userId, string token);
+        Task ForgotPasswordAsync(string userName);
+        Task ResetPasswordAsync(string userId, UserResetPasswordDto model);
+        Task LogoutAsync();
         PagedList<UserDto> GetAllUsers(int pageSize, int pageNumber);
-        Task<User> GetUser(string userId);
+        Task<User> GetUserAsync(string userId);
         Task UpdateUserAsync(string userId, UserUpdateDto model);
         IDictionary<string, TokenResource> RefreshToken(string userId, string refreshToken);
 
