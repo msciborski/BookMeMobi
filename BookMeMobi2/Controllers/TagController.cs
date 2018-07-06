@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using BookMeMobi2.Helpers.Fliters;
 using BookMeMobi2.Services;
@@ -17,6 +18,7 @@ namespace BookMeMobi2.Controllers
         {
           _tagService = tagService;
         }
+
         [ValidateUserExists]
         [ValidateBookExists]
         [HttpGet("/api/users/{userId}/books/{bookId}/tags")]
@@ -24,6 +26,16 @@ namespace BookMeMobi2.Controllers
         {
             var bookTags = _tagService.GetBookTags(bookId);
             return Ok(bookTags);
+        }
+
+        [ValidateUserExists]
+        [ValidateBookExists]
+        [HttpPost("/api/users/{userId}/books/{bookId}/tags")]
+        public async Task<IActionResult> AddBookTags(string userId, int bookId, [FromBody] IEnumerable<string> tagNames)
+        {
+            var bookWithAddedTags = await _tagService.AddTagsToBook(bookId, tagNames);
+
+            return Ok(bookWithAddedTags);
         }
 
 
