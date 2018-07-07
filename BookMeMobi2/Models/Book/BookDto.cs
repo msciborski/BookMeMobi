@@ -23,5 +23,6 @@ namespace BookMeMobi2.Models.Book
         [JsonConverter(typeof(CustomDateTimeConverter))]
         public DateTime? PublishingDate { get; set; }
         public DateTime UploadDate { get; set; }
+        public IEnumerable<TagDto> Tags { get; set; }
     }
 }
