@@ -32,7 +32,20 @@ namespace BookMeMobi2.Helpers.Extensions
             searchQuery = searchQuery.ToLowerInvariant();
 
             return source.Where(b =>
-                b.Author.ToLowerInvariant().Contains(searchQuery) || b.Title.ToLowerInvariant().Contains(searchQuery) || b.FileName.ToLowerInvariant().Contains(searchQuery));
+                b.Author.ToLowerInvariant().Contains(searchQuery) ||
+                  b.Title.ToLowerInvariant().Contains(searchQuery) ||
+                    b.FileName.ToLowerInvariant().Contains(searchQuery));
+        }
+        public static IEnumerable<Tag> SearchTag(this IEnumerable<Tag> source, string tagName)
+        {
+          if(String.IsNullOrEmpty(tagName) || String.IsNullOrWhiteSpace(tagName))
+          {
+            return source;
+          }
+
+          tagName = tagName.ToLowerInvariant();
+
+          return source.Where(t => t.TagName.ToLowerInvariant().Equals(tagName));
         }
 
         public static IQueryable<T> ApplySort<T>(this IQueryable<T> source, string orderBy,

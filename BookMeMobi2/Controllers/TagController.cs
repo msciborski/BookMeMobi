@@ -1,6 +1,10 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using BookMeMobi2.Entities;
 using BookMeMobi2.Helpers.Fliters;
+using BookMeMobi2.Models;
 using BookMeMobi2.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -12,20 +16,39 @@ namespace BookMeMobi2.Controllers
     [ValidateToken]
     public class TagController : Controller
     {
-
         private readonly ITagService _tagService;
-        public TagController(ITagService tagService)
+        private readonly IMapper _mapper;
+        public TagController(ITagService tagService, IMapper mapper)
         {
           _tagService = tagService;
+          _mapper = mapper;
         }
 
+        [HttpGet("/api/tags")]
+        public async Task<IActionResult> GetTags([FromQuery] TagResourceParameters parameters)
+        {
+          var tags = _tagService.GetTags(parameters);
+
+          var tagsDto = _mapper.Map<IEnumerable<Tag>, IEnumerable<TagDto>>(tags);
+
+          var pagedList = new PagedList<TagDto>(tagsDto.AsQueryable(), parameters.PageNumber, parameters.PageSize);
+
+          return Ok(pagedList);
+        }
+
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(typeof(IEnumerable<TagDto>),200)]
         [ValidateUserExists]
         [ValidateBookExists]
         [HttpGet("/api/users/{userId}/books/{bookId}/tags")]
         public async Task<IActionResult> GetBookTags(string userId, int bookId)
         {
             var bookTags = _tagService.GetBookTags(bookId);
-            return Ok(bookTags);
+
+            var bookTagsDto = _mapper.Map<IEnumerable<Tag>, IEnumerable<TagDto>>(bookTags);
+
+            return Ok(bookTagsDto);
         }
 
         [ValidateUserExists]

@@ -38,7 +38,6 @@ namespace BookMeMobi2.Helpers.Fliters
                         }
                     }
                 }
-
                 await next();
             }
         }

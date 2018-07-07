@@ -254,28 +254,28 @@ namespace BookMeMobi2.Services
         //Method tries to get title from file name
         private static string GetTitleFromFileName(string fileName, string author)
         {
-          var title = String.Empty;
-          //if file name contains author -> remove it
-          if(fileName.Contains(author))
-          {
-            title = fileName.Replace(author, String.Empty);
-          }
+            var title = String.Empty;
+            //if file name contains author -> remove it
+            if (fileName.Contains(author))
+            {
+                title = fileName.Replace(author, String.Empty);
+            }
 
-          //Remove extension from title
-          if(title.Contains(".mobi"))
-          {
-            title = title.Replace(".mobi", String.Empty);
-          }
-          else if(title.Contains(".epub"))
-          {
-            title = title.Replace(".epub", String.Empty);
-          }
+            //Remove extension from title
+            if (title.Contains(".mobi"))
+            {
+                title = title.Replace(".mobi", String.Empty);
+            }
+            else if (title.Contains(".epub"))
+            {
+                title = title.Replace(".epub", String.Empty);
+            }
 
-          //Remove special characters from start and end of file name
-          title = Regex.Replace(title, "(^[^\\w0-9_.]+|[^\\w0-9_.]+$)", String.Empty);
-          //Remove starting and tralining spaces
-          title = title.Trim();
-          return title;
+            //Remove special characters from start and end of file name
+            title = Regex.Replace(title, "(^[^\\w0-9_.]+|[^\\w0-9_.]+$)", String.Empty);
+            //Remove starting and tralining spaces
+            title = title.Trim();
+            return title;
         }
 
         private static async Task<MobiMetadaDto> GetMobiMetadataAsync(Stream stream)

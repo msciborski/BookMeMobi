@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BookMeMobi2.Entities;
+using BookMeMobi2.Helpers.Extensions;
 using BookMeMobi2.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,14 +11,29 @@ namespace BookMeMobi2.Services
     public class TagServcie : ITagService
     {
         private readonly ApplicationDbContext _context;
-        public TagServcie(ApplicationDbContext context)
+        private readonly IPropertyMappingService _propertyMappingService;
+        public TagServcie(ApplicationDbContext context, IPropertyMappingService propertyMappingService)
         {
             _context = context;
+            _propertyMappingService = propertyMappingService;
         }
 
+        public IEnumerable<Tag> GetTags(TagResourceParameters parameters)
+        {
+            var tags = _context.BookTags
+                        .Include(bt => bt.Tag)
+                        .Select(bt => bt.Tag);
+
+            var retrunTags = tags.SearchTag(parameters.TagName).AsQueryable().ApplySort(parameters.OrderBy, _propertyMappingService.GetPropertyMapping<TagDto, Tag>());
+            return retrunTags;
+        }
         public IEnumerable<Tag> GetBookTags(int bookId)
         {
-            var tags = _context.BookTags.Include(bt => bt.Tag).Where(bt => bt.BookId == bookId).Select(bt => bt.Tag);
+            var tags = _context.BookTags
+              .Include(bt => bt.Tag)
+              .Where(bt => bt.BookId == bookId)
+              .Select(bt => bt.Tag);
+
             return tags;
         }
 
