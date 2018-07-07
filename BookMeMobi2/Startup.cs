@@ -95,9 +95,9 @@ namespace BookMeMobi2
 
             // services.AddHangfire(config => config.UsePostgreSqlStorage(Configuration.GetConnectionString("HangFireDb")));
 
-            services.AddMvc(o => {
-                o.Filters.Add(typeof(ApiExceptionAttributeImpl));
-            }).AddFluentValidation(o => o.RegisterValidatorsFromAssemblyContaining<Startup>());
+            services.AddMvc(o => o.Filters.Add(typeof(ApiExceptionAttributeImpl)))
+              .AddFluentValidation(o => o.RegisterValidatorsFromAssemblyContaining<Startup>())
+              .AddJsonOptions(opt => opt.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
             services.AddSwaggerGen(c =>
             {
@@ -127,8 +127,9 @@ namespace BookMeMobi2
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<ITokenService, TokenService>();
             services.AddTransient<IMailService, SendGridMailService>();
+            services.AddTransient<ITagService, TagServcie>();
             // services.AddTransient<IStorageService, GoogleStorageService>();
-            services.AddTransient<IStorageService, AWSS3StorageService>();            
+            services.AddTransient<IStorageService, AWSS3StorageService>();
             services.AddTransient<IPropertyMappingService, PropertyMappingService>();
             services.AddScoped<ValidateModelAttribute>();
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
@@ -145,7 +146,7 @@ namespace BookMeMobi2
 
             app.UseDeveloperExceptionPage();
             loggerFactory.AddDebug();
-            
+
 
             app.UseCors(o => o.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().AllowCredentials());
             app.UseStaticFiles();

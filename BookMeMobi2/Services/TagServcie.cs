@@ -21,10 +21,12 @@ namespace BookMeMobi2.Services
             return tags;
         }
 
-        public async Task<Book> AddTagsToBook(int bookId, IEnumerable<string> tags)
+        public async Task AddTagsToBook(int bookId, IEnumerable<string> tags)
         {
-            var book = await _context.Books.Include(b => b.BookTags)
-              .ThenInclude(bt => bt.Book).FirstOrDefaultAsync(b => b.Id == bookId);
+            var book = await _context.Books
+              .Include(b => b.BookTags).ThenInclude(bt => bt.Book)
+              .Include(b => b.BookTags).ThenInclude(bt => bt.Tag)
+              .FirstOrDefaultAsync(b => b.Id == bookId);
 
             //Create new List if list of tags is empty
             //(then list of tags == null)
@@ -50,8 +52,6 @@ namespace BookMeMobi2.Services
 
             _context.Books.Update(book);
             await _context.SaveChangesAsync();
-
-            return book;
         }
 
         private bool TagExist(Book book, string tag)

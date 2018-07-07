@@ -33,9 +33,9 @@ namespace BookMeMobi2.Controllers
         [HttpPost("/api/users/{userId}/books/{bookId}/tags")]
         public async Task<IActionResult> AddBookTags(string userId, int bookId, [FromBody] IEnumerable<string> tagNames)
         {
-            var bookWithAddedTags = await _tagService.AddTagsToBook(bookId, tagNames);
+            await _tagService.AddTagsToBook(bookId, tagNames);
 
-            return Ok(bookWithAddedTags);
+            return NoContent();
         }
 
 
