@@ -24,6 +24,10 @@ namespace BookMeMobi2.Controllers
             _mapper = mapper;
         }
 
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(PagedList<TagDto>), 200)]
+        [ProducesResponseType(401)]
+        [ValidateModel]
         [HttpGet("/api/tags")]
         public IActionResult GetTags([FromQuery] TagResourceParameters parameters)
         {
@@ -56,6 +60,7 @@ namespace BookMeMobi2.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(204)]
+        [ValidateModel]
         [ValidateUserExists]
         [ValidateBookExists]
         [HttpPost("/api/users/{userId}/books/{bookId}/tags")]
@@ -64,6 +69,21 @@ namespace BookMeMobi2.Controllers
             await _tagService.AddTagsToBookAsync(bookId, tagNames);
 
             return NoContent();
+        }
+
+        [Produces("application/json")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        [ValidateUserExists]
+        [ValidateBookExists]
+        [HttpDelete("/api/users/{userId}/books/{bookId}/tags/{tagId}")]
+        public async Task<IActionResult> DeleteTagFromBook(string userId, int bookId, int tagId)
+        {
+          await _tagService.DeleteTagFromBook(bookId, tagId);
+
+          return NoContent();
         }
 
 

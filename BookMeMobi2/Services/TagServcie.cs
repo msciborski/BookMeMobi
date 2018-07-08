@@ -51,22 +51,22 @@ namespace BookMeMobi2.Services
 
                     if (await TagExist(tag))
                     {
-                      if(!TagAddedToBook(book, tag))
-                      {
-                        tagToAdd = await _context.Tags.FirstOrDefaultAsync(t => t.TagName == tag);
-                      }
-                      else
-                      {
-                        continue;
-                      }
+                        if (!TagAddedToBook(book, tag))
+                        {
+                            tagToAdd = await _context.Tags.FirstOrDefaultAsync(t => t.TagName == tag);
+                            tagToAdd.CountUsage++;
+                        }
+                        else
+                        {
+                            continue;
+                        }
                     }
                     else
                     {
-                        tagToAdd = new Tag { TagName = tag };
+                        tagToAdd = new Tag { TagName = tag, CountUsage = 1 };
                     }
 
                     book.BookTags.Add(new BookTag { Book = book, Tag = tagToAdd });
-
                 }
                 _context.Books.Update(book);
                 await _context.SaveChangesAsync();
@@ -76,7 +76,23 @@ namespace BookMeMobi2.Services
                 throw new AppException("Book dosen't exist.", 404);
             }
         }
+        public async Task DeleteTagFromBook(int bookId, int tagId)
+        {
+            var bookTag = await _context.BookTags
+                                .Include(bt => bt.Tag)
+                                .FirstOrDefaultAsync(bt => bt.BookId == bookId && bt.TagId == tagId);
+            if (bookTag != null)
+            {
+                bookTag.Tag.CountUsage--;
+                _context.BookTags.Remove(bookTag);
 
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+              throw new AppException("Tag to remove dosen't exist.", 404);
+            }
+        }
         private async Task<bool> TagExist(string tag)
         {
             var tagExist = await _context.Tags.AllAsync(t => t.TagName != tag);
@@ -84,8 +100,8 @@ namespace BookMeMobi2.Services
         }
         private bool TagAddedToBook(Book book, string tag)
         {
-          var tagExistInBook = book.BookTags.Any(b => b.Tag.TagName == tag);
-          return tagExistInBook;
+            var tagExistInBook = book.BookTags.Any(b => b.Tag.TagName == tag);
+            return tagExistInBook;
         }
     }
 }
