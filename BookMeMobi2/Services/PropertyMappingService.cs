@@ -21,11 +21,19 @@ namespace BookMeMobi2.Services
             { "Size", new PropertyMappingValue(new List<string>(){"Size"}) }
         };
 
+        private Dictionary<string, PropertyMappingValue> _tagPropertyMapping = new Dictionary<string, PropertyMappingValue>(StringComparer.OrdinalIgnoreCase)
+        {
+          { "Id", new PropertyMappingValue(new List<string>(){"Id"}) },
+          { "TagName", new PropertyMappingValue(new List<string>() {"TagName"}) },
+          { "CountUsage", new PropertyMappingValue(new List<string>() {"CountUsage"}) }
+        };
+
         private IList<IPropertyMapping> _propertyMappings = new List<IPropertyMapping>();
 
         public PropertyMappingService()
         {
             _propertyMappings.Add(new PropertyMapping<BookDto, Book>(_booksPropertyMapping));
+            _propertyMappings.Add(new PropertyMapping<TagDto, Tag>(_tagPropertyMapping));
         }
         public Dictionary<string, PropertyMappingValue> GetPropertyMapping<TSource, TDestination>()
         {

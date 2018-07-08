@@ -175,9 +175,13 @@ namespace BookMeMobi2.Controllers
             return NoContent();
         }
 
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(IDictionary<string,TokenResource>), 200)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
         [AllowAnonymous]
         [HttpPost("{userId}/refreshToken")]
-        public async Task<IActionResult> RefreshToken(string userId, [FromBody] string refreshToken)
+        public IActionResult RefreshToken(string userId, [FromBody] string refreshToken)
         {
             var tokens = _userService.RefreshToken(userId, refreshToken);
             return Ok(tokens);

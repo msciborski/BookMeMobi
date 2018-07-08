@@ -20,10 +20,13 @@ namespace BookMeMobi2.Helpers.Mappings
             CreateMap<UserLoginDto, User>();
             CreateMap<User, UserDto>();
             CreateMap<PagedList<User>, PagedList<UserDto>>();
+            CreateMap<Tag, TagDto>();
             CreateMap<Book, BookDeleteDto>();
             CreateMap<BookDeleteDto, Book>();
             CreateMap<BookDto, Book>();
-            CreateMap<Book, BookDto>();
+            CreateMap<Book, BookDto>()
+              .ForMember(dto => dto.Tags, opt =>
+                        opt.MapFrom(x => x.BookTags.Select(y => y.Tag)));
             CreateMap<PagedList<Book>, PagedList<BookDto>>();
             CreateMap<PagedList<BookDto>, PagedList<Book>>();
         }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Net.Mail;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using BookMeMobi2.Entities;
@@ -44,13 +45,21 @@ namespace BookMeMobi2.Services
 
         public async Task<Book> GetBookForUserAsync(string userId, int bookId)
         {
-            Book book = await _context.Books.Include(b => b.Cover).FirstOrDefaultAsync(b => b.Id == bookId);
+            Book book = await _context.Books
+                  .Include(b => b.Cover)
+                  .Include(b => b.BookTags)
+                  .ThenInclude(bt => bt.Tag)
+                  .FirstOrDefaultAsync(b => b.Id == bookId);
             return book;
         }
 
         public IEnumerable<Book> GetBooksForUserAsync(string userId, BooksResourceParameters parameters)
         {
-            var userBooks = _context.Books.Include(b => b.Cover).Where(b => b.UserId == userId);
+            var userBooks = _context.Books
+                  .Include(b => b.Cover)
+                  .Include(b => b.BookTags)
+                  .ThenInclude(bt => bt.Tag)
+                  .Where(b => b.UserId == userId);
 
             //Filter method
             var books = userBooks.FilterBooks(parameters).SearchBook(parameters.SearchQuery).AsQueryable()
@@ -135,7 +144,7 @@ namespace BookMeMobi2.Services
 
                 book.HasBeenEdited = true;
                 book.LastEditDate = DateTime.Now.ToUniversalTime();
-                
+
                 _context.Books.Update(book);
                 await _context.SaveChangesAsync();
 
@@ -178,11 +187,13 @@ namespace BookMeMobi2.Services
                     book = new Book
                     {
                         Author = metadata.Author,
-                        Title = metadata.Title,
+                        //If title dosen't exist in mobi metdata, try to get it from file name
+                        Title = String.IsNullOrEmpty(metadata.Title) || String.IsNullOrWhiteSpace(metadata.Title) ?
+                                        GetTitleFromFileName(file.FileName, metadata.Author) : metadata.Title,
                         PublishingDate = metadata.PublishingDate,
                         UploadDate = DateTime.Now.ToUniversalTime(),
-                        Format = GetEbookFormat(file.FileName),
-                        Size = Math.Round(ConvertBytesToMegabytes(file.Length), 3),
+                        Format = BookService.GetEbookFormat(file.FileName),
+                        Size = Math.Round(BookService.ConvertBytesToMegabytes(file.Length), 3),
                         FileName = file.FileName
                     };
                     await AddFilesToDbAsync(book, userId);
@@ -240,7 +251,34 @@ namespace BookMeMobi2.Services
             await _context.SaveChangesAsync();
         }
 
-        private async Task<MobiMetadaDto> GetMobiMetadataAsync(Stream stream)
+        //Method tries to get title from file name
+        private static string GetTitleFromFileName(string fileName, string author)
+        {
+            var title = String.Empty;
+            //if file name contains author -> remove it
+            if (fileName.Contains(author))
+            {
+                title = fileName.Replace(author, String.Empty);
+            }
+
+            //Remove extension from title
+            if (title.Contains(".mobi"))
+            {
+                title = title.Replace(".mobi", String.Empty);
+            }
+            else if (title.Contains(".epub"))
+            {
+                title = title.Replace(".epub", String.Empty);
+            }
+
+            //Remove special characters from start and end of file name
+            title = Regex.Replace(title, "(^[^\\w0-9_.]+|[^\\w0-9_.]+$)", String.Empty);
+            //Remove starting and tralining spaces
+            title = title.Trim();
+            return title;
+        }
+
+        private static async Task<MobiMetadaDto> GetMobiMetadataAsync(Stream stream)
         {
             MobiMetadaDto mobiMetada = new MobiMetadaDto();
             var mobiDocument = await MobiService.GetMobiDocument(stream);
@@ -269,21 +307,12 @@ namespace BookMeMobi2.Services
             return _storageService.GetDownloadUrl(userId, bookId, bookFileName);
         }
 
-        private byte[] ConvertStreamToByteArray(Stream stream)
-        {
-            using (MemoryStream ms = new MemoryStream())
-            {
-                stream.CopyTo(ms);
-                return ms.ToArray();
-            }
-        }
-
-        private double ConvertBytesToMegabytes(long bytes)
+        private static double ConvertBytesToMegabytes(long bytes)
         {
             return (bytes / 1024f) / 1024f;
         }
 
-        private string GetEbookFormat(string fileName)
+        private static string GetEbookFormat(string fileName)
         {
             if (fileName.Contains(".mobi"))
             {
@@ -296,5 +325,6 @@ namespace BookMeMobi2.Services
             }
             throw new NotImplementedException("Format is not avaiable.");
         }
+
     }
 }

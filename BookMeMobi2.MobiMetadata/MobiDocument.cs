@@ -80,11 +80,8 @@ namespace BookMeMobi2.MobiMetadata
 
         private string GetTitle()
         {
-            if (MOBIHeader == null)
-                return PDBHeader.Name;
-            return MOBIHeader.FullName;
+          return MOBIHeader == null ? PDBHeader.Name : MOBIHeader.FullName;
         }
-
         private void SetTitle(string title)
         {
             PDBHeader.SetName(title);
@@ -99,8 +96,11 @@ namespace BookMeMobi2.MobiMetadata
             }
 
             var publishingDate = MOBIHeader.EXTHHeader.GetEXTHRecordValue(106);
-            Console.WriteLine(publishingDate);
-            return Convert.ToDateTime(publishingDate);
+            if(!String.IsNullOrEmpty(publishingDate))
+            {
+              return Convert.ToDateTime(publishingDate);
+            }
+            return null;
         }
 
         private void SetPublishingDate(DateTime? publishingDate)
