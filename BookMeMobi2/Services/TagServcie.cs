@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BookMeMobi2.Entities;
+using BookMeMobi2.Helpers.Exceptions;
 using BookMeMobi2.Helpers.Extensions;
 using BookMeMobi2.Models;
 using Microsoft.EntityFrameworkCore;
@@ -20,9 +21,7 @@ namespace BookMeMobi2.Services
 
         public IEnumerable<Tag> GetTags(TagResourceParameters parameters)
         {
-            var tags = _context.BookTags
-                        .Include(bt => bt.Tag)
-                        .Select(bt => bt.Tag);
+            var tags = _context.Tags;
 
             var retrunTags = tags.SearchTag(parameters.TagName).AsQueryable().ApplySort(parameters.OrderBy, _propertyMappingService.GetPropertyMapping<TagDto, Tag>());
             return retrunTags;
@@ -36,46 +35,57 @@ namespace BookMeMobi2.Services
 
             return tags;
         }
-
-        public async Task AddTagsToBook(int bookId, IEnumerable<string> tags)
+        //TODO: Do przepisania jutro, bo to co ty tu odjebales to wstyd
+        public async Task AddTagsToBookAsync(int bookId, IEnumerable<string> tags)
         {
             var book = await _context.Books
               .Include(b => b.BookTags).ThenInclude(bt => bt.Book)
               .Include(b => b.BookTags).ThenInclude(bt => bt.Tag)
               .FirstOrDefaultAsync(b => b.Id == bookId);
 
-            //Create new List if list of tags is empty
-            //(then list of tags == null)
-            if (book.BookTags == null)
+            if (book != null)
             {
-                book.BookTags = new List<BookTag>();
-            }
-
-            foreach (var tag in tags)
-            {
-                if (!TagExist(book, tag))
+                foreach (var tag in tags)
                 {
-                    book.BookTags.Add(new BookTag
-                    {
-                        Book = book,
-                        Tag = new Tag
-                        {
-                            TagName = tag
-                        }
-                    });
-                }
-            }
+                    Tag tagToAdd = null;
 
-            _context.Books.Update(book);
-            await _context.SaveChangesAsync();
+                    if (await TagExist(tag))
+                    {
+                      if(!TagAddedToBook(book, tag))
+                      {
+                        tagToAdd = await _context.Tags.FirstOrDefaultAsync(t => t.TagName == tag);
+                      }
+                      else
+                      {
+                        continue;
+                      }
+                    }
+                    else
+                    {
+                        tagToAdd = new Tag { TagName = tag };
+                    }
+
+                    book.BookTags.Add(new BookTag { Book = book, Tag = tagToAdd });
+
+                }
+                _context.Books.Update(book);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                throw new AppException("Book dosen't exist.", 404);
+            }
         }
 
-        private bool TagExist(Book book, string tag)
+        private async Task<bool> TagExist(string tag)
         {
-            var tagExist = (book.BookTags
-                      .FirstOrDefault(bt => bt.Tag.TagName == tag) != null) ?
-                        true : false;
-            return tagExist;
+            var tagExist = await _context.Tags.AllAsync(t => t.TagName != tag);
+            return !tagExist;
+        }
+        private bool TagAddedToBook(Book book, string tag)
+        {
+          var tagExistInBook = book.BookTags.Any(b => b.Tag.TagName == tag);
+          return tagExistInBook;
         }
     }
 }

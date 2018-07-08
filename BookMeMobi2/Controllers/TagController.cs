@@ -20,29 +20,30 @@ namespace BookMeMobi2.Controllers
         private readonly IMapper _mapper;
         public TagController(ITagService tagService, IMapper mapper)
         {
-          _tagService = tagService;
-          _mapper = mapper;
+            _tagService = tagService;
+            _mapper = mapper;
         }
 
         [HttpGet("/api/tags")]
-        public async Task<IActionResult> GetTags([FromQuery] TagResourceParameters parameters)
+        public IActionResult GetTags([FromQuery] TagResourceParameters parameters)
         {
-          var tags = _tagService.GetTags(parameters);
+            var tags = _tagService.GetTags(parameters);
 
-          var tagsDto = _mapper.Map<IEnumerable<Tag>, IEnumerable<TagDto>>(tags);
+            var tagsDto = _mapper.Map<IEnumerable<Tag>, IEnumerable<TagDto>>(tags);
 
-          var pagedList = new PagedList<TagDto>(tagsDto.AsQueryable(), parameters.PageNumber, parameters.PageSize);
+            var pagedList = new PagedList<TagDto>(tagsDto.AsQueryable(), parameters.PageNumber, parameters.PageSize);
 
-          return Ok(pagedList);
+            return Ok(pagedList);
         }
 
+        [Produces("application/json")]
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
-        [ProducesResponseType(typeof(IEnumerable<TagDto>),200)]
+        [ProducesResponseType(typeof(IEnumerable<TagDto>), 200)]
         [ValidateUserExists]
         [ValidateBookExists]
         [HttpGet("/api/users/{userId}/books/{bookId}/tags")]
-        public async Task<IActionResult> GetBookTags(string userId, int bookId)
+        public IActionResult GetBookTags(string userId, int bookId)
         {
             var bookTags = _tagService.GetBookTags(bookId);
 
@@ -51,12 +52,16 @@ namespace BookMeMobi2.Controllers
             return Ok(bookTagsDto);
         }
 
+        [Produces("application/json")]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(204)]
         [ValidateUserExists]
         [ValidateBookExists]
         [HttpPost("/api/users/{userId}/books/{bookId}/tags")]
         public async Task<IActionResult> AddBookTags(string userId, int bookId, [FromBody] IEnumerable<string> tagNames)
         {
-            await _tagService.AddTagsToBook(bookId, tagNames);
+            await _tagService.AddTagsToBookAsync(bookId, tagNames);
 
             return NoContent();
         }
