@@ -24,7 +24,8 @@ namespace BookMeMobi2.Services
         private Dictionary<string, PropertyMappingValue> _tagPropertyMapping = new Dictionary<string, PropertyMappingValue>(StringComparer.OrdinalIgnoreCase)
         {
           { "Id", new PropertyMappingValue(new List<string>(){"Id"}) },
-          { "TagName", new PropertyMappingValue(new List<string>() {"TagName"})}
+          { "TagName", new PropertyMappingValue(new List<string>() {"TagName"}) },
+          { "CountUsage", new PropertyMappingValue(new List<string>() {"CountUsage"}) }
         };
 
         private IList<IPropertyMapping> _propertyMappings = new List<IPropertyMapping>();
