@@ -84,7 +84,6 @@ namespace BookMeMobi2.MobiMetadata
         }
         private void SetTitle(string title)
         {
-            PDBHeader.SetName(title);
             MOBIHeader.SetFullName(title);
         }
 
