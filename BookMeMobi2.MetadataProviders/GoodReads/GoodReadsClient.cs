@@ -7,10 +7,11 @@ using System.Xml.Linq;
 using System.Linq;
 using BookMeMobi2.MetadataProviders.GoodReads.Models;
 using BookMeMobi2.MetadataProviders.Utils;
+using Microsoft.Extensions.Options;
 
 namespace BookMeMobi2.MetadataProviders.GoodReads
 {
-    public class GoodReadsClient : IBookMetadaProvider
+    public class GoodReadsClient : IGoodReadsMetadataProvider
     {
         private readonly IDictionary<string, string> _endpoints = new Dictionary<string, string>
         {
@@ -18,11 +19,11 @@ namespace BookMeMobi2.MetadataProviders.GoodReads
         };
         private GoodReadsSettings _settings;
 
-        public GoodReadsClient(GoodReadsSettings settings)
+        public GoodReadsClient(IOptions<GoodReadsSettings> settings)
         {
-            _settings = settings;
+            _settings = settings.Value;
         }
-        public async Task<IEnumerable<GoodReadsBookDto>> GetBooks(string title, string author, string isbn)
+        public async Task<IEnumerable<GoodReadsBookDto>> GetBooks(string title, string author, string isbn = "")
         {
             if (!String.IsNullOrEmpty(isbn))
             {
