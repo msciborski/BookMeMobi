@@ -66,9 +66,9 @@ namespace BookMeMobi2.Controllers
         [HttpPost("/api/users/{userId}/books/{bookId}/tags")]
         public async Task<IActionResult> AddBookTags(string userId, int bookId, [FromBody] IEnumerable<string> tagNames)
         {
-            await _tagService.AddTagsToBookAsync(bookId, tagNames);
+            var book = await _tagService.AddTagsToBookAsync(bookId, tagNames);
 
-            return NoContent();
+            return Ok(book);
         }
 
         [Produces("application/json")]
@@ -81,9 +81,9 @@ namespace BookMeMobi2.Controllers
         [HttpDelete("/api/users/{userId}/books/{bookId}/tags/{tagId}")]
         public async Task<IActionResult> DeleteTagFromBook(string userId, int bookId, int tagId)
         {
-          await _tagService.DeleteTagFromBook(bookId, tagId);
+          var book = await _tagService.DeleteTagFromBook(bookId, tagId);
 
-          return NoContent();
+          return Ok(book);
         }
 
 

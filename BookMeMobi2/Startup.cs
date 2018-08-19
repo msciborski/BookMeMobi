@@ -29,6 +29,7 @@ using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using Swashbuckle.AspNetCore.Swagger;
+using BookMeMobi2.MetadataProviders;
 using BookMeMobi2.MetadataProviders.GoodReads;
 
 namespace BookMeMobi2

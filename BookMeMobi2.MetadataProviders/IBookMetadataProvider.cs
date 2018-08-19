@@ -4,7 +4,7 @@ using BookMeMobi2.MetadataProviders.GoodReads.Models;
 
 namespace BookMeMobi2.MetadataProviders
 {
-    public interface IBookMetadaProvider
+    public interface IBookMetadataProvider
     {
       Task<IEnumerable<GoodReadsBookDto>> GetBooks(string title, string author, string isbn = "");
     }

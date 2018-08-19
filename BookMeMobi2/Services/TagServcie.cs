@@ -36,7 +36,7 @@ namespace BookMeMobi2.Services
             return tags;
         }
         //TODO: Do przepisania jutro, bo to co ty tu odjebales to wstyd
-        public async Task AddTagsToBookAsync(int bookId, IEnumerable<string> tags)
+        public async Task<Book> AddTagsToBookAsync(int bookId, IEnumerable<string> tags)
         {
             var book = await _context.Books
               .Include(b => b.BookTags).ThenInclude(bt => bt.Book)
@@ -70,13 +70,14 @@ namespace BookMeMobi2.Services
                 }
                 _context.Books.Update(book);
                 await _context.SaveChangesAsync();
+                return book;
             }
             else
             {
                 throw new AppException("Book dosen't exist.", 404);
             }
         }
-        public async Task DeleteTagFromBook(int bookId, int tagId)
+        public async Task<Book> DeleteTagFromBook(int bookId, int tagId)
         {
             var bookTag = await _context.BookTags
                                 .Include(bt => bt.Tag)
@@ -87,6 +88,7 @@ namespace BookMeMobi2.Services
                 _context.BookTags.Remove(bookTag);
 
                 await _context.SaveChangesAsync();
+                return await _context.Books.FirstOrDefaultAsync(b => b.Id == bookId);
             }
             else
             {

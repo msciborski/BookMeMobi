@@ -27,6 +27,9 @@ namespace BookMeMobi2.Controllers
       }
 
       [Produces("application/json")]
+      [ProducesResponseType(typeof(PagedList<GoodReadsBookDto>), 200)]
+      [ValidateUserExists]
+      [ValidateBookExists]
       [HttpGet("{userId}/books/{bookId}/goodreads")]
       public async Task<IActionResult> GetGoodReadsMetada(string userId, int bookId, int pageNumber = 1, int pageSize = 10)
       {

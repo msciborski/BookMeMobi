@@ -8,8 +8,8 @@ namespace BookMeMobi2.Services
     public interface ITagService
     {
          IEnumerable<Tag> GetBookTags(int bookId);
-         Task AddTagsToBookAsync(int bookid, IEnumerable<string> tags);
+         Task<Book> AddTagsToBookAsync(int bookid, IEnumerable<string> tags);
          IEnumerable<Tag> GetTags(TagResourceParameters parameters);
-         Task DeleteTagFromBook(int bookId, int tagId);
+         Task<Book> DeleteTagFromBook(int bookId, int tagId);
     }
 }
