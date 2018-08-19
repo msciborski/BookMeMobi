@@ -287,6 +287,7 @@ namespace BookMeMobi2.Services
             mobiMetada.PublishingDate = (mobiDocument.PublishingDate.HasValue) ?
               mobiDocument.PublishingDate?.ToUniversalTime() :
               null;
+            mobiMetada.Isbn = mobiDocument.ISBN;
 
             var coverStream = mobiDocument.CoverExtractor.Extract();
             if (coverStream != null)
