@@ -1,4 +1,4 @@
-namespace BookMeMobi2.GoodReads
+namespace BookMeMobi2.MetadataProviders.GoodReads
 {
     public class GoodReadsSettings
     {

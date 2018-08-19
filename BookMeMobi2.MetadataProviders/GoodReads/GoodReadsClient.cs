@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using System.Linq;
-using BookMeMobi2.GoodReads.Models;
-using BookMeMobi2.GoodReads.Utils;
+using BookMeMobi2.MetadataProviders.GoodReads.Models;
+using BookMeMobi2.MetadataProviders.Utils;
 
-namespace BookMeMobi2.GoodReads
+namespace BookMeMobi2.MetadataProviders.GoodReads
 {
-    public class GoodReadsClient
+    public class GoodReadsClient : IBookMetadaProvider
     {
         private readonly IDictionary<string, string> _endpoints = new Dictionary<string, string>
         {

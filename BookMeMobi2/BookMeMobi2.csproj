@@ -58,7 +58,7 @@
   <ItemGroup>
     <ProjectReference Include="..\BookMeMobi2.MobiMetadata\BookMeMobi2.MobiMetadata.csproj" />
     <ProjectReference Include="..\BookMeMobi2.SendGrid\BookMeMobi2.SendGrid.csproj" />
-    <ProjectReference Include="..\BookMeMobi2.GoodReads\BookMeMobi2.GoodReads.csproj" />
+    <ProjectReference Include="..\BookMeMobi2.MetadataProviders\BookMeMobi2.MetadataProviders.csproj" />
   </ItemGroup>
   <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
     <ItemGroup>

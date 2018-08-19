@@ -1,6 +1,6 @@
 using System;
 
-namespace BookMeMobi2.GoodReads.Models
+namespace BookMeMobi2.MetadataProviders.GoodReads.Models
 {
     public class GoodReadsBookDto
     {

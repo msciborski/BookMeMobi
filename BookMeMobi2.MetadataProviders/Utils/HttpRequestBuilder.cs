@@ -2,7 +2,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace BookMeMobi2.GoodReads.Utils
+namespace BookMeMobi2.MetadataProviders.Utils
 {
     internal class HttpRequestBuilder
     {
