@@ -1,7 +1,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace BookMeMobi2.GoodReads
+namespace BookMeMobi2.GoodReads.Utils
 {
     public class HttpRequestFactory
     {
