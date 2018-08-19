@@ -29,6 +29,7 @@ using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using Swashbuckle.AspNetCore.Swagger;
+using BookMeMobi2.MetadataProviders.GoodReads;
 
 namespace BookMeMobi2
 {
@@ -51,6 +52,7 @@ namespace BookMeMobi2
             services.Configure<SMTPSettings>(Configuration.GetSection("SMTP"));
             services.Configure<SendGridSettings>(Configuration.GetSection("SendGrid"));
             services.Configure<AWSS3Settings>(Configuration.GetSection("AWSS3"));
+            services.Configure<GoodReadsSettings>(Configuration.GetSection("GoodReads"));
             services.AddCors();
 
             //services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
@@ -131,6 +133,7 @@ namespace BookMeMobi2
             // services.AddTransient<IStorageService, GoogleStorageService>();
             services.AddTransient<IStorageService, AWSS3StorageService>();
             services.AddTransient<IPropertyMappingService, PropertyMappingService>();
+            services.AddTransient<IGoodReadsMetadataProvider, GoodReadsClient>();
             services.AddScoped<ValidateModelAttribute>();
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
             services.AddScoped<ReccuringDbJobs>();
