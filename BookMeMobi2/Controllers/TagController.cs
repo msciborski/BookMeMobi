@@ -5,6 +5,7 @@ using AutoMapper;
 using BookMeMobi2.Entities;
 using BookMeMobi2.Helpers.Fliters;
 using BookMeMobi2.Models;
+using BookMeMobi2.Models.Book;
 using BookMeMobi2.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -59,7 +60,7 @@ namespace BookMeMobi2.Controllers
         [Produces("application/json")]
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
-        [ProducesResponseType(204)]
+        [ProducesResponseType(typeof(BookDto), 200)]
         [ValidateModel]
         [ValidateUserExists]
         [ValidateBookExists]
@@ -67,12 +68,12 @@ namespace BookMeMobi2.Controllers
         public async Task<IActionResult> AddBookTags(string userId, int bookId, [FromBody] IEnumerable<string> tagNames)
         {
             var book = await _tagService.AddTagsToBookAsync(bookId, tagNames);
-
-            return Ok(book);
+            var bookDto = _mapper.Map<Book, BookDto>(book);
+            return Ok(bookDto);
         }
 
         [Produces("application/json")]
-        [ProducesResponseType(204)]
+        [ProducesResponseType(typeof(BookDto), 200)]
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
@@ -82,8 +83,8 @@ namespace BookMeMobi2.Controllers
         public async Task<IActionResult> DeleteTagFromBook(string userId, int bookId, int tagId)
         {
           var book = await _tagService.DeleteTagFromBook(bookId, tagId);
-
-          return Ok(book);
+          var bookDto = _mapper.Map<Book, BookDto>(book);
+          return Ok(bookDto);
         }
 
 
