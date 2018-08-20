@@ -7,6 +7,7 @@ using BookMeMobi2.MetadataProviders.GoodReads;
 using Microsoft.Extensions.Options;
 using System.Threading.Tasks;
 using BookMeMobi2.Models;
+using BookMeMobi2.MetadataProviders;
 using BookMeMobi2.MetadataProviders.GoodReads.Models;
 using System.Linq;
 
