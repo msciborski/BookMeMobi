@@ -11,11 +11,11 @@ RUN dotnet restore --disable-parallel ./BookMeMobi2.MobiMetadata/
 COPY ./BookMeMobi2.SendGrid/BookMeMobi2.SendGrid.csproj ./BookMeMobi2.SendGrid/
 RUN dotnet restore --disable-parallel ./BookMeMobi2.SendGrid/
 
+COPY ./BookMeMobi2.MetadataProviders/BookMeMobi2.MetadataProviders.csproj ./BookMeMobi2.MetadataProviders/
+RUN dotnet restore --disable-parallel ./BookMeMobi2.MetadataProviders/
+
 COPY ./BookMeMobi2/BookMeMobi2.csproj ./BookMeMobi2/
 RUN dotnet restore --disable-parallel ./BookMeMobi2/
-
-COPY ./BookMeMobi2.MetadataProviders/BookMeMobi2.MetadataProviders ./BookMeMobi2.MetadataProviders/
-RUN dotnet restore --disable-parallel ./BookMeMobi2.MetadataProviders/
 
 COPY ./BookMeMobi2.MobiMetadata/ ./BookMeMobi2.MobiMetadata/
 RUN dotnet build ./BookMeMobi2.MobiMetadata/
