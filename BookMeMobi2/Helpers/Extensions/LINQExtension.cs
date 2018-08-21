@@ -14,10 +14,26 @@ namespace BookMeMobi2.Helpers.Extensions
         public static IEnumerable<Book> FilterBooks(this IEnumerable<Book> source, BooksResourceParameters parameters)
         {
             source = source.Where(b => b.IsDeleted == parameters.Deleted);
+
             if (parameters.SentKindle.HasValue)
             {
                 source =source.Where(b => b.IsSentToKindle == parameters.SentKindle.Value);
             }
+
+            if (parameters.Tags != null && parameters.Tags.Any())
+            {
+              IList<Book> booksToReturn = new List<Book>();
+              foreach (var book in source)
+              {
+                var bookTags = book.BookTags.Select(bt => bt.Tag.TagName);
+                if (!parameters.Tags.Except(bookTags).Any())
+                {
+                  booksToReturn.Add(book);
+                }
+              }
+              return booksToReturn;
+            }
+
 
             return source;
         }

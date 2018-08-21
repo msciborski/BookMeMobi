@@ -47,6 +47,7 @@ namespace BookMeMobi2.Controllers
         [Produces("application/json")]
         [ProducesResponseType(typeof(PagedList<BookDto>), 200)]
         [ProducesResponseType(typeof(ApiError), 404)]
+        [SeparatedQueryString]
         [ValidateUserExists]
         [HttpGet("{userId}/books")]
         public IActionResult GetBooks(string userId, [FromQuery] BooksResourceParameters parameters)

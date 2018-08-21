@@ -13,6 +13,7 @@ namespace BookMeMobi2.Models.Book
         {
           base.OrderBy = "UploadDate desc";
         }
+        public string[] Tags { get; set; }
         public bool Deleted { get; set; } = false;
         public string SearchQuery { get; set; }
         public bool? SentKindle { get; set; } = null;
