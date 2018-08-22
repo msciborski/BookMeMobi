@@ -20,22 +20,24 @@ namespace BookMeMobi2.Helpers.Extensions
                 source =source.Where(b => b.IsSentToKindle == parameters.SentKindle.Value);
             }
 
-            if (parameters.Tags != null && parameters.Tags.Any())
-            {
+            return source;
+        }
+        public static IEnumerable<Book> FilterBooksByTags(this IEnumerable<Book> source, IEnumerable<string> tags)
+        {
+          if (tags != null && tags.Any())
+          {
               IList<Book> booksToReturn = new List<Book>();
               foreach (var book in source)
               {
                 var bookTags = book.BookTags.Select(bt => bt.Tag.TagName);
-                if (!parameters.Tags.Except(bookTags).Any())
+                if (!tags.Except(bookTags).Any())
                 {
                   booksToReturn.Add(book);
                 }
               }
               return booksToReturn;
-            }
-
-
-            return source;
+          }
+          return source;
         }
 
         public static IEnumerable<Book> SearchBook(this IEnumerable<Book> source, string searchQuery)

@@ -36,7 +36,16 @@ namespace BookMeMobi2.Controllers
             _storageService = storageService;
         }
 
+        [HttpGet("/api/book")]
+        [SeparatedQueryString]
+        public IActionResult GetBooks([FromQuery] BooksResourceParameters parameters)
+        {
+            var books = _bookService.GetBooks(parameters);
+            var bookDtos = MapBookToBookDto(books);
+            AddCoversToBookDtos(books, bookDtos);
 
+            return Ok(new PagedList<BookDto>(bookDtos.AsQueryable(), parameters.PageNumber, parameters.PageSize));
+        }
         /// <summary>
         /// Returns user's books.
         /// </summary>
@@ -50,23 +59,45 @@ namespace BookMeMobi2.Controllers
         [SeparatedQueryString]
         [ValidateUserExists]
         [HttpGet("{userId}/books")]
-        public IActionResult GetBooks(string userId, [FromQuery] BooksResourceParameters parameters)
+        public IActionResult GetBooksForUser(string userId, [FromQuery] BooksResourceParameters parameters)
         {
-            List<BookDto> booksDto = new List<BookDto>();
             var books = _bookService.GetBooksForUserAsync(userId, parameters);
 
-            foreach (var book in books)
-            {
-                var coverUrl = (book.Cover != null) ? _storageService.GetCoverUrl(userId, book.Id, book.Cover.CoverName) : null;
-                var bookDto = _mapper.Map<Book, BookDto>(book);
-                bookDto.CoverUrl = coverUrl;
-                booksDto.Add(bookDto);
-            }
+            var booksDto = MapBookToBookDto(books);
+            AddCoversToBookDtos(books, booksDto);
 
             var pagedList = new PagedList<BookDto>(booksDto.AsQueryable(), parameters.PageNumber, parameters.PageSize);
             return Ok(pagedList);
         }
 
+        private IEnumerable<BookDto> MapBookToBookDto(IEnumerable<Book> books)
+        {
+            List<BookDto> booksDto = new List<BookDto>();
+            foreach (var book in books)
+            {
+                // var coverUrl = (book.Cover != null) ? _storageService.GetCoverUrl(book.UserId, book.Id, book.Cover.CoverName) : null;
+                var bookDto = _mapper.Map<Book, BookDto>(book);
+                // bookDto.CoverUrl = coverUrl;
+                booksDto.Add(bookDto);
+            }
+            return booksDto;
+        }
+        private void AddCoversToBookDtos(IEnumerable<Book> books, IEnumerable<BookDto> bookDtos)
+        {
+          foreach (var bookDto in bookDtos)
+          {
+            var book = books.FirstOrDefault(b => b.Id == bookDto.Id);
+            if (book != null && book.Cover != null)
+            {
+              var coverUrl = _storageService.GetCoverUrl(book.UserId, book.Id, book.Cover.CoverName);
+              bookDto.CoverUrl = coverUrl;
+            }
+            else
+            {
+              bookDto.CoverUrl = null;
+            }
+          }
+        }
 
         /// <summary>
         /// Returns user's book with particular id

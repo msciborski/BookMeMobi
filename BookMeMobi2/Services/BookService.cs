@@ -42,7 +42,17 @@ namespace BookMeMobi2.Services
             _mailService = mailService;
             _storageService = storageService;
         }
-
+        public IEnumerable<Book> GetBooks(BooksResourceParameters parameters)
+        {
+          return  _context.Books
+                  .Include(b => b.Cover)
+                  .Include(b => b.BookTags)
+                  .ThenInclude(bt => bt.Tag)
+                  .FilterBooks(parameters)
+                  .FilterBooksByTags(parameters.Tags)
+                  .AsQueryable()
+                  .ApplySort(parameters.OrderBy, _propertyMappingService.GetPropertyMapping<BookDto, Book>());
+        }
         public async Task<Book> GetBookForUserAsync(string userId, int bookId)
         {
             Book book = await _context.Books
@@ -62,7 +72,7 @@ namespace BookMeMobi2.Services
                   .Where(b => b.UserId == userId);
 
             //Filter method
-            var books = userBooks.FilterBooks(parameters).SearchBook(parameters.SearchQuery).AsQueryable()
+            var books = userBooks.FilterBooks(parameters).FilterBooksByTags(parameters.Tags).SearchBook(parameters.SearchQuery).AsQueryable()
               .ApplySort(parameters.OrderBy, _propertyMappingService.GetPropertyMapping<BookDto, Book>());
             return books;
         }
