@@ -77,7 +77,7 @@ namespace BookMeMobi2.Services
                 throw new AppException("Book dosen't exist.", 404);
             }
         }
-        public async Task<Book> DeleteTagFromBook(int bookId, int tagId)
+        public async Task DeleteTagFromBook(int bookId, int tagId)
         {
             var bookTag = await _context.BookTags
                                 .Include(bt => bt.Tag)
@@ -88,7 +88,6 @@ namespace BookMeMobi2.Services
                 _context.BookTags.Remove(bookTag);
 
                 await _context.SaveChangesAsync();
-                return await _context.Books.FirstOrDefaultAsync(b => b.Id == bookId);
             }
             else
             {

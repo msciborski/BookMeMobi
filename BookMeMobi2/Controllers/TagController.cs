@@ -18,11 +18,13 @@ namespace BookMeMobi2.Controllers
     public class TagController : Controller
     {
         private readonly ITagService _tagService;
+        private readonly IBookService _bookService;
         private readonly IMapper _mapper;
-        public TagController(ITagService tagService, IMapper mapper)
+        public TagController(ITagService tagService, IBookService bookService, IMapper mapper)
         {
             _tagService = tagService;
             _mapper = mapper;
+            _bookService = bookService;
         }
 
         [Produces("application/json")]
@@ -82,7 +84,8 @@ namespace BookMeMobi2.Controllers
         [HttpDelete("/api/users/{userId}/books/{bookId}/tags/{tagId}")]
         public async Task<IActionResult> DeleteTagFromBook(string userId, int bookId, int tagId)
         {
-          var book = await _tagService.DeleteTagFromBook(bookId, tagId);
+          await _tagService.DeleteTagFromBook(bookId, tagId);
+          var book = _bookService.GetBookForUserAsync(userId, bookId);
           var bookDto = _mapper.Map<Book, BookDto>(book);
           return Ok(bookDto);
         }

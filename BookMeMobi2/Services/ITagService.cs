@@ -10,6 +10,6 @@ namespace BookMeMobi2.Services
          IEnumerable<Tag> GetBookTags(int bookId);
          Task<Book> AddTagsToBookAsync(int bookid, IEnumerable<string> tags);
          IEnumerable<Tag> GetTags(TagResourceParameters parameters);
-         Task<Book> DeleteTagFromBook(int bookId, int tagId);
+         Task DeleteTagFromBook(int bookId, int tagId);
     }
 }
