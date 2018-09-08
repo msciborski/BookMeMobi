@@ -85,7 +85,7 @@ namespace BookMeMobi2.Controllers
         public async Task<IActionResult> DeleteTagFromBook(string userId, int bookId, int tagId)
         {
           await _tagService.DeleteTagFromBook(bookId, tagId);
-          var book = _bookService.GetBookForUserAsync(userId, bookId);
+          var book = await _bookService.GetBookForUserAsync(userId, bookId);
           var bookDto = _mapper.Map<Book, BookDto>(book);
           return Ok(bookDto);
         }
