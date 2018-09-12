@@ -17,6 +17,7 @@ namespace BookMeMobi2.Models.Book
         public bool Deleted { get; set; } = false;
         public string SearchQuery { get; set; }
         public bool? SentKindle { get; set; } = null;
+        public bool? IsPublic { get; protected set; } = true;
 
     }
 }

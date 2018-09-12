@@ -22,7 +22,7 @@ namespace BookMeMobi2.Entities
         public bool IsSentToKindle { get; set; } = false;
         public bool HasBeenEdited { get; set; } = false;
         public DateTime? LastEditDate { get; set; }
-
+        public bool? IsPublic { get; set; } = true;
 
         public string UserId { get; set; }
         public User User { get; set; }

@@ -19,5 +19,6 @@ namespace BookMeMobi2.Models.Book
         public DateTime UploadDate { get; set; }
         public DateTime DeleteDate { get; set; }
         public bool IsDelete { get; set; }
+        public bool IsPublic { get; set; }
     }
 }

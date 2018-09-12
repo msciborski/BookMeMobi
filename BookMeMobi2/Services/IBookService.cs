@@ -15,7 +15,7 @@ namespace BookMeMobi2.Services
         Task<Book> UploadBookAsync(IFormFile file, string userId);
         Task<Stream> DownloadBookAsync(string userId, int bookId, string bookFileName);
         Task<Book> GetBookForUserAsync(string userId, int bookId);
-        IEnumerable<Book> GetBooksForUserAsync(string userId, BooksResourceParameters parameters);
+        IEnumerable<Book> GetBooksForUserAsync(string userId, UserBooksResourceParameters parameters);
         Task<Book> DeleteBookAsync(string userId, int bookId);
         Task SendBook(string userId, int bookId);
         string GetDownloadUrl(string userId, int bookId, string bookFileName);

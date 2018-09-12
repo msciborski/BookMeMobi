@@ -59,11 +59,11 @@ namespace BookMeMobi2.Services
                   .Include(b => b.Cover)
                   .Include(b => b.BookTags)
                   .ThenInclude(bt => bt.Tag)
-                  .FirstOrDefaultAsync(b => b.Id == bookId);
+                  .FirstOrDefaultAsync(b => b.Id == bookId && b.UserId == userId);
             return book;
         }
 
-        public IEnumerable<Book> GetBooksForUserAsync(string userId, BooksResourceParameters parameters)
+        public IEnumerable<Book> GetBooksForUserAsync(string userId, UserBooksResourceParameters parameters)
         {
             var userBooks = _context.Books
                   .Include(b => b.Cover)
@@ -152,6 +152,7 @@ namespace BookMeMobi2.Services
                     book.Title = model.Title;
                 }
 
+                book.IsPublic = model.IsPublic;
                 book.HasBeenEdited = true;
                 book.LastEditDate = DateTime.Now.ToUniversalTime();
 

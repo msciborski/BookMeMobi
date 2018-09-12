@@ -36,7 +36,7 @@ namespace BookMeMobi2.Controllers
             _storageService = storageService;
         }
 
-        [HttpGet("/api/book")]
+        [HttpGet("/api/books")]
         [SeparatedQueryString]
         public IActionResult GetBooks([FromQuery] BooksResourceParameters parameters)
         {
@@ -59,7 +59,7 @@ namespace BookMeMobi2.Controllers
         [SeparatedQueryString]
         [ValidateUserExists]
         [HttpGet("{userId}/books")]
-        public IActionResult GetBooksForUser(string userId, [FromQuery] BooksResourceParameters parameters)
+        public IActionResult GetBooksForUser(string userId, [FromQuery] UserBooksResourceParameters parameters)
         {
             var books = _bookService.GetBooksForUserAsync(userId, parameters);
 

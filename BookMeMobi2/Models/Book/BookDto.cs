@@ -20,6 +20,7 @@ namespace BookMeMobi2.Models.Book
         public string CoverUrl { get; set; }
         public bool IsDeleted { get; set; }
         public DateTime? DeleteDate { get; set; }
+        public bool IsPublic { get; set; }
         public bool IsSentToKindle { get; set; }
         [JsonConverter(typeof(CustomDateTimeConverter))]
         public DateTime? PublishingDate { get; set; }

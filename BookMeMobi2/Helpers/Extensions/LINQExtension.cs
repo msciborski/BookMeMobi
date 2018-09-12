@@ -17,27 +17,31 @@ namespace BookMeMobi2.Helpers.Extensions
 
             if (parameters.SentKindle.HasValue)
             {
-                source =source.Where(b => b.IsSentToKindle == parameters.SentKindle.Value);
+                source = source.Where(b => b.IsSentToKindle == parameters.SentKindle.Value);
+            }
+            if (parameters.IsPublic.HasValue)
+            {
+                source = source.Where(b => b.IsPublic == parameters.IsPublic.Value);
             }
 
             return source;
         }
         public static IEnumerable<Book> FilterBooksByTags(this IEnumerable<Book> source, IEnumerable<string> tags)
         {
-          if (tags != null && tags.Any())
-          {
-              IList<Book> booksToReturn = new List<Book>();
-              foreach (var book in source)
-              {
-                var bookTags = book.BookTags.Select(bt => bt.Tag.TagName);
-                if (!tags.Except(bookTags).Any())
+            if (tags != null && tags.Any())
+            {
+                IList<Book> booksToReturn = new List<Book>();
+                foreach (var book in source)
                 {
-                  booksToReturn.Add(book);
+                    var bookTags = book.BookTags.Select(bt => bt.Tag.TagName);
+                    if (!tags.Except(bookTags).Any())
+                    {
+                        booksToReturn.Add(book);
+                    }
                 }
-              }
-              return booksToReturn;
-          }
-          return source;
+                return booksToReturn;
+            }
+            return source;
         }
 
         public static IEnumerable<Book> SearchBook(this IEnumerable<Book> source, string searchQuery)
@@ -56,14 +60,14 @@ namespace BookMeMobi2.Helpers.Extensions
         }
         public static IEnumerable<Tag> SearchTag(this IEnumerable<Tag> source, string tagName)
         {
-          if(String.IsNullOrEmpty(tagName) || String.IsNullOrWhiteSpace(tagName))
-          {
-            return source;
-          }
+            if (String.IsNullOrEmpty(tagName) || String.IsNullOrWhiteSpace(tagName))
+            {
+                return source;
+            }
 
-          tagName = tagName.ToLowerInvariant();
+            tagName = tagName.ToLowerInvariant();
 
-          return source.Where(t => t.TagName.ToLowerInvariant().Equals(tagName));
+            return source.Where(t => t.TagName.ToLowerInvariant().Equals(tagName));
         }
 
         public static IQueryable<T> ApplySort<T>(this IQueryable<T> source, string orderBy,

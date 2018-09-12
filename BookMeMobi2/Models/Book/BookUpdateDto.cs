@@ -11,5 +11,6 @@ namespace BookMeMobi2.Models.Book
         public string Title { get; set; }
         public string Author { get; set; }
         public IEnumerable<Tag> Tags { get; set; }
+        public bool IsPublic { get; set; }
     }
 }
