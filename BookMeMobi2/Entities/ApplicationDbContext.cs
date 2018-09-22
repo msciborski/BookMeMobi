@@ -81,7 +81,7 @@ namespace BookMeMobi2.Entities
 
         public async Task SeedDatabaseWithUsersAndBooks()
         {
-            var users = await CreateUsers();
+            var users = CreateUsers();
             var books = CreateBooks(users);
 
             //await this.Users.AddRangeAsync(users);
@@ -159,7 +159,7 @@ namespace BookMeMobi2.Entities
             };
             return books;
         }
-        private async Task<List<User>> CreateUsers()
+        private List<User> CreateUsers()
         {
             var userList = new List<User>
             {

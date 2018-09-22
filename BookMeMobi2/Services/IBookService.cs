@@ -21,5 +21,6 @@ namespace BookMeMobi2.Services
         string GetDownloadUrl(string userId, int bookId, string bookFileName);
         Task UpdateBookAsync(string userId, int bookId, BookUpdateDto model);
         IEnumerable<Book> GetBooks(BooksResourceParameters parameters);
+        IEnumerable<Book> GetRecommendedBooks(int bookId);
     }
 }

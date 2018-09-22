@@ -70,6 +70,46 @@ namespace BookMeMobi2.Controllers
             return Ok(pagedList);
         }
 
+                /// <summary>
+        /// Returns user's book with particular id
+        /// </summary>
+        /// <param name="userId">Book owner Id</param>
+        /// <param name="bookId">Book id</param>
+        /// <returns></returns>
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(BookDto), 200)]
+        [ProducesResponseType(typeof(ApiError), 404)]
+        [ProducesResponseType(typeof(ApiError), 500)]
+        [ValidateUserExists]
+        [ValidateBookExists]
+        [HttpGet("{userId}/books/{bookId}")]
+        public async Task<IActionResult> GetBook(string userId, int bookId)
+        {
+            Book book = await _bookService.GetBookForUserAsync(userId, bookId);
+
+            var coverUrl = (book.Cover != null) ? _storageService.GetCoverUrl(userId, bookId, book.Cover.CoverName) : null;
+
+            var bookDto = _mapper.Map<Book, BookDto>(book);
+            bookDto.CoverUrl = coverUrl;
+
+            return Ok(bookDto);
+        }
+
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(BookDto), 200)]
+        [ProducesResponseType(typeof(ApiError), 404)]
+        [ProducesResponseType(typeof(ApiError), 401)]
+        [ProducesResponseType(typeof(ApiError), 500)]
+        [ValidateUserExists]
+        [ValidateBookExists]
+        [HttpGet("{userId}/books/{bookId}/recommended")]
+        public IActionResult GetRecommendedBooks(string userId, int bookId) {
+          var recommendedBooks = _bookService.GetRecommendedBooks(bookId);
+          var booksDto = _mapper.Map<IEnumerable<Book>, IEnumerable<BookDto>>(recommendedBooks);
+          AddCoversToBookDtos(recommendedBooks, booksDto);
+          return Ok(booksDto);
+        }
+
         private IEnumerable<BookDto> MapBookToBookDto(IEnumerable<Book> books)
         {
             List<BookDto> booksDto = new List<BookDto>();
@@ -97,31 +137,6 @@ namespace BookMeMobi2.Controllers
               bookDto.CoverUrl = null;
             }
           }
-        }
-
-        /// <summary>
-        /// Returns user's book with particular id
-        /// </summary>
-        /// <param name="userId">Book owner Id</param>
-        /// <param name="bookId">Book id</param>
-        /// <returns></returns>
-        [Produces("application/json")]
-        [ProducesResponseType(typeof(BookDto), 200)]
-        [ProducesResponseType(typeof(ApiError), 404)]
-        [ProducesResponseType(typeof(ApiError), 500)]
-        [ValidateUserExists]
-        [ValidateBookExists]
-        [HttpGet("{userId}/books/{bookId}")]
-        public async Task<IActionResult> GetBook(string userId, int bookId)
-        {
-            Book book = await _bookService.GetBookForUserAsync(userId, bookId);
-
-            var coverUrl = (book.Cover != null) ? _storageService.GetCoverUrl(userId, bookId, book.Cover.CoverName) : null;
-
-            var bookDto = _mapper.Map<Book, BookDto>(book);
-            bookDto.CoverUrl = coverUrl;
-
-            return Ok(bookDto);
         }
 
         /// <summary>

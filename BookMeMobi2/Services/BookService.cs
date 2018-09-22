@@ -53,6 +53,26 @@ namespace BookMeMobi2.Services
                   .AsQueryable()
                   .ApplySort(parameters.OrderBy, _propertyMappingService.GetPropertyMapping<BookDto, Book>());
         }
+
+        public IEnumerable<Book> GetRecommendedBooks(int bookId) {
+          var selectedBookTagId = _context.BookTags.Include(bt => bt.Tag)
+                  .Where(bt => bt.BookId == bookId)
+                  .Select(bt => bt.TagId);
+
+          var recommendedBooks = _context.BookTags
+                  .Include(bt => bt.Tag)
+                  .Include(bt => bt.Book)
+                  .ThenInclude(b => b.Cover)
+                  .Where(bt => bt.BookId != bookId && selectedBookTagId.Contains(bt.TagId))
+                  .GroupBy(g => new { g.BookId, g.Book })
+                  .Select(g => new { Book = g.Key.Book, CommonTags = g.Count() })
+                  .OrderByDescending(g => g.CommonTags)
+                  .Take(5)
+                  .Select(g => g.Book);
+
+          return recommendedBooks;
+        }
+
         public async Task<Book> GetBookForUserAsync(string userId, int bookId)
         {
             Book book = await _context.Books
@@ -117,6 +137,7 @@ namespace BookMeMobi2.Services
                     var mobiDocument = await MobiService.GetMobiDocument(bookStream);
                     var editedBookStream = await UpdateMobiMetadata(mobiDocument, new BookUpdateDto { Title = book.Title, Author = book.Author });
                     await _storageService.UploadBookAsync(editedBookStream, userId, book.Id, book.FileName);
+                    _logger.LogCritical(e.ToString());
                     throw;
                 }
             }
@@ -185,7 +206,6 @@ namespace BookMeMobi2.Services
         {
 
             var user = await _context.Users.FindAsync(userId);
-            Cover cover = null;
             Book book = null;
 
             using (var stream = file.OpenReadStream())
