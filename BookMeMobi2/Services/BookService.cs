@@ -65,10 +65,9 @@ namespace BookMeMobi2.Services
                   .ThenInclude(b => b.Cover)
                   .Where(bt => bt.BookId != bookId && selectedBookTagId.Contains(bt.TagId))
                   .GroupBy(g => new { g.BookId, g.Book })
-                  .Select(g => new { Book = g.Key.Book, CommonTags = g.Count() })
-                  .OrderByDescending(g => g.CommonTags)
-                  .Take(5)
-                  .Select(g => g.Book);
+                  .OrderByDescending(g => g.Count())
+                  .Select(g => g.Key.Book)
+                  .Take(5);
 
           return recommendedBooks;
         }
@@ -117,7 +116,6 @@ namespace BookMeMobi2.Services
             {
                 try
                 {
-
                     book = await GetBookForUserAsync(userId, bookId);
                     bookStream = await DownloadBookAsync(userId, bookId, book.FileName);
                     bookStream.Position = 0;
@@ -155,6 +153,10 @@ namespace BookMeMobi2.Services
             {
                 mobiDocument.Title = model.Title;
             }
+            if(model.PublishingDate != null && model.PublishingDate.HasValue)
+            {
+              mobiDocument.PublishingDate = model.PublishingDate;
+            }
 
             return await MobiService.SaveMobiDocument(mobiDocument);
         }
@@ -173,6 +175,11 @@ namespace BookMeMobi2.Services
                     book.Title = model.Title;
                 }
 
+                if(model.PublishingDate != null && model.PublishingDate.HasValue)
+                {
+                  book.PublishingDate = model.PublishingDate;
+                }
+                book.IsDeleted = model.IsDeleted;
                 book.IsPublic = model.IsPublic;
                 book.HasBeenEdited = true;
                 book.LastEditDate = DateTime.Now.ToUniversalTime();

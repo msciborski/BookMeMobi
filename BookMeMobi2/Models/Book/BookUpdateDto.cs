@@ -10,7 +10,9 @@ namespace BookMeMobi2.Models.Book
     {
         public string Title { get; set; }
         public string Author { get; set; }
+        public DateTime? PublishingDate { get; set; }
         public IEnumerable<Tag> Tags { get; set; }
         public bool IsPublic { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }
