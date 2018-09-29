@@ -28,20 +28,12 @@ namespace BookMeMobi2.Helpers.Extensions
         }
         public static IEnumerable<Book> FilterBooksByTags(this IEnumerable<Book> source, IEnumerable<string> tags)
         {
-            if (tags != null && tags.Any())
-            {
-                IList<Book> booksToReturn = new List<Book>();
-                foreach (var book in source)
-                {
-                    var bookTags = book.BookTags.Select(bt => bt.Tag.TagName);
-                    if (!tags.Except(bookTags).Any())
-                    {
-                        booksToReturn.Add(book);
-                    }
-                }
-                return booksToReturn;
-            }
-            return source;
+          if (tags != null && tags.Any())
+          {
+            var booksWithTags = source.Where(b => tags.Except(b.BookTags.Select(bt => bt.Tag.TagName)).Any());
+            return booksWithTags;
+          }
+          return source;
         }
 
         public static IEnumerable<Book> SearchBook(this IEnumerable<Book> source, string searchQuery)
