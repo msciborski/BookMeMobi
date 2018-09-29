@@ -42,7 +42,7 @@ namespace BookMeMobi2.Services
             _mailService = mailService;
             _storageService = storageService;
         }
-        public IEnumerable<Book> GetBooks(BooksResourceParameters parameters)
+        public IQueryable<Book> GetBooks(BooksResourceParameters parameters)
         {
           return  _context.Books
                   .Include(b => b.Cover)
@@ -50,7 +50,6 @@ namespace BookMeMobi2.Services
                   .ThenInclude(bt => bt.Tag)
                   .FilterBooks(parameters)
                   .FilterBooksByTags(parameters.Tags)
-                  .AsQueryable()
                   .ApplySort(parameters.OrderBy, _propertyMappingService.GetPropertyMapping<BookDto, Book>());
         }
 
@@ -67,7 +66,7 @@ namespace BookMeMobi2.Services
                   .GroupBy(g => new { g.BookId, g.Book })
                   .OrderByDescending(g => g.Count())
                   .Select(g => g.Key.Book)
-                  .Take(5);
+                  .Take(6);
 
           return recommendedBooks;
         }
@@ -82,18 +81,18 @@ namespace BookMeMobi2.Services
             return book;
         }
 
-        public IEnumerable<Book> GetBooksForUserAsync(string userId, UserBooksResourceParameters parameters)
+        public IQueryable<Book> GetBooksForUserAsync(string userId, UserBooksResourceParameters parameters)
         {
             var userBooks = _context.Books
                   .Include(b => b.Cover)
                   .Include(b => b.BookTags)
                   .ThenInclude(bt => bt.Tag)
-                  .Where(b => b.UserId == userId);
+                  .Where(b => b.UserId == userId)
+                  .FilterBooks(parameters)
+                  .FilterBooksByTags(parameters.Tags)
+                  .ApplySort(parameters.OrderBy, _propertyMappingService.GetPropertyMapping<BookDto, Book>());
 
-            //Filter method
-            var books = userBooks.FilterBooks(parameters).FilterBooksByTags(parameters.Tags).SearchBook(parameters.SearchQuery).AsQueryable()
-              .ApplySort(parameters.OrderBy, _propertyMappingService.GetPropertyMapping<BookDto, Book>());
-            return books;
+            return userBooks;
         }
 
         public async Task<Book> DeleteBookAsync(string userId, int bookId)

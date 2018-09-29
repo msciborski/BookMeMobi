@@ -11,7 +11,7 @@ namespace BookMeMobi2.Helpers.Extensions
 {
     public static class LINQExtension
     {
-        public static IEnumerable<Book> FilterBooks(this IEnumerable<Book> source, BooksResourceParameters parameters)
+        public static IQueryable<Book> FilterBooks(this IQueryable<Book> source, BooksResourceParameters parameters)
         {
             source = source.Where(b => b.IsDeleted == parameters.Deleted);
 
@@ -26,7 +26,7 @@ namespace BookMeMobi2.Helpers.Extensions
 
             return source;
         }
-        public static IEnumerable<Book> FilterBooksByTags(this IEnumerable<Book> source, IEnumerable<string> tags)
+        public static IQueryable<Book> FilterBooksByTags(this IQueryable<Book> source, IEnumerable<string> tags)
         {
           if (tags != null && tags.Any())
           {
@@ -36,7 +36,7 @@ namespace BookMeMobi2.Helpers.Extensions
           return source;
         }
 
-        public static IEnumerable<Book> SearchBook(this IEnumerable<Book> source, string searchQuery)
+        public static IQueryable<Book> SearchBook(this IQueryable<Book> source, string searchQuery)
         {
             if (String.IsNullOrEmpty(searchQuery) || String.IsNullOrWhiteSpace(searchQuery))
             {
@@ -50,7 +50,7 @@ namespace BookMeMobi2.Helpers.Extensions
                   b.Title.ToLowerInvariant().Contains(searchQuery) ||
                     b.FileName.ToLowerInvariant().Contains(searchQuery));
         }
-        public static IEnumerable<Tag> SearchTag(this IEnumerable<Tag> source, string tagName)
+        public static IQueryable<Tag> SearchTag(this IQueryable<Tag> source, string tagName)
         {
             if (String.IsNullOrEmpty(tagName) || String.IsNullOrWhiteSpace(tagName))
             {

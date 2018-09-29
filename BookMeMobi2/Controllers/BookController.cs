@@ -22,10 +22,7 @@ namespace BookMeMobi2.Controllers
     {
         private readonly ILogger _logger;
         private readonly IMapper _mapper;
-
         private readonly IBookService _bookService;
-        private readonly IMailService _mailService;
-        private readonly IUserService _userService;
         private readonly IStorageService _storageService;
 
         public BookController(IMapper mapper, IBookService bookService, ILogger<BookController> logger, IStorageService storageService)
