@@ -59,15 +59,19 @@ namespace BookMeMobi2.Services
                     .Where(bt => bt.BookId == bookId)
                     .Select(bt => bt.TagId);
 
-            var recommendedBooks = _context.BookTags
-                    .Include(bt => bt.Tag)
-                    .Include(bt => bt.Book)
-                    .ThenInclude(b => b.Cover)
+            var bookTags = _context.BookTags
                     .Where(bt => bt.BookId != bookId && selectedBookTagId.Contains(bt.TagId))
-                    .GroupBy(g => new { g.BookId, g.Book })
-                    .OrderByDescending(g => g.Count())
-                    .Select(g => g.Key.Book)
-                    .Take(6);
+                    .GroupBy(g => new { x = g.BookId})
+                    .Select(g => new { BookId = g.Key.x, Count = g.Count() })
+                    .OrderByDescending(g => g.Count)
+                    .Take(6)
+                    .ToList();
+
+            var recommendedBooks = _context.Books
+                    .Include(b => b.Cover)
+                    .Include(b => b.BookTags)
+                      .ThenInclude(bt => bt.Tag)
+                    .Where(b => bookTags.Select(bt => bt.BookId).Contains(b.Id));
 
             return recommendedBooks;
         }
