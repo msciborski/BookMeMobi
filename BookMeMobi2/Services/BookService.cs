@@ -44,31 +44,32 @@ namespace BookMeMobi2.Services
         }
         public IQueryable<Book> GetBooks(BooksResourceParameters parameters)
         {
-          return  _context.Books
-                  .Include(b => b.Cover)
-                  .Include(b => b.BookTags)
-                  .ThenInclude(bt => bt.Tag)
-                  .FilterBooks(parameters)
-                  .FilterBooksByTags(parameters.Tags)
-                  .ApplySort(parameters.OrderBy, _propertyMappingService.GetPropertyMapping<BookDto, Book>());
+            return _context.Books
+                    .Include(b => b.Cover)
+                    .Include(b => b.BookTags)
+                    .ThenInclude(bt => bt.Tag)
+                    .FilterBooks(parameters)
+                    .FilterBooksByTags(parameters.Tags)
+                    .ApplySort(parameters.OrderBy, _propertyMappingService.GetPropertyMapping<BookDto, Book>());
         }
 
-        public IEnumerable<Book> GetRecommendedBooks(int bookId) {
-          var selectedBookTagId = _context.BookTags.Include(bt => bt.Tag)
-                  .Where(bt => bt.BookId == bookId)
-                  .Select(bt => bt.TagId);
+        public IEnumerable<Book> GetRecommendedBooks(int bookId)
+        {
+            var selectedBookTagId = _context.BookTags.Include(bt => bt.Tag)
+                    .Where(bt => bt.BookId == bookId)
+                    .Select(bt => bt.TagId);
 
-          var recommendedBooks = _context.BookTags
-                  .Include(bt => bt.Tag)
-                  .Include(bt => bt.Book)
-                  .ThenInclude(b => b.Cover)
-                  .Where(bt => bt.BookId != bookId && selectedBookTagId.Contains(bt.TagId))
-                  .GroupBy(g => new { g.BookId, g.Book })
-                  .OrderByDescending(g => g.Count())
-                  .Select(g => g.Key.Book)
-                  .Take(6);
+            var recommendedBooks = _context.BookTags
+                    .Include(bt => bt.Tag)
+                    .Include(bt => bt.Book)
+                    .ThenInclude(b => b.Cover)
+                    .Where(bt => bt.BookId != bookId && selectedBookTagId.Contains(bt.TagId))
+                    .GroupBy(g => new { g.BookId, g.Book })
+                    .OrderByDescending(g => g.Count())
+                    .Select(g => g.Key.Book)
+                    .Take(6);
 
-          return recommendedBooks;
+            return recommendedBooks;
         }
 
         public async Task<Book> GetBookForUserAsync(string userId, int bookId)
@@ -116,14 +117,20 @@ namespace BookMeMobi2.Services
                 try
                 {
                     book = await GetBookForUserAsync(userId, bookId);
-                    bookStream = await DownloadBookAsync(userId, bookId, book.FileName);
-                    bookStream.Position = 0;
-                    var mobiDocument = await MobiService.GetMobiDocument(bookStream);
+                    if (!String.IsNullOrEmpty(model.Author) || !String.IsNullOrEmpty(model.Title) ||
+                      (model.PublishingDate != null && model.PublishingDate.HasValue))
+                    {
+                        bookStream = await DownloadBookAsync(userId, bookId, book.FileName);
+                        bookStream.Position = 0;
+                        var mobiDocument = await MobiService.GetMobiDocument(bookStream);
 
-                    var editedBookStream = await UpdateMobiMetadata(mobiDocument, model);
-                    editedBookStream.Position = 0;
-                    await _storageService.UploadBookAsync(editedBookStream, userId, bookId, book.FileName);
+                        var editedBookStream = await UpdateMobiMetadata(mobiDocument, model);
+                        editedBookStream.Position = 0;
+                        await _storageService.UploadBookAsync(editedBookStream, userId, bookId, book.FileName);
 
+                        book.HasBeenEdited = true;
+                        book.LastEditDate = DateTime.Now.ToUniversalTime();
+                    }
                     await UpdateBookDb(book, model);
                     transaction.Commit();
                 }
@@ -152,9 +159,9 @@ namespace BookMeMobi2.Services
             {
                 mobiDocument.Title = model.Title;
             }
-            if(model.PublishingDate != null && model.PublishingDate.HasValue)
+            if (model.PublishingDate != null && model.PublishingDate.HasValue)
             {
-              mobiDocument.PublishingDate = model.PublishingDate;
+                mobiDocument.PublishingDate = model.PublishingDate;
             }
 
             return await MobiService.SaveMobiDocument(mobiDocument);
@@ -174,14 +181,12 @@ namespace BookMeMobi2.Services
                     book.Title = model.Title;
                 }
 
-                if(model.PublishingDate != null && model.PublishingDate.HasValue)
+                if (model.PublishingDate != null && model.PublishingDate.HasValue)
                 {
-                  book.PublishingDate = model.PublishingDate;
+                    book.PublishingDate = model.PublishingDate;
                 }
                 book.IsDeleted = model.IsDeleted;
                 book.IsPublic = model.IsPublic;
-                book.HasBeenEdited = true;
-                book.LastEditDate = DateTime.Now.ToUniversalTime();
 
                 _context.Books.Update(book);
                 await _context.SaveChangesAsync();
